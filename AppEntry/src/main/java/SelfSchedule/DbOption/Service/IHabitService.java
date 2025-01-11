@@ -2,10 +2,7 @@ package SelfSchedule.DbOption.Service;
 
 import SelfSchedule.Entity.Habit;
 import SelfSchedule.Entity.HabitGroup;
-import SelfSchedule.Entity.VO.HabitRecordVO;
-import SelfSchedule.Entity.VO.HabitReminderVO;
-import SelfSchedule.Entity.VO.HabitVO;
-import SelfSchedule.Entity.VO.PagedData;
+import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.HabitModel;
 import SelfSchedule.Model.HabitRecordModel;
 import SelfSchedule.Service.FileService;
@@ -24,7 +21,7 @@ public interface IHabitService extends IService<Habit> {
     HabitModel updateHabit(HabitModel model);
     String uploadThumb(MultipartFile image, String habitId,String originalFileName, FileService fileService);
     int removeGroup(String userId,Long groupId,Integer code);
-    int finishOrNot(HabitRecordModel model);
+    HabitOptionVO finishOrNot(HabitRecordModel model);
     List<HabitReminderVO> getReminders(String habitId);
     int removeHabit(String habitId);
     boolean isInFrequency(String habitId,Date day,Long habitBeginDate);

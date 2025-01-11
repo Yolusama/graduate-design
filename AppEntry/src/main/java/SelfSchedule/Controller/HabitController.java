@@ -5,10 +5,7 @@ import SelfSchedule.Common.Constants;
 import SelfSchedule.DbOption.Service.IHabitService;
 import SelfSchedule.DbOption.ServiceImpl.HabitService;
 import SelfSchedule.Entity.HabitGroup;
-import SelfSchedule.Entity.VO.HabitRecordVO;
-import SelfSchedule.Entity.VO.HabitReminderVO;
-import SelfSchedule.Entity.VO.HabitVO;
-import SelfSchedule.Entity.VO.PagedData;
+import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.HabitModel;
 import SelfSchedule.Model.HabitRecordModel;
 import SelfSchedule.Result.ActionResult;
@@ -107,7 +104,7 @@ public class HabitController extends ControllerBase{
     @PatchMapping("/FinishOrNot")
     @ApiOperation(value = "用户习惯打卡",notes = "用户习惯打卡")
     @ClearRedisCache(keys={CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue})
-    public ActionResult<Integer> FinishOrNot(@RequestBody HabitRecordModel model,HttpServletRequest request){
+    public ActionResult<HabitOptionVO> FinishOrNot(@RequestBody HabitRecordModel model, HttpServletRequest request){
         return successWithData(habitService.finishOrNot(model));
     }
 

@@ -5,10 +5,7 @@ import SelfSchedule.Common.Constants;
 import SelfSchedule.DbOption.Mapper.*;
 import SelfSchedule.DbOption.Service.IHabitService;
 import SelfSchedule.Entity.*;
-import SelfSchedule.Entity.VO.HabitRecordVO;
-import SelfSchedule.Entity.VO.HabitReminderVO;
-import SelfSchedule.Entity.VO.HabitVO;
-import SelfSchedule.Entity.VO.PagedData;
+import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Functional.RandomGenerator;
 import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Model.HabitModel;
@@ -133,12 +130,22 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
                 temp.setDate(temp.getDate()+Constants.Week);
                 Date rightBound = new Date(temp.getTime());
                 LambdaQueryWrapper<HabitRecord> wrapper1 = new LambdaQueryWrapper<>();
-                wrapper1.ge(HabitRecord::getFinishTime,leftBound).lt(HabitRecord::getFinishTime,rightBound);
-                Long count = recordMapper.selectCount(wrapper1);
-                if(count<habit.getWeekPersistDays())
+                wrapper1.eq(HabitRecord::getFinished,true).and(q->q.ge(HabitRecord::getFinishTime,leftBound)
+                        .lt(HabitRecord::getFinishTime,rightBound));
+                List<HabitRecord> records = recordMapper.selectList(wrapper1);
+                if(records.size()<habit.getWeekPersistDays())
                     res.getData().add(habit);
                 else
+                {
+                    Optional<HabitRecord> currentRecord = records.stream().filter(r->r.getDay().getTime()==date.getTime())
+                            .findFirst();
+                    if(!currentRecord.isEmpty()){
+                        habit.setFinished(true);
+                        habit.setFinishTime(currentRecord.get().getFinishTime());
+                       res.getData().add(habit);
+                    }
                     continue;
+                }
             }
             if(habit.getPeriod()!=null)
             {
@@ -303,11 +310,27 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
 
     @Override
     @Transactional
-    public int finishOrNot(HabitRecordModel model) {
-        LambdaUpdateWrapper<HabitRecord> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(HabitRecord::getFinished,model.getFinished()).set(HabitRecord::getFinishTime,model.getFinishTime());
+    public HabitOptionVO finishOrNot(HabitRecordModel model) {
         HabitOption option = optionMapper.selectOne(new LambdaQueryWrapper<HabitOption>()
                 .eq(HabitOption::getHabitId,model.getHabitId()));
+        LambdaQueryWrapper<HabitRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(HabitRecord::getHabitId,model.getHabitId()).eq(HabitRecord::getDay,model.getDay());
+        HabitRecord record = recordMapper.selectOne(wrapper);
+        if(record!=null)
+        {
+            LambdaUpdateWrapper<HabitRecord> wrapper1 = new LambdaUpdateWrapper<>();
+            wrapper1.set(HabitRecord::getFinished,model.getFinished()).set(HabitRecord::getFinishTime,model.getFinishTime())
+              .eq(HabitRecord::getHabitId,model.getHabitId()).eq(HabitRecord::getDay,model.getDay());
+            recordMapper.update(wrapper1);
+        }
+        else{
+            record = new HabitRecord();
+            record.setHabitId(model.getHabitId());
+            record.setFinished(model.getFinished());
+            record.setFinishTime(model.getFinishTime());
+            record.setDay(model.getDay());
+            recordMapper.insert(record);
+        }
         int continuousDays = 0;
         List<Boolean> states = recordMapper.getFinishStatesOrdered(model.getHabitId());
         for(int i=0;i<states.size();i++){
@@ -326,10 +349,9 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         else
             option.setPersistDays(option.getPersistDays()-1);
         option.setContinuousDays(continuousDays);
-        wrapper.eq(HabitRecord::getHabitId,model.getHabitId()).eq(HabitRecord::getDay,model.getDay());
         optionMapper.updateById(option);
-        recordMapper.update(wrapper);
-        return continuousDays;
+
+        return new HabitOptionVO(option.getPersistDays(),option.getContinuousDays(),option.getMostDays());
     }
 
     @Override

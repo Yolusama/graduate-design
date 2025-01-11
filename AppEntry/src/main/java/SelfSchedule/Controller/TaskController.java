@@ -1,0 +1,134 @@
+package SelfSchedule.Controller;
+
+import SelfSchedule.Common.CachingKeys;
+import SelfSchedule.Common.Constants;
+import SelfSchedule.DbOption.Service.ITaskService;
+import SelfSchedule.DbOption.ServiceImpl.TaskService;
+import SelfSchedule.Entity.VO.*;
+import SelfSchedule.Model.TaskModel;
+import SelfSchedule.Model.TaskReminderModel;
+import SelfSchedule.Model.TaskRepeatRuleModel;
+import SelfSchedule.Result.ActionResult;
+import SelfSchedule.Service.RedisCache;
+import SelfSchedule.annotation.ClearRedisCache;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+@RestController
+@RequestMapping("/Api/Task")
+@Api(tags = "日程：任务实例行为控制器")
+public class TaskController extends ControllerBase
+{
+    private final ITaskService taskService;
+
+    @Autowired
+    public TaskController(TaskService taskService,RedisCache redis){
+        this.taskService = taskService;
+        this.redis = redis;
+    }
+
+
+    @PutMapping("/CreateTask")
+    @ApiOperation(value ="创建任务",notes="创建任务")
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    public ActionResult<Long> CreateTask(@RequestBody TaskModel model,HttpServletRequest request){
+        Long res = taskService.createTask(model);
+        if(res>0)
+            return successWithData("任务创建成功！",res);
+        else
+            return fail("任务创建失败！");
+    }
+
+    @GetMapping("/GetTasks/{userId}")
+    @ApiOperation(value = "获取某天的任务日程",notes="异步获取某天的任务日程并分页处理")
+    public CompletableFuture<ActionResult<PagedData<TaskRuleComboVO>>> GetTasks(
+            @RequestParam Integer page,@RequestParam Integer pageSize,@RequestParam Long time,
+            @PathVariable String userId,HttpServletRequest request
+    ){
+        return CompletableFuture.completedFuture(
+                successWithData(
+                        taskService.getTasks(page,pageSize,userId,new Date(time),redis)
+                ));
+    }
+
+    @GetMapping("/GetTaskReminders/{taskId}")
+    @ApiOperation(value="获取任务的提醒时间",notes="以任务id搜索任务提醒")
+    public CompletableFuture<ActionResult<List<TaskReminderVO>>> GetTaskReminders(@PathVariable Long taskId){
+        if(taskId == null)
+            return CompletableFuture.completedFuture(fail("任务id不能为空", HttpStatus.BAD_REQUEST));
+        return CompletableFuture.completedFuture(successWithData(taskService.getTaskReminders(taskId)));
+    }
+
+    @PostMapping("/CancelTask")
+    @ApiOperation(value = "取消任务，表示用户界面的删除",notes = "形式删除")
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    public ActionResult CancelTask(@RequestBody TaskModel model, @RequestParam Integer mode, HttpServletRequest request){
+        int res = taskService.cancelTask(model,mode);
+        if(res== Constants.EOF)
+            return fail("不支持的模式！");
+        return ok("已移除任务！");
+    }
+
+
+    @PutMapping("/AddReminder")
+    @ApiOperation(value = "添加任务提醒",notes = "任务/可重复任务的提醒")
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    public ActionResult<Long> AddReminder(@RequestBody TaskReminderModel model,@RequestParam Integer mode, HttpServletRequest request)
+    {
+        Long res = taskService.addReminder(model,mode);
+        if(res==Constants.AbNormalState)
+            return fail("添加提醒失败！");
+        else
+            return successWithData(res);
+    }
+
+    @PutMapping("/RemoveReminder")
+    @ApiOperation(value = "移除任务提醒",notes = "任务/可重复任务的提醒")
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    public ActionResult RemoveReminder(@RequestBody TaskReminderModel model,@RequestParam Integer mode, HttpServletRequest request)
+    {
+        int res = taskService.removeReminder(model,mode);
+        if(res==Constants.AbNormalState)
+            return fail();
+        else
+            return ok();
+    }
+
+    @PatchMapping("/ChangeRepeatRule")
+    @ApiOperation(value = "修改可重复任务的重复规则",notes = "只有任务的主任务能够修改重复规则")
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    public ActionResult ChangeRepeatRule(@RequestBody TaskRepeatRuleModel model,@RequestParam Integer mode, HttpServletRequest request){
+        int res = taskService.changeRepeatRule(model,mode);
+        if(res == Constants.AbNormalState)
+            return fail();
+        else
+            return ok();
+    }
+
+    @PostMapping("/UpdateTask")
+    @ApiOperation(value = "更新任务的基本信息",notes = "不同的更新下的效果会不同")
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    public ActionResult UpdateTask(@RequestBody TaskModel model,@RequestParam Integer mode, HttpServletRequest request){
+        int res = taskService.updateTask(model,mode);
+        if(res == Constants.EOF)
+            return fail("无效的模式！");
+        return ok("修改完成!");
+    }
+
+    @GetMapping("/GetRepeatRule/{taskId}")
+    @ApiOperation(value = "获取重复任务的重复规则",notes = "获取重复任务的重复规则")
+    public CompletableFuture<ActionResult<TaskRuleVO>> GetRepeatRule(@PathVariable Long taskId){
+        TaskRuleVO res = taskService.getRepeatRule(taskId);
+        if(res==null)
+            return CompletableFuture.completedFuture(fail(HttpStatus.NOT_FOUND));
+        return CompletableFuture.completedFuture(successWithData(res));
+    }
+}

@@ -1,0 +1,36 @@
+package SelfSchedule.Service;
+
+import SelfSchedule.Functional.JwtGenerator;
+import SelfSchedule.Functional.JwtParser;
+import SelfSchedule.Configuration.JwtConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+
+@Service
+public class JwtService {
+    private final JwtConfig jwtConfig;
+
+    public String SecretKey()
+    {
+        return jwtConfig.getSecretKey();
+    }
+
+    @Autowired
+    public JwtService(JwtConfig jwtConfig)
+    {
+        this.jwtConfig = jwtConfig;
+    }
+
+    public String GenerateToken(String userId, Duration expire)
+    {
+        return JwtGenerator.generateToken(jwtConfig.getSecretKey(),
+                userId,expire,jwtConfig.getIssuer(),jwtConfig.getAudience());
+    }
+
+    public String GetUserIdFromToken(String token)
+    {
+        return JwtParser.parse(jwtConfig.getSecretKey(),token);
+    }
+}

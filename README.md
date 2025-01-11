@@ -1,2 +1,2 @@
 # graduate-design
-个人毕业上合计
+个人毕业设计

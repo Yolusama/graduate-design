@@ -255,5 +255,7 @@ export class HabitReminder{
 	}
 }
 
+export const ADayMillseconds = 1000*60*60*24;
+
 
 

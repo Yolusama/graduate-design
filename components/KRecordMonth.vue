@@ -17,8 +17,7 @@
 				</view>
 				<view class="month">
 					<view class="month-container" v-for="(day,index2) in state.days[index]" :key="index2">
-						<view :class="day!=null?day.class:'date'" @tap="select(day)" 
-						:style="day!=null&&onlyDate(day.date).getTime() <= today.getTime() &&
+						<view :class="day!=null?day.class:'date'" @tap="select(day)" :style="day!=null&&onlyDate(day.date).getTime() <= today.getTime() &&
 						  onlyDate(day.date).getTime() >= beginDate.getTime()?'background-color:rgb(5,5,5,.75)':''">
 							{{day!=null?day.date.getDate():''}}
 						</view>
@@ -26,6 +25,43 @@
 				</view>
 			</swiper-item>
 		</swiper>
+		<view class="rercord-card">
+			<view class="card-header">
+				习惯完成数据
+			</view>
+			<view class="card-content">
+				<view class="card">
+					<view class="head">
+						<image src="../static/percentage.png"  class="head-image"></image>
+						<text>完成率</text>
+					</view>
+					<view class="card-option">{{((persistDays/state.daysFromBeginDateToNow)).toFixed(2)*100}}
+						<text class="card-option-text">%</text>
+					</view>
+				</view>
+				<view class="card">
+					<view class="head">
+						<image src="../static/完成.png" class="head-image"></image>
+						<text>总完成</text>
+					</view>
+					<view class="card-option">{{persistDays}}&nbsp;<text class="card-option-text">天</text></view>
+				</view>
+				<view class="card">
+					<view class="head">
+						<image src="../static/曲线图2.png" class="head-image"></image>
+						<text>连续</text>
+					</view>
+					<view class="card-option">{{continuousDays}}&nbsp;<text class="card-option-text">天</text></view>
+				</view>
+				<view class="card">
+					<view class="head">
+						<image src="../static/连续.png"  class="head-image"></image>
+						<text>最多连续</text>
+					</view>
+					<view class="card-option">{{mostDays}}&nbsp;<text class="card-option-text">天</text></view>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -39,7 +75,8 @@
 		onlyDate,
 		monthDays,
 		getDateStr,
-		copy
+		copy,
+		ADayMillseconds
 	} from '../module/Common';
 	import {
 		DayInFrequency,
@@ -50,7 +87,10 @@
 		modelValue: Array,
 		beginDate: Date,
 		habitId: String,
-		current: Date
+		current: Date,
+		continuousDays: Number,
+		mostDays: Number,
+		persistDays: Number
 	});
 	const emits = defineEmits();
 
@@ -64,18 +104,24 @@
 			[]
 		],
 		moveLeft: undefined,
-		transformed: false
+		transformed: false,
+		daysFromBeginDateToNow:0
 	});
 
 	const records = ref(pros.modelValue);
 	const beginDate = ref(pros.beginDate);
 	const habitId = ref(pros.habitId);
 	const current = ref(pros.current);
+	const continuousDays = ref(pros.continuousDays);
+	const mostDays = ref(pros.mostDays);
+	const persistDays = ref(pros.persistDays);
 
 	onMounted(() => {
+		const today = onlyDate(new Date());
 		if (beginDate.value == undefined)
-			beginDate.value = onlyDate(new Date());
+			beginDate.value = today;
 		loadMonthDays();
+		state.daysFromBeginDateToNow = ((today.getTime()-beginDate.value.getTime())/ADayMillseconds)+1;
 	});
 
 	function loadMonthDays() {
@@ -98,8 +144,8 @@
 						result: index >= 0
 					}
 				};
-				if(day.record.result)
-					day.class = records.value[day.record.index].finished? "date finished" : "date unfinished";
+				if (day.record.result)
+					day.class = records.value[day.record.index].finished ? "date finished" : "date unfinished";
 				state.days[i].push(day);
 			}
 		}
@@ -109,34 +155,39 @@
 		if (day.record.result) {
 			const record = records.value[day.record.index];
 			uni.showModal({
-				confirmText:"完成",
-				cancelText:"不完成",
+				confirmText: "完成",
+				cancelText: "不完成",
 				success: res => {
 					const model = {};
-					copy(record,model);
+					copy(record, model);
 					if (res.confirm) {
-						if(record.finsihed)return;
+						if (record.finsihed) return;
 						model.finished = true;
 					}
-					if(res.cancel){
-						if(!record.finished)return;
+					if (res.cancel) {
+						if (!record.finished) return;
 						model.finished = false;
 					}
-					model.finishTime = model.finished? new Date() : null;
+					model.finishTime = model.finished ? new Date() : null;
 					model.habitId = habitId.value;
-					FinishOrNot(model,response=>{
-						if(!response.data.succeeded){
+					FinishOrNot(model, response => {
+						if (!response.data.succeeded) {
 							uni.showToast({
-								title:response.data.message,
-								icon:"none"
+								title: response.data.message,
+								icon: "none"
 							});
 							return;
 						}
+						const data = response.data.data;
 						record.finished = model.finished;
 						record.finishTime = model.finishTime;
+						persistDays.value = data.persistDays;
+						mostDays.value = data.mostDays;
+						continuousDays.value = data.continuousDays;
 						day.class = record.finished ? "date finished" : "date unfinished";
 						emits("update:modelValue", records.value);
-					});	
+						emits("select", data);
+					});
 				}
 			});
 		} else {
@@ -165,10 +216,10 @@
 								habitId: habitId.value,
 								day: onlyDate(day.date),
 								finished: finished,
-								finishTime: finished?new Date():null
+								finishTime: finished ? new Date() : null
 							};
 							FinishOrNot(record, response1 => {
-								const res1 = response.data;
+								const res1 = response1.data;
 								if (!res1.succeeded) {
 									uni.showToast({
 										title: res1.message,
@@ -176,9 +227,15 @@
 									});
 									return;
 								}
+								const data = res1.data;
 								records.value.push(record);
-								day.class = record.finished ? "date finished" : "date unfinished";
+								day.class = record.finished ? "date finished" :
+									"date unfinished";
+								persistDays.value = data.persistDays;
+								mostDays.value = data.mostDays;
+								continuousDays.value = data.continuousDays;
 								emits("update:modelValue", records.value);
+								emits("select", data);
 							});
 						}
 					});
@@ -192,7 +249,7 @@
 		if (!state.transformed && state.moveLeft == undefined) {
 			if (detail.dx < 0)
 				state.moveLeft = true;
-			else if(detail.dx > 0)
+			else if (detail.dx > 0)
 				state.moveLeft = false;
 			state.transformed = true;
 		}
@@ -208,10 +265,10 @@
 		if (detail.source == "") return;
 		if (state.moveLeft == undefined) return;
 		const date = new Date(current.value);
-		if(state.moveLeft)
-		  date.setMonth(date.getMonth() - 1);
+		if (state.moveLeft)
+			date.setMonth(date.getMonth() - 1);
 		else
-		  date.setMonth(date.getMonth() + 1);
+			date.setMonth(date.getMonth() + 1);
 		current.value = date;
 		state.transformed = false;
 	}
@@ -222,14 +279,14 @@
 
 	function transformLeft() {
 		const date = new Date(current.value);
-		date.setMonth(date.getMonth()-1);
+		date.setMonth(date.getMonth() - 1);
 		changeMonthDays(state.current--);
 		current.value = date;
 	}
 
 	function transformRight() {
 		const date = new Date(current.value);
-		date.setMonth(date.getMonth()+1);
+		date.setMonth(date.getMonth() + 1);
 		changeMonthDays(state.current++);
 		current.value = date;
 	}
@@ -250,8 +307,8 @@
 						result: index >= 0
 					}
 				};
-				if(data.record.result)
-					data.class = records.value[data.record.index].finished? "date finished" : "date unfinished";
+				if (data.record.result)
+					data.class = records.value[data.record.index].finished ? "date finished" : "date unfinished";
 				if (i == 0) {
 					for (let j = 0; j < data.date.getDay(); j++)
 						toAdd.push(null);
@@ -259,7 +316,7 @@
 				toAdd.push(data);
 			}
 			state.current = state.data.length - 2;
-			
+
 			state.days.push(toAdd);
 		}
 		if (index == 0) {
@@ -275,8 +332,8 @@
 						result: index >= 0
 					}
 				};
-				if(data.record.result)
-					data.class = records.value[data.record.index].finished? "date finished" : "date unfinished";
+				if (data.record.result)
+					data.class = records.value[data.record.index].finished ? "date finished" : "date unfinished";
 				if (i == 0) {
 					for (let j = 0; j < data.date.getDay(); j++)
 						toAdd.push(null);
@@ -284,8 +341,8 @@
 				toAdd.push(data);
 			}
 			state.current = 1;
-			
-			state.days.splice(0,0,toAdd);
+
+			state.days.splice(0, 0, toAdd);
 		}
 		state.transformed = false;
 		state.moveLeft = undefined;
@@ -328,8 +385,8 @@
 	}
 
 	.k-record-month .unfinished {
-		background-color: rgb(225,225,225) !important;
-		color:red;
+		background-color: rgb(225, 225, 225) !important;
+		color: red;
 	}
 
 	.k-record-month .month {
@@ -342,5 +399,64 @@
 		width: 14.28%;
 		display: flex;
 		justify-content: center;
+		margin-bottom: 1%;
+	}
+
+
+	.k-record-month .rercord-card {
+		position: relative;
+		background-color: #fff;
+		border-radius: 8px;
+	}
+	
+	.k-record-month  .card-content{
+		display: flex;
+		width: 100%;
+		flex-flow: row wrap;
+		justify-content: center;
+	}
+	
+	.k-record-month .card{
+		display: flex;
+		flex-direction: column;
+		width: 44%;
+		background-color: aliceblue;
+		margin-left: 3%;
+		margin-bottom: 3%;
+		border-radius: 5px;
+		font-size: 14px;
+		height: 60px;
+		justify-content: center;
+	}
+	
+	.k-record-month .card .head{
+		display: flex;
+		align-items: center;
+		color: gray
+	}
+	
+	.k-record-month .card .head-image{
+		width: 15px;
+		height: 15px;
+		margin-left: 2%;
+		margin-right: 2%;
+	}
+	
+	.k-record-month .card .card-option{
+		margin-left: 2%;
+		font-size: 18px;
+		font-weight: 600;
+	}
+	
+	.k-record-month .card  .card-option-text{
+		font-size: 14px;
+	}
+	
+	.k-record-month .card-header {
+		font-size: 18px;
+		color: black;
+		width: 100%;
+		padding: 1%;
+		font-weight: 600;
 	}
 </style>

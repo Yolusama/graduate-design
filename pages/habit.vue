@@ -23,11 +23,11 @@
 						</template>
 						<scroll-view :scroll-y="true" style="max-height:30vh;height:fit-content;">
 							<view style="display: flex;justify-content: space-between;" v-for="(habit,index) in data"
-								@click="seeDetail(index)" :key="index">
+								@click="seeDetail(groupName,index)" :key="index">
 								<view class="info">
 									<image :src="imgSrc(habit.thumb)" style="width: 40px;height: 40px"></image>
 									<text style="margin-left:3px;">{{habit.name}}</text>
-									<!--<k-split :height="20" :width="4" v-if="habit.finished"
+								<k-split :height="20" :width="4" v-if="habit.finished"
 										backgroundColor="black"></k-split>
 									<text v-if="habit.finished" style="font-weight: normal;font-size: 14px;color:blue;
 								margin-left: 4px;margin-right: 4px;">
@@ -36,7 +36,7 @@
 										完成</text>
 									<text @click="unfinishHabit($event,habit)" v-if="habit.finished">
 										<uni-icons type="close" color="red"></uni-icons>
-									</text>-->
+									</text>
 								</view>
 								<view class="option">
 									<text>{{habit.persistDays}}天</text>
@@ -290,7 +290,9 @@
 					</view>
 					<k-record-month class="record-calendar" v-model="state.selectedHabit.records"
 						:current="state.selectedDay" :habitId="state.selectedHabit.habitId"
-						:beginDate="state.selectedHabit.beginDate">
+						:beginDate="state.selectedHabit.beginDate" @select="recordFinish" 
+						:continuousDays="state.selectedHabit.continuousDays" :mostDays="state.selectedHabit.mostDays" 
+						:persistDays="state.selectedHabit.persistDays">
 					</k-record-month>
 				</view>
 			</uni-popup>
@@ -439,8 +441,8 @@
 		fillWeekdays();
 	}
 
-	function seeDetail(index) {
-		state.selectedHabit = habitOption.value.data[index];
+	function seeDetail(groupName,index) {
+		state.selectedHabit = state.data[groupName][index];
 		if (state.selectedDay.getTime() > today.value.getTime() || state.selectedDay.getTime() < state.selectedHabit
 			.beginDate
 			.getTime())
@@ -794,6 +796,7 @@
 			}
 			state.selectedHabit.finished = finished;
 			state.selectedHabit.finishTime = model.finishTime;
+			recordFinish(res.data);
 		});
 	}
 
@@ -813,6 +816,7 @@
 				return;
 			}
 			habit.finished = false;
+			recordFinish(res.data);
 		});
 	}
 
@@ -841,17 +845,22 @@
 			datum.beginDate = new Date(datum.beginDate);
 			datum.finishTime = new Date(datum.finishTime);
 			const groupName = datum.groupName;
+		
 			if (state.data[groupName] != undefined)
 				state.data[groupName].push(datum);
-			else {
+			else {	
 				state.data[groupName] = [datum];
 			}
 		}
 	}
 	
-	function groupOpen(e){
-		console.log(e);
+	function recordFinish(data){
+		state.selectedHabit.persistDays = data.persistDays;
+		state.selectedHabit.mostDays = data.mostDays;
+		state.selectedHabit.continuousDays = data.continuousDays;
 	}
+	
+	
 </script>
 
 <style scoped>
@@ -1152,7 +1161,6 @@
 
 	.open-record {
 		color: rgb(0, 75, 235);
-		text-decoration: underline;
 		margin-top: 2%;
 	}
 

@@ -58,7 +58,6 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         habit.setDeleteFlag(false);
         habit.setDescription(model.getDescription());
         habit.setName(model.getName());
-        habit.setPriority(model.getPriority());
         habit.setThumb(model.getThumb());
         habit.setUserId(model.getUserId());
         habit.setGroupId(model.getGroupId());
@@ -236,9 +235,8 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     public HabitModel updateHabit(HabitModel model){
         LambdaUpdateWrapper<Habit> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(Habit::getBeginDate,model.getBeginDate()).set(Habit::getDescription,model.getDescription())
-                .set(Habit::getName,model.getName()).set(Habit::getPriority,model.getPriority())
-                .set(Habit::getThumb,model.getThumb()).set(Habit::getGroupId,model.getGroupId())
-                .eq(Habit::getId,model.getHabitId());
+                .set(Habit::getName,model.getName()).set(Habit::getThumb,model.getThumb())
+                .set(Habit::getGroupId,model.getGroupId()).eq(Habit::getId,model.getHabitId());
         LambdaUpdateWrapper<HabitOption> wrapper1 = new LambdaUpdateWrapper<>();
         wrapper1.set(HabitOption::getAimDays,model.getAimDays()).eq(HabitOption::getHabitId,model.getHabitId());
         LambdaUpdateWrapper<HabitFrequency> wrapper2 = new LambdaUpdateWrapper<>();
@@ -255,6 +253,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
             if(reminderModel.getReminderId()==null){
                 if(reminderModel.getToDelete()){
                     toDeleteIndexes.add(i);
+
                     continue;
                 }
                 HabitReminder reminder = new HabitReminder();

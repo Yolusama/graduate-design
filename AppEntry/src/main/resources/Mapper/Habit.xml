@@ -3,7 +3,7 @@
 
 <mapper namespace="SelfSchedule.DbOption.Mapper.HabitMapper">
     <select id="getHabits" resultType="SelfSchedule.Entity.VO.HabitVO">
-        select h.id as habitId,h.userId,h.name,h.createTime,h.beginDate,h.description,h.priority,h.thumb,
+        select h.id as habitId,h.userId,h.name,h.createTime,h.beginDate,h.description,h.thumb,
                o.aimDays,o.persistDays,o.continuousDays,o.mostDays,f.days,f.weekPersistDays,f.period,
                g.name as groupName,g.id as groupId,g.code as groupCode
             from Habit h join HabitOption o on h.id = o.habitId

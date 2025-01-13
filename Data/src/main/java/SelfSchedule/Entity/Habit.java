@@ -54,10 +54,6 @@ public class Habit{
      * 习惯组id
      */
     private Long groupId;
-    /**
-     * 描述
-     */
-    private Integer priority;
 
     /**
      * 习惯信息更新时间

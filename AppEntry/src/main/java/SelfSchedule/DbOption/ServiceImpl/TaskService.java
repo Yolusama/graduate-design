@@ -288,6 +288,11 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             else {
                 if(queryTask.getState().equals(TaskState.CANCELLED.value()))
                     continue;
+                queryTask.setPeriod(task.getPeriod());
+                queryTask.setPeriodUnit(task.getPeriodUnit());
+                queryTask.setDeadline(task.getDeadline());
+                queryTask.setCount(task.getCount());
+                queryTask.setCustom(task.getCustom());
                 res.getData().add(queryTask);
             }
         }

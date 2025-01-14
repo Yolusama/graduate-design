@@ -91,18 +91,6 @@
 								<template v-slot:body>
 									<view class="between">
 										<view class="info">
-											<uni-icons type="vip" :size="30"></uni-icons>
-											<text>优先级</text>
-										</view>
-										<text @click="priorityPopup.open()">
-											{{state.priority[state.habit.priority-1].text}}</text>
-									</view>
-								</template>
-							</uni-list-item>
-							<uni-list-item show-arrow>
-								<template v-slot:body>
-									<view class="between">
-										<view class="info">
 											<uni-icons type="medal" :size="30"></uni-icons>
 											<text>坚持天数</text>
 										</view>
@@ -241,11 +229,6 @@
 				</view>
 				<k-habit-group v-model="state.groups"></k-habit-group>
 			</uni-popup>
-			<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="priorityPopup"
-				style="z-index:101">
-				<k-radio-group :data="state.priority" v-model="state.habit.priority" @onChange="priorityPopup.close()">
-				</k-radio-group>
-			</uni-popup>
 			<uni-popup ref="detailPopup" type="right" background-color="#fff">
 				<view class="detail" v-if="state.selectedHabit!=null">
 					<view class="header">
@@ -316,7 +299,6 @@
 		loading,
 		onlyDate,
 		persistDays,
-		priority,
 		timeWithoutSeconds,
 		weekdays,
 		getDateTimeStr,
@@ -347,7 +329,6 @@
 	const persistPopup = ref(null);
 	const thumbPopup = ref(null);
 	const groupPopup = ref(null);
-	const priorityPopup = ref(null);
 	const detailPopup = ref(null);
 	const recordPopup = ref(null);
 	const today = ref(new Date());
@@ -366,7 +347,6 @@
 			thumb: "habit.png",
 			name: "",
 			beginDate: "",
-			priority: 4,
 			reminderModels: [],
 			days: null,
 			period: null,
@@ -396,7 +376,6 @@
 		selectedImgFile: null,
 		groupName: "",
 		groupAdd: false,
-		priority: priority,
 		selectedHabit: null,
 		groupCode: 1,
 		data: {}

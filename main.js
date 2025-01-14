@@ -20,7 +20,6 @@ app.$mount();
 
 // #ifdef VUE3
 import { createSSRApp } from 'vue'
-import KSplitVue from './components/KSplit.vue';
 
 export function createApp() {
   const app = createSSRApp(App);

@@ -20,6 +20,13 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path" : "pages/fourQuadrants",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"tabBar": {
@@ -36,7 +43,7 @@
 		"selectedIconPath": "static/calendar-fill.png"
       },
 	  {
-	    "pagePath":"pages/index", //页面路径
+	    "pagePath":"pages/fourQuadrants", //页面路径
 	    "text":"四象限"   ,                //tab字体显示
 	  	"iconPath": "static/分类.png",
 		"selectedIconPath": "static/全部.png"

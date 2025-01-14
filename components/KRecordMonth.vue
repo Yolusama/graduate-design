@@ -35,7 +35,7 @@
 						<image src="../static/percentage.png"  class="head-image"></image>
 						<text>完成率</text>
 					</view>
-					<view class="card-option">{{((persistDays/state.daysFromBeginDateToNow)).toFixed(2)*100}}
+					<view class="card-option">{{getFinishRate()}}
 						<text class="card-option-text">%</text>
 					</view>
 				</view>
@@ -90,7 +90,8 @@
 		current: Date,
 		continuousDays: Number,
 		mostDays: Number,
-		persistDays: Number
+		persistDays: Number,
+		frequency:Object
 	});
 	const emits = defineEmits();
 
@@ -115,6 +116,7 @@
 	const continuousDays = ref(pros.continuousDays);
 	const mostDays = ref(pros.mostDays);
 	const persistDays = ref(pros.persistDays);
+	const frequency = ref(pros.frequency);
 
 	onMounted(() => {
 		const today = onlyDate(new Date());
@@ -199,6 +201,13 @@
 						uni.showToast({
 							title: res.message,
 							icon: "none"
+						});
+						return;
+					}
+					if(!res.data){
+						uni.showToast({
+							title:"非习惯执行频率区段",
+							icon:"none"
 						});
 						return;
 					}
@@ -346,6 +355,40 @@
 		}
 		state.transformed = false;
 		state.moveLeft = undefined;
+	}
+	
+	function getFinishRate(){
+		var count = 0;
+		if(frequency.value.days!=null)
+		{
+			for(let i=0;i<state.daysFromBeginDateToNow;i++){
+				const date = new Date(new Date(beginDate.value).setDate(beginDate.value.getDate()+i));
+				for(let pro in frequency.value.days){
+					if(frequency.value.days[pro]==date.getDay())
+					   {
+						   count++;
+						   break;
+					   }
+				}
+			}
+		}
+		
+		if(frequency.value.weekPersistDays!=null){
+			const beginDateDay = beginDate.value.getDay();
+			if(beginDateDay<=frequency.value.weekPersistDays)
+			{
+				count += frequency.value.weekPersistDays;
+			}
+			const leftDays = state.daysFromBeginDateToNow - (7-beginDateDay);
+			const mod = leftDays%7;
+			const left = Math.floor(leftDays/7);
+			count += frequency.value.weekPersistDays*left + mod<=frequency.value.persistDays? mode : frequency.value.weekPersistDays;
+		}
+		
+		if(frequency.value.period!=null)
+		   count = Math.floor(state.daysFromBeginDateToNow/frequency.value.period);
+	   
+	   return ((persistDays/count).toFixed(2))*100;
 	}
 </script>
 

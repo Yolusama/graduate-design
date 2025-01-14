@@ -98,7 +98,7 @@ export class ReminderInfo{
 	
 	static getModeValueText(reminder){
 		switch(reminder.mode){
-			case 1: return `${reminder.value}分钟前`;
+			case 1: return `${reminder.value==0?"准时":reminder.value+"分钟前"}`;
 			case 2: return `${reminder.value}小时前`;
 			case 3: return `${reminder.value}天前`;
 			case 4: return `${reminder.value}周前`;
@@ -158,7 +158,7 @@ export function remindModeValues(mode){
 	const data = [];
 	switch(mode){
 		case 1:
-		  for(let i=1;i<=60;i++)
+		  for(let i=0;i<=60;i++)
 		      data.push(i);
 			 break; 
 	    case 2:

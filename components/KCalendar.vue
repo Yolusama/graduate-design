@@ -1,7 +1,8 @@
 <template>
 	<view class="k-calendar">
-		<h3 v-if="state.selectedDay!=undefined" class="title">
+		<view v-if="state.selectedDay!=undefined" class="title">
 			{{ labelText()}}
+			
 			<view class="sign" @click="signRotate" :style="state.view.rotation" v-if="!unchangable"></view>
 			<view class="select-date">
 				<picker mode="date" :value="state.dateStr" start="1970-01-01" @change="dateChange"
@@ -9,7 +10,11 @@
 					<uni-icons type="paperplane"></uni-icons>
 				</picker>
 			</view>
-		</h3>
+			<view class="switch">
+				<uni-icons type="left" :size="16" @click="switchLeft"></uni-icons>
+				<uni-icons type="right" :size="16"  @click="switchRight"></uni-icons>
+			</view>
+		</view>
 		<uni-segmented-control style-type="text" :values="state.view.items" :current="state.view.current"
 			v-if="state.view.expanded" @clickItem="switchViewMode" style="margin-bottom:5px">
 		</uni-segmented-control>
@@ -370,10 +375,15 @@
 
 	function backTransform(e) {
 		const detail = e.detail;
+	
+		changeDays(e.detail.current);
+	}
+	
+	function changeDays(index){
 		const date = state.selectedDay;
 		const day = date.getDate();
 		const weekDay = date.getDay();
-		if (detail.current == state.data.length - 1) {
+		if (index == state.data.length - 1) {
 			state.data.push(1);
 			const toAdd = [];
 			if (showWay.value == CalendarDisplayWay.week) {
@@ -422,7 +432,7 @@
 			}
 			state.days.push(toAdd);
 			state.current = state.days.length - 2;
-		} else if (detail.current == 0) {
+		} else if (index == 0) {
 			var toAdd = [];
 			state.data.splice(0, 0, 1);
 			if (showWay.value == CalendarDisplayWay.week) {
@@ -474,6 +484,34 @@
 		}
 		state.transformed = false;
 		state.moveLeft = undefined;
+	}
+	
+	function switchLeft(){
+		const date = new Date(state.selectedDay);
+		switch(showWay.value){
+			case CalendarDisplayWay.day:date.setDate(date.getDate()-1);break;
+			case CalendarDisplayWay.week: date.setDate(date.getDate()-7);break;
+			case CalendarDisplayWay.month: date.setMonth(date.getMonth()-1);break;
+			case CalendarDisplayWay.year: date.setFullYear(date.getFullYear()-1);break;
+		}
+		changeDays(state.current--);
+		state.selectedDay = date;
+		if(showWay.value!=CalendarDisplayWay.year)
+		emits("onChange",date);
+	}
+	
+	function switchRight(){
+		const date = new Date(state.selectedDay);
+		switch(showWay.value){
+			case CalendarDisplayWay.day:date.setDate(date.getDate()+1);break;
+			case CalendarDisplayWay.week: date.setDate(date.getDate()+7);break;
+			case CalendarDisplayWay.month: date.setMonth(date.getMonth()+1);break;
+			case CalendarDisplayWay.year: date.setFullYear(date.getFullYear()+1);break;
+		}
+		changeDays(state.current++);
+		state.selectedDay = date;
+		if(showWay.value!=CalendarDisplayWay.year)
+		emits("onChange",date);
 	}
 
 	function signRotate() {
@@ -602,6 +640,16 @@
 		display: flex;
 		align-items: center;
 		position: relative;
+		font-size: 18px;
+		font-weight: 600;
+	}
+	
+	.k-calendar .title .switch{
+		position: absolute;
+		right: 9%;
+		display: flex;
+		justify-content: space-between;
+		width: 12%;
 	}
 
 	.k-calendar .title .select-date {

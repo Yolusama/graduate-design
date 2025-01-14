@@ -199,7 +199,7 @@
 												</text>
 											</picker>
 
-											<picker :range="state.frequency.multiData[0]" v-if="state.defOpt.val==2"
+											<picker :range="state.frequency.multiData[2]" v-if="state.defOpt.val==2"
 												@change="takeCount">
 												<text class="def-text">{{state.task.count}}次</text>
 											</picker>
@@ -417,7 +417,11 @@
 		for (let i = 1; i <= 99; i++)
 			numbers.push(i);
 		state.frequency.multiData.push(numbers);
-		state.frequency.multiData.push(["日", "周", "月", "年"]);
+		state.frequency.multiData.push(["天", "周", "月", "年"]);
+		const counts = [];
+		for(let i=1;i<=1000;i++)
+		   counts.push(i);
+		state.frequency.multiData.push(counts);
 		state.notifyOpt[0] = remindModeValues(1);
 		state.task.beginTime = new Date(today.value);
 		state.task.endTime = date;
@@ -558,23 +562,8 @@
 				state.selectedTask.index = index;
 				if(task.repeatable)
 		        {
-					GetRepeatRule(task.taskId,response1=>{
-					const res1 = response1.data;
-					if(!res1.succeeded){
-						uni.showToast({
-							title:res1.message,
-							icon:"none"
-						});
-						return;
-					}
-					state.selectedTask.period = res1.data.period;
-					state.selectedTask.periodUnit = res1.data.periodUnit;
-					state.selectedTask.deadline = res1.data.deadline;
-					state.selectedTask.custom = res1.data.custom;
-					state.selectedTask.count = res1.data.count;
-					state.frequency.selection = task.custom==null?res1.data.periodUnit:5;
-				    state.frequency.defText = task.custom!=null||state.selectedTask.period>1?"自定义":frequency[res1.data.periodUnit].text;
-				    });
+					state.frequency.selection = task.custom==null?state.selectedTask.periodUnit:5;
+				    state.frequency.defText = task.custom!=null||state.selectedTask.period>1?"自定义":frequency[state.selectedTask.periodUnit].text;
 				}
 				detailPopup.value.open();
 			} else {

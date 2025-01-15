@@ -12,7 +12,7 @@ import java.util.Date;
 public interface TaskRepeatRuleMapper extends BaseMapper<TaskRepeatRule> {
     @Select("select r.id,r.taskId,r.period,r.periodUnit,r.count,r.custom,r.deadline from TaskRepeatRule r where r.taskId =#{taskId}")
     TaskRepeatRule getRepeatRule(@Param("taskId")Long taskId);
-    @Update("update set instanceId = #{instanceId} where taskId = #{taskId}")
+    @Update("update TaskRepeatRule set taskId = #{instanceId} where taskId = #{taskId}")
     Integer setInstanceId(@Param("taskId")Long taskId,@Param("instanceId")Long instanceId);
     @Update("update TaskRepeatRule set deadline = #{deadline} where taskId=#{taskId}")
     int setDeadline(@Param("deadline")Date deadline,@Param("taskId")Long taskId);

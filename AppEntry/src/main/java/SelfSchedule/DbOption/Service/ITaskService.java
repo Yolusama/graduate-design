@@ -23,5 +23,5 @@ public interface ITaskService extends IService<Task> {
    Long addReminder(TaskReminderModel model,Integer mode);
    int removeReminder(TaskReminderModel model,Integer mode);
    int changeRepeatRule(TaskRepeatRuleModel model,Integer mode);
-   TaskRuleVO getRepeatRule(Long taskId);
+   int finishOrNot(Long taskId,Integer state);
 }

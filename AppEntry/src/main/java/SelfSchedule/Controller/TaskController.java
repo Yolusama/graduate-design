@@ -35,7 +35,6 @@ public class TaskController extends ControllerBase
         this.redis = redis;
     }
 
-
     @PutMapping("/CreateTask")
     @ApiOperation(value ="创建任务",notes="创建任务")
     @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
@@ -123,12 +122,14 @@ public class TaskController extends ControllerBase
         return ok("修改完成!");
     }
 
-    @GetMapping("/GetRepeatRule/{taskId}")
-    @ApiOperation(value = "获取重复任务的重复规则",notes = "获取重复任务的重复规则")
-    public CompletableFuture<ActionResult<TaskRuleVO>> GetRepeatRule(@PathVariable Long taskId){
-        TaskRuleVO res = taskService.getRepeatRule(taskId);
-        if(res==null)
-            return CompletableFuture.completedFuture(fail(HttpStatus.NOT_FOUND));
-        return CompletableFuture.completedFuture(successWithData(res));
+    @PatchMapping("/FinishOrNot/{taskId}")
+    @ApiOperation(value = "完成或取消完成任务",notes = "完成或取消完成")
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    public ActionResult FinishOrNot(@PathVariable Long taskId,@RequestParam Integer state){
+       int res = taskService.finishOrNot(taskId,state);
+       if(res==Constants.AbNormalState)
+           return fail(HttpStatus.NOT_FOUND);
+       return ok();
     }
+
 }

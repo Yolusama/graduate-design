@@ -537,15 +537,6 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         return (long)Constants.EOF;
     }
 
-    //根据任务获取重复任务的重复规则
-    @Override
-    public TaskRuleVO getRepeatRule(Long taskId) {
-        TaskRepeatRule rule = ruleMapper.getRepeatRule(taskId);
-        if(rule == null)
-            return null;
-        return ObjectUtil.copy(rule,new TaskRuleVO());
-    }
-
     @Override
     @Transactional
     public int updateTask(TaskModel model) {
@@ -571,28 +562,34 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 instanceMapper.insert(instance);
                 newRule = ObjectUtil.copy(rule,new TaskRepeatRule());
                 newRule.setTaskId(newTask.getId());
-                ruleMapper.insert(newRule);
                 toCompare.setRepeatable(false);
             }
             mapper.updateById(toCompare);
         }
         if(rule==null)
+        {
             ruleMapper.insert(toCompareRule);
+            task.setRepeatable(true);
+            mapper.updateById(task);
+        }
         if(rule!=null&&!rule.equals(toCompareRule)){
             if(newRule==null){
-                toCompareRule.setId(rule.getId());
                 newTask = ObjectUtil.copy(task,new Task());
                 newTask.setId(null);
+                newTask.setRepeatable(true);
                 newTask.setState(TaskState.CANCELLED.value());
                 mapper.insert(newTask);
+                toCompareRule.setId(rule.getId());
+                toCompareRule.setTaskId(newTask.getId());
                 TaskInstance instance = new TaskInstance();
                 instance.setTaskId(newTask.getId());
                 instance.setInstanceId(newTask.getId());
                 instanceMapper.insert(instance);
             }
-            else
+            else {
                 toCompareRule.setId(newRule.getId());
-            toCompareRule.setTaskId(newTask.getId());
+                toCompareRule.setTaskId(newTask.getId());
+            }
             ruleMapper.updateById(toCompareRule);
         }
         TaskReminderInfoModel[] reminderModels = model.getReminderInfoModels();
@@ -612,13 +609,14 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             if(optional.isEmpty())
             {
                 TaskReminder reminder = ObjectUtil.copy(reminderModel,new TaskReminder());
+                reminder.setTaskId(taskId);
                 toInsert.add(reminder);
             }
         }
         if(toDeleteIds.size()>0)
-            reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,toDeleteIds));
+            reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getId,toDeleteIds));
         if(toInsert.size()>0)
-                reminderMapper.batchInsert(toInsert);
+            reminderMapper.batchInsert(toInsert);
         return Constants.NormalState;
     }
 
@@ -633,6 +631,12 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             res.get(key).add(item);
         }
         return res;
+    }
+
+    @Override
+    @Transactional
+    public int finishOrNot(Long taskId, Integer state) {
+        return mapper.changeState(state,taskId);
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

@@ -9,6 +9,7 @@ import SelfSchedule.DbOption.Mapper.TaskReminderMapper;
 import SelfSchedule.DbOption.Mapper.TaskRepeatRuleMapper;
 import SelfSchedule.DbOption.Service.ITaskService;
 import SelfSchedule.Entity.Enum.PeriodUnit;
+import SelfSchedule.Entity.Enum.SchedulePriority;
 import SelfSchedule.Entity.Enum.TaskEditMode;
 import SelfSchedule.Entity.Enum.TaskState;
 import SelfSchedule.Entity.TaskInstance;
@@ -30,13 +31,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskService {
@@ -427,6 +428,15 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     public int changeRepeatRule(TaskRepeatRuleModel model, Integer mode) {
         TaskRepeatRule rule = new TaskRepeatRule();
         ObjectUtil.copy(model,rule);
+        Boolean repeatable = mapper.isRepeatable(model.getTaskId());
+        if(!repeatable){
+            LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.set(Task::getRepeatable,true).eq(Task::getId,model.getTaskId());
+            mapper.update(wrapper);
+            ruleMapper.insert(rule);
+            return Constants.NormalState;
+        }
+
         LambdaUpdateWrapper<TaskRepeatRule> wrapper = new LambdaUpdateWrapper<>();
         if(rule.getCount()!=null)
             wrapper.set(TaskRepeatRule::getCount,model.getCount());
@@ -535,6 +545,86 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         if(rule == null)
             return null;
         return ObjectUtil.copy(rule,new TaskRuleVO());
+    }
+
+    @Override
+    @Transactional
+    public int updateTask(TaskModel model) {
+        Long taskId = model.getTaskId();
+        Long instanceId = model.getInstanceId();
+        Task toCompare = ObjectUtil.copy(model,new Task());
+        Task task = mapper.selectById(instanceId);
+        TaskRepeatRule rule = ruleMapper.selectOne(new LambdaQueryWrapper<TaskRepeatRule>()
+                .eq(TaskRepeatRule::getTaskId,instanceId));
+        if(task!=null&&!task.equals(toCompare))
+           updateTask(model,TaskEditMode.ONLYTHIS.value());
+        Object savePoint = TransactionAspectSupport.currentTransactionStatus().createSavepoint();
+        TaskRepeatRuleModel ruleModel = new TaskRepeatRuleModel();
+        ruleModel.setCount(model.getCount());
+        ruleModel.setTaskId(taskId);
+        ruleModel.setDeadline(model.getDeadline());
+        ruleModel.setPeriod(model.getPeriod());
+        ruleModel.setPeriodUnit(model.getPeriodUnit());
+        ruleModel.setInstanceId(model.getInstanceId());
+        ruleModel.setCustom(model.getCustom());
+        ruleModel.setTaskBeginTime(model.getBeginTime());
+        TaskRepeatRule toCompareRule = ObjectUtil.copy(ruleModel,new TaskRepeatRule());
+        if(rule==null)
+            changeRepeatRule(ruleModel,TaskEditMode.ONLYTHIS.value());
+        else{
+            if(!rule.equals(toCompareRule))
+               changeRepeatRule(ruleModel,TaskEditMode.ONLYTHIS.value());
+        }
+
+        TaskReminderInfoModel[] reminderModels = model.getReminderInfoModels();
+        var taskReminders = reminderMapper.getTaskReminders(instanceId);
+        List<Long> toDeleteIds = new ArrayList<>();
+        List<TaskReminder> toInsert = new ArrayList<>();
+        for (TaskReminderInfoModel reminderModel:reminderModels){
+            Optional<TaskReminderVO> optional = taskReminders.stream()
+                    .filter(r->r.getMode().equals(reminderModel.getMode())&& r.getValue().equals(reminderModel.getValue()))
+                    .findFirst();
+            if(optional.isEmpty()){
+                LambdaQueryWrapper<TaskReminder> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(TaskReminder::getTaskId,instanceId).eq(TaskReminder::getMode,reminderModel.getMode())
+                        .eq(TaskReminder::getValue,reminderModel.getValue());
+                TaskReminder reminder = reminderMapper.selectOne(wrapper);
+                if(reminder==null)
+                {
+                    reminder = new TaskReminder();
+                    ObjectUtil.copy(model,reminder);
+                    reminder.setTaskId(instanceId);
+                    toInsert.add(reminder);
+                }
+                else toDeleteIds.add(reminder.getId());
+            }
+        }
+        try {
+            if(toDeleteIds.size()>0)
+                reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,toDeleteIds));
+            if(toInsert.size()>0)
+                reminderMapper.batchInsert(toInsert);
+        }catch (Exception ex){
+            ex.printStackTrace();
+            TransactionAspectSupport.currentTransactionStatus().rollbackToSavepoint(savePoint);
+        }
+        finally {
+            TransactionAspectSupport.currentTransactionStatus().releaseSavepoint(savePoint);
+        }
+        return Constants.NormalState;
+    }
+
+    @Override
+    public Map<String, List<TaskRuleComboVO>> getTasks(String userId, Date time, RedisCache redis) {
+        HashMap<String,List<TaskRuleComboVO>> res = new HashMap<>();
+        List<TaskRuleComboVO> totalData = getTasks(1,1000,userId,time,redis).getData();
+        for(int i = SchedulePriority.NIONU.value();i>=SchedulePriority.INU.value();i--)
+            res.put(String.format("%s-%d",Constants.Quadrant,i),new ArrayList<TaskRuleComboVO>());
+        for(TaskRuleComboVO item:totalData){
+            String key = (String.format("%s-%d",Constants.Quadrant,item.getPriority()));
+            res.get(key).add(item);
+        }
+        return res;
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

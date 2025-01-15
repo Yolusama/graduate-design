@@ -8,6 +8,7 @@ import lombok.Data;
 import org.apache.ibatis.type.JdbcType;
 
 import java.util.Date;
+import java.util.Objects;
 
 @TableName("Task")
 @Data
@@ -59,5 +60,18 @@ public class Task{
      */
     private Date updateTime;
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(beginTime, task.beginTime) && Objects.equals(endTime, task.endTime) && Objects.equals(description, task.description) && Objects.equals(priority, task.priority) && Objects.equals(title, task.title) && Objects.equals(repeatable, task.repeatable);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
 

@@ -10,6 +10,7 @@ import org.apache.ibatis.type.JdbcType;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 @TableName(value = "TaskRepeatRule",autoResultMap = true)
 @Data
@@ -49,6 +50,17 @@ public class TaskRepeatRule{
     @TableField(jdbcType = JdbcType.OTHER,typeHandler = MapTypeHandler.class,value ="custom")
     private Map<String,Integer> custom;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TaskRepeatRule that = (TaskRepeatRule) o;
+        return Objects.equals(taskId, that.taskId) && Objects.equals(period, that.period) && Objects.equals(periodUnit, that.periodUnit) && Objects.equals(count, that.count) && Objects.equals(deadline, that.deadline) && Objects.equals(custom, that.custom);
+    }
 
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
 

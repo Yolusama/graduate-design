@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.Date;
@@ -24,4 +25,6 @@ public interface TaskMapper extends BaseMapper<Task> {
     Integer changeState(@Param("state")Integer state,@Param("taskId")Long taskId);
     @Update("update Task set ${ew.sqlSet} ${ew.customSqlSegment}")
     int update(@Param(Constants.WRAPPER)Wrapper<Task> wrapper);
+    @Select("select repeatable from Task where id=#{taskId}")
+    Boolean isRepeatable(@Param("taskId")Long taskId);
 }

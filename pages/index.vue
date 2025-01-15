@@ -5,8 +5,8 @@
 			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
 				<view class="mask" v-if="!dateGE(task.beginTime,today)&&!dateGE(task.endTime,today)"></view>
 				<view class="title">
-					<checkbox-group @change="task.finished=!state.finished">
-						<checkbox :checked="task.finished" style="transform:scale(0.7)" />
+					<checkbox-group @change="finishOrNot(task)">
+						<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.7)" />
 					</checkbox-group>
 					<view class="time" v-html="beginEndTimeStr(task)">
 					</view>
@@ -309,7 +309,8 @@
 		ValueText,
 		getRuleText,
 		dateGE,
-		onlyDate
+		onlyDate,
+		TaskState
 	} from "../module/Common";
 	import {
 		CreateTask,
@@ -319,8 +320,8 @@
 		AddReminder,
 		RemoveReminder,
 		UpdateTask,
-		GetRepeatRule,
-		ChangeRepeatRule
+		ChangeRepeatRule,
+		FinishOrNot
 	} from "../api/Task.js"
 	import {
 		user
@@ -923,6 +924,25 @@
 				state.selectedTask.custom=state.task.custom
 			}
 		});
+	}
+	
+	function finishOrNot(task){
+		const state = 0;
+		if(task.state==TaskState.unfinished)
+		 state = TaskState.finished;
+		else if(task.state==TaskState.finished)
+		  state = TaskState.unfinished;
+		 FinishOrNot(task.instanceId,task.state,response=>{
+			const res = response.data;
+			 if(!res.succeeded){
+				 uni.showToast({
+				 	title:res.message,
+					icon:"none"
+				 });
+				 return;
+			 }
+			 task.state = state;
+		 });
 	}
 </script>
 

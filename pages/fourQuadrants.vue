@@ -6,35 +6,59 @@
 		<view class="content">
 			<view class="item" v-for="(item,index) in state.priority" :key="index">
 				<text :class="'quadrant-'+(index+1)">{{item.text}}</text>
-				<scroll-view :scroll-y="true" class="item-content">
-
+				<scroll-view :scroll-y="true">
+					<view class="item-content">
+						<view class="task" v-for="(task,index1) in state.data['quadrant-'+(index+1)]" :key="index1"
+							@click="toUpdate(index1,index+1)" style="">
+							<checkbox-group @change="finishOrNot(task)">
+								<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.7)" />
+							</checkbox-group>
+							<view>
+								<text class="task-text">
+									{{task.title}}
+								</text>
+								<text>开始：{{getTimeStr(task.beginTime)}}</text>
+								<text>结束：{{getTimeStr(task.endTime)}}</text>
+							</view>
+						</view>
+					</view>
 				</scroll-view>
 			</view>
 		</view>
 		<uni-popup ref="taskEditor" type="bottom" background-color="#fff" @change="beforeEditorClose">
 			<view class="task-edit">
 				<view class="head">
-					<text :class="'quadrant-'+state.task.priority">
+					<text :class="'quadrant-'+state.task.priority" @click="priorityPopup.open()">
 						{{state.priority[state.task.priority-1].text}}
 					</text>
 					<image src="../static/日历.png" @click="timePopup.open()" class="image"></image>
-					<image src="../static/plane.png" v-if="!state.canCreateTask" :size="18" class="image" />
+					<image src="../static/plane.png" v-if="!state.canCreateTask&&!state.isTaskUpdate" :size="18"
+						class="image" />
 					<image src="../static/plane-filled.png" v-if="state.isTaskUpdate||state.canCreateTask" :size="18"
 						class="image" @click="editTask" />
 				</view>
 				<uni-easyinput v-model="state.task.title" placeholder="标题" focus
 					style="margin-bottom: 2px;margin-top: 3px;" @input="titleInput"></uni-easyinput>
-				<uni-easyinput v-model="state.task.dsecription" placeholder="描述" type="textarea"
+				<uni-easyinput v-model="state.task.description" placeholder="描述" type="textarea"
 					:rows="3"></uni-easyinput>
 			</view>
 		</uni-popup>
-		<uni-popup ref="priorityPopup" background-color="#fff">
-			<view :class="'quadrant-'+(index+1)" v-for="(item,index) in state.priority" :key="index"
-				@click="takePriority(item)">
-				{{item.text}}
-			</view>
+		<uni-popup ref="priorityPopup" background-color="#fff" border-radius="10px 10px 10px 10px">
+			<uni-list :border="true" style="width: 60vw;">
+				<uni-list-item v-for="(item,index) in state.priority" :key="index">
+					<template v-slot:body>
+						<view :class="'quadrant-'+(index+1)" @click="takePriority(item)"
+							style="width: 100%;text-align: center">
+							{{item.text}}
+						</view>
+					</template>
+				</uni-list-item>
+			</uni-list>
 		</uni-popup>
 		<uni-popup ref="timePopup" background-color="#fff" type="bottom">
+			<view style="display: flex;width:96%;margin-bottom: 1%;">
+				<uni-icons type="closeempty" @click="timePopup.close()" :size="20"></uni-icons>
+			</view>
 			<k-calendar :showWay="CalendarDisplayWay.month" :unchangable="true" @onChange="selectDay"></k-calendar>
 			<uni-list class="time" :border="true">
 				<uni-list-item show-arrow>
@@ -78,11 +102,11 @@
 						</view>
 					</template>
 				</uni-list-item>
-				<uni-list-item v-show="state.task.remindInfoModels.length>0">
+				<uni-list-item v-show="state.task.reminderInfoModels.length>0">
 					<template v-slot:body>
 						<scroll-view :scroll-x="true">
 							<view class="reminders">
-								<view class="reminder" v-for="(reminder,index) in state.task.remindInfoModels"
+								<view class="reminder" v-for="(reminder,index) in state.task.reminderInfoModels"
 									:key="index">
 									<uni-icons :size="10" type="closeempty" class="close"
 										@click="removeReminderInfoModel(index)"></uni-icons>
@@ -176,11 +200,23 @@
 		customDef,
 		weekdays,
 		ReminderInfo,
-		copy
+		copy,
+		loading,
+		getDateTimeStr,
+		dateEquals,
+		TaskState
 	} from '../module/Common';
-	import {CraeteTask} from "../api/Task"
-import { GetTasks, UpdateTask } from '../api/fourQuadrants';
-import { user } from '../api/User';
+	import {
+		CreateTask,
+		GetTaskReminders
+	} from "../api/Task"
+	import {
+		GetTasks,
+		UpdateTask
+	} from '../api/fourQuadrants';
+	import {
+		user
+	} from '../api/User';
 
 	const pattern = ref({
 		color: '#7A7E83',
@@ -191,6 +227,7 @@ import { user } from '../api/User';
 
 	const taskEditor = ref(null);
 	const timePopup = ref(null);
+	const priorityPopup = ref(null);
 	const defRulePopup = ref(null);
 	const customPopup = ref(null);
 
@@ -208,18 +245,18 @@ import { user } from '../api/User';
 		priority: [],
 		task: {
 			title: "",
-			dsecription: "",
+			description: "",
 			priority: 4,
 			beginTime: "",
 			endTime: "",
-			userId: user == ''?uni.getStorageSync("user").uid:user.uid,
-			remindInfoModels: [],
+			userId: user == '' ? uni.getStorageSync("user").uid : user.uid,
+			reminderInfoModels: [],
 			period: null,
 			periodUnit: null,
 			custom: null,
 			count: null,
 			deadline: null,
-			repeatable:false
+			repeatable: false
 		},
 		selectedDay: new Date(),
 		notifyOpt: [
@@ -243,9 +280,9 @@ import { user } from '../api/User';
 		},
 		weekdays: weekdays,
 		canCreateTask: false,
-		selectedTask:null,
+		selectedTask: null,
 		isTaskUpdate: false,
-		data:{}
+		data: {}
 	});
 
 	onMounted(() => {
@@ -263,77 +300,91 @@ import { user } from '../api/User';
 
 		state.notifyOpt[0] = remindModeValues(1);
 		resetBeginEndTime();
+
+		getData();
+
 	});
 
 	function getData() {
-        GetTasks(state.task.userId,state.selectedDay,response=>{
+		GetTasks(state.task.userId, new Date(), response => {
 			const res = response.data;
-			if(!res.succeeded){
+			if (!res.succeeded) {
 				uni.showToast({
 					title: res.message,
-					icon:"none"
+					icon: "none"
 				});
 				return;
 			}
 			state.data = res.data;
-		})
+			for(let pro in state.data){
+				for(let task of state.data[pro])
+				{
+					task.beginTime = new Date(task.beginTime);
+					task.endTime = new Date(task.endTime);
+					if(task.deadline!=null)
+					  task.deadline = new Date(task.deadline);
+				}
+			}
+		});
 	}
-	
-	function reloadModelData(){
+
+	function reloadModelData() {
 		state.task = {
 			title: "",
-			dsecription: "",
+			description: "",
 			priority: 4,
 			beginTime: "",
 			endTime: "",
-			userId: user == ''?uni.getStorageSync("user").uid:user.uid,
-			remindInfoModels: [],
+			userId: user == '' ? uni.getStorageSync("user").uid : user.uid,
+			reminderInfoModels: [],
 			period: null,
 			periodUnit: null,
 			custom: null,
 			count: null,
 			deadline: null,
-			repeatable:false
+			repeatable: false
 		};
-	  state.frequency.selected = [];
-	  state.frequency.selection = 0;
-	  state.rule.selected = [];
-	  state.rule.selection = 0;
-	  state.selectedTask = null;
-	  state.isTaskUpdate = false;
-	  state.canCreateTask = false;
+		state.frequency.selected = [];
+		state.frequency.selection = 0;
+		state.rule.selected = [];
+		state.rule.selection = 0;
+		state.selectedTask = null;
+		state.isTaskUpdate = false;
+		state.canCreateTask = false;
 	}
-	
-	function beforeEditorClose(e){
-		if(e.show) return;
+
+	function beforeEditorClose(e) {
+		if (e.show) return;
 		reloadModelData();
 	}
 
 	function addReminderInfoModel(e) {
 		const values = e.detail.value;
-		const reminder = ReminderInfo.getInstance(values[1] + 1, values[0] + 1, state.task.beginTime);
+		const reminder = ReminderInfo.getInstance(values[1] + 1, values[0] + 1, new Date(startTime.value.date + " " +
+			startTime.value.time));
 		if (reminder.mode == 1)
 			reminder.value = values[0];
-		const data = state.task.remindInfoModels;
+		const data = state.task.reminderInfoModels;
 		if (data.length == 0)
 			data.push(reminder);
 		else {
 			var i;
 			for (i = 0; i < data.length; i++) {
-				if (reminder.timing.getTime() < data[i].timing.getTime() && data.findIndex(r => r.timing == reminder
-						.timing) < 0) {
+				if (reminder.timing.getTime() < data[i].timing.getTime() && data.findIndex(r => r.timing.getTime() ==
+						reminder
+						.timing.getTime()) < 0) {
 					data.splice(i, 0, reminder);
 					break;
 				}
 			}
-			if (i == data.length)
+			if (i == data.length && data.findIndex(r => r.timing.getTime() == reminder
+					.timing.getTime()) < 0)
 				data.push(reminder);
-			console.log(data);	
 		}
 	}
 
 	function removeReminderInfoModel(index) {
-		state.task.remindInfoModels.splice(index, 1);
+		state.task.reminderInfoModels.splice(index, 1);
 	}
 
 	function titleInput(current) {
@@ -347,9 +398,9 @@ import { user } from '../api/User';
 		date.setHours(date.getHours() + 1);
 		endTime.value.date = getDateStr(date);
 		endTime.value.time = timeWithoutSeconds(date);
-		
-		state.task.beginTime = new Date(startTime.value.date+" "+startTime.value.time);
-		state.task.endTime = new Date(endTime.value.date+" "+endTime.value.time);
+
+		state.task.beginTime = new Date(startTime.value.date + " " + startTime.value.time);
+		state.task.endTime = new Date(endTime.value.date + " " + endTime.value.time);
 	}
 
 	function pick(sign, event) {
@@ -362,11 +413,18 @@ import { user } from '../api/User';
 				startTime.value.time = value;
 				break;
 			case "end-date":
-				startTime.value.date = value.replace(/-/g, "/");
+				endTime.value.date = value.replace(/-/g, "/");
 				break
 			case "end-time":
-				startTime.value.time = value;
+				endTime.value.time = value;
 				break;
+		}
+		const begin = new Date(startTime.value.date + " " + startTime.value.time);
+		const end = new Date(endTime.value.date + " " + endTime.value.time);
+		if (end.getTime() <= begin.getTime()) {
+			begin.setHours(begin.getHours() + 1);
+			endTime.value.date = getDateStr(begin);
+			endTime.value.time = timeWithoutSeconds(begin);
 		}
 	}
 
@@ -377,16 +435,39 @@ import { user } from '../api/User';
 		}
 	}
 
-	function addremindInfoModel(e) {
-		const indexes = e.detail.value;
+	function toUpdate(index, qudrant) {
+		state.isTaskUpdate = true;
+		const task = state.data[`${quadrant.value}-${qudrant}`][index];
+		GetTaskReminders(task.instanceId, response => {
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			state.selectedTask = task;
+			for (let reminder of res.data)
+				reminder.timing = new Date(reminder.timing);
+			state.selectedTask.reminderInfoModels = res.data;
+			copy(state.selectedTask, state.task);
+			startTime.value.date = getDateStr(state.task.beginTime);
+			startTime.value.time = timeWithoutSeconds(state.task.beginTime);
+			endTime.value.date = getDateStr(state.task.endTime);
+			endTime.value.time = timeWithoutSeconds(state.task.endTime);
+			taskEditor.value.open();
+		});
 	}
+
 
 	function openToEdit() {
 		taskEditor.value.open();
 	}
 
 	function takePriority(item) {
-		state.task.priority = item.value;
+		state.task.priority = item.value + 1;
+		priorityPopup.value.close();
 	}
 
 	function takeBaseRule(e) {
@@ -396,6 +477,7 @@ import { user } from '../api/User';
 			if (value == 0) {
 				state.task.period = null;
 				state.task.repeatable = false;
+				defRulePopup.value.close();
 				return;
 			}
 			state.task.repeatable = true;
@@ -405,10 +487,10 @@ import { user } from '../api/User';
 			state.task.repeatable = true;
 			customPopup.value.open();
 			state.frequency.selection = 0;
-			defRulePopup.value.close();
 			state.task.period = null;
 			state.task.periodUnit = null;
 		}
+		defRulePopup.value.close();
 	}
 
 	function takeCount(e) {
@@ -437,37 +519,77 @@ import { user } from '../api/User';
 			state.task.deadline = null;
 		}
 	}
-	
-	function editTask(){
+
+	function editTask() {
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
-		if(!state.isTaskUpdate){
-			CraeteTask(state.task,response=>{
+		if (!state.isTaskUpdate) {
+			CreateTask(state.task, response => {
 				const res = response.data;
-				if(!res.succeeded){
+				if (!res.succeeded) {
 					uni.showToast({
 						title: res.message,
-						icon:"none"
+						icon: "none"
 					});
 					return;
 				}
-				data[`${quadrant.value}-${state.task.state}`].splice(0,1);
-				reloadModelData();
+				loading("创建中...", () => {
+					state.task.taskId = res.data;
+					state.task.instanceId = res.data;
+					const task = {};
+					copy(state.task, task);
+					state.data[`${quadrant.value}-${state.task.priority}`].splice(0, 0, task);
+					taskEditor.value.close();
+				}, 750);
 			});
-		}
-		else{
-			UpdateTask(state.task,response=>{
+		} else {
+			UpdateTask(state.task, response => {
 				const res = response.data;
-				if(!res.succeeded){
+				if (!res.succeeded) {
 					uni.showToast({
 						title: res.message,
-						icon:"none"
+						icon: "none"
 					});
 					return;
 				}
-				copy(state.task,state.selectedTask);
+				loading("", () => {
+					copy(state.task, state.selectedTask);
+					taskEditor.value.close();
+				}, 550);
+
 			});
 		}
+	}
+
+	function selectDay(date) {
+		state.selectedDay = date;
+		resetBeginEndTime();
+	}
+	
+	function getTimeStr(date){
+		if(dateEquals(date,new Date()))
+		  return timeWithoutSeconds(date);
+		else
+		  return getDateTimeStr(date);
+	}
+	
+	function finishOrNot(task){
+		const state = 0;
+		if(task.state==TaskState.unfinished)
+		 state = TaskState.finished;
+		else if(task.state==TaskState.finished)
+		  state = TaskState.unfinished;
+		 FinishOrNot(task.instanceId,task.state,response=>{
+			const res = response.data;
+			 if(!res.succeeded){
+				 uni.showToast({
+				 	title:res.message,
+					icon:"none"
+				 });
+				 return;
+			 }
+			 task.state = state;
+		 });
 	}
 </script>
 
@@ -489,6 +611,7 @@ import { user } from '../api/User';
 
 	#four-quadrants .content {
 		display: flex;
+		position: relative;
 		flex-flow: row wrap;
 		justify-content: center;
 		width: 90%;
@@ -506,6 +629,7 @@ import { user } from '../api/User';
 		height: 45%;
 		margin-left: 10px;
 		font-size: 14px;
+		padding: 1%;
 	}
 
 	.quadrant-1 {

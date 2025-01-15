@@ -16,7 +16,7 @@ import java.util.List;
 public interface TaskReminderMapper extends BaseMapper<TaskReminder> {
     Integer batchInsert(@Param("reminders") List<TaskReminder> reminders);
 
-    @Select("select tr.id as reminderId,tr.mode,tr.value,tr.timing from TaskReminder tr where tr.taskId=#{taskId}")
+    @Select("select tr.id as reminderId,tr.mode,tr.value,tr.timing from TaskReminder tr where tr.taskId=#{taskId} order by timing")
     List<TaskReminderVO> getTaskReminders(@Param("taskId")Long taskId);
     @Update("update TaskReminder set ${wrapper.sqlSet} ${wrapper.sqlSegment}")
     int update(@Param("wrapper") Wrapper<TaskInstance> wrapper);

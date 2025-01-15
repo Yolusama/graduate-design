@@ -98,7 +98,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 rule.setCustom(model.getCustom());
             if (model.getDeadline() != null)
                 rule.setDeadline(model.getDeadline());
-            if(model.getCount()>Constants.None)
+            if(model.getCount()!=null&&model.getCount()>Constants.None)
                 rule.setCount(model.getCount());
             ruleMapper.insert(rule);
         }
@@ -456,7 +456,6 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             task.setId(null);
             mapper.insert(task);
             rule.setTaskId(task.getId());
-            reminderMapper.updateTaskId(task.getId(),model.getInstanceId());
             TaskInstance instance = new TaskInstance();
             instance.setTaskId(task.getId());
             instance.setInstanceId(task.getId());
@@ -552,65 +551,74 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     public int updateTask(TaskModel model) {
         Long taskId = model.getTaskId();
         Long instanceId = model.getInstanceId();
-        Task toCompare = ObjectUtil.copy(model,new Task());
         Task task = mapper.selectById(instanceId);
         TaskRepeatRule rule = ruleMapper.selectOne(new LambdaQueryWrapper<TaskRepeatRule>()
-                .eq(TaskRepeatRule::getTaskId,instanceId));
-        if(task!=null&&!task.equals(toCompare))
-           updateTask(model,TaskEditMode.ONLYTHIS.value());
-        Object savePoint = TransactionAspectSupport.currentTransactionStatus().createSavepoint();
-        TaskRepeatRuleModel ruleModel = new TaskRepeatRuleModel();
-        ruleModel.setCount(model.getCount());
-        ruleModel.setTaskId(taskId);
-        ruleModel.setDeadline(model.getDeadline());
-        ruleModel.setPeriod(model.getPeriod());
-        ruleModel.setPeriodUnit(model.getPeriodUnit());
-        ruleModel.setInstanceId(model.getInstanceId());
-        ruleModel.setCustom(model.getCustom());
-        ruleModel.setTaskBeginTime(model.getBeginTime());
-        TaskRepeatRule toCompareRule = ObjectUtil.copy(ruleModel,new TaskRepeatRule());
-        if(rule==null)
-            changeRepeatRule(ruleModel,TaskEditMode.ONLYTHIS.value());
-        else{
-            if(!rule.equals(toCompareRule))
-               changeRepeatRule(ruleModel,TaskEditMode.ONLYTHIS.value());
+        .eq(TaskRepeatRule::getTaskId,taskId));
+        TaskRepeatRule newRule = null;
+        Task newTask = null;
+        Task toCompare = ObjectUtil.copy(model,new Task());
+        TaskRepeatRule toCompareRule = ObjectUtil.copy(model,new TaskRepeatRule());
+        if(!task.equals(toCompare)){
+            toCompare.setId(taskId);
+            if(task.getRepeatable()){
+                newTask = ObjectUtil.copy(task,new Task());
+                newTask.setId(null);
+                newTask.setState(TaskState.CANCELLED.value());
+                mapper.insert(newTask);
+                TaskInstance instance = new TaskInstance();
+                instance.setTaskId(newTask.getId());
+                instance.setInstanceId(newTask.getId());
+                instanceMapper.insert(instance);
+                newRule = ObjectUtil.copy(rule,new TaskRepeatRule());
+                newRule.setTaskId(newTask.getId());
+                ruleMapper.insert(newRule);
+                toCompare.setRepeatable(false);
+            }
+            mapper.updateById(toCompare);
         }
-
+        if(rule==null)
+            ruleMapper.insert(toCompareRule);
+        if(rule!=null&&!rule.equals(toCompareRule)){
+            if(newRule==null){
+                toCompareRule.setId(rule.getId());
+                newTask = ObjectUtil.copy(task,new Task());
+                newTask.setId(null);
+                newTask.setState(TaskState.CANCELLED.value());
+                mapper.insert(newTask);
+                TaskInstance instance = new TaskInstance();
+                instance.setTaskId(newTask.getId());
+                instance.setInstanceId(newTask.getId());
+                instanceMapper.insert(instance);
+            }
+            else
+                toCompareRule.setId(newRule.getId());
+            toCompareRule.setTaskId(newTask.getId());
+            ruleMapper.updateById(toCompareRule);
+        }
         TaskReminderInfoModel[] reminderModels = model.getReminderInfoModels();
         var taskReminders = reminderMapper.getTaskReminders(instanceId);
         List<Long> toDeleteIds = new ArrayList<>();
         List<TaskReminder> toInsert = new ArrayList<>();
-        for (TaskReminderInfoModel reminderModel:reminderModels){
-            Optional<TaskReminderVO> optional = taskReminders.stream()
-                    .filter(r->r.getMode().equals(reminderModel.getMode())&& r.getValue().equals(reminderModel.getValue()))
+        for(TaskReminderVO reminder:taskReminders){
+            Optional<TaskReminderInfoModel> optional = Arrays.stream(reminderModels).filter(r->
+                    r.getMode().equals(reminder.getMode())&&r.getValue().equals(reminder.getValue())).findFirst();
+            if(optional.isEmpty())
+               toDeleteIds.add(reminder.getReminderId());
+        }
+        for(TaskReminderInfoModel reminderModel:reminderModels){
+            Optional<TaskReminderVO> optional =taskReminders.stream().filter(r->
+                    r.getMode().equals(reminderModel.getMode())&&r.getValue().equals(reminderModel.getValue()))
                     .findFirst();
-            if(optional.isEmpty()){
-                LambdaQueryWrapper<TaskReminder> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(TaskReminder::getTaskId,instanceId).eq(TaskReminder::getMode,reminderModel.getMode())
-                        .eq(TaskReminder::getValue,reminderModel.getValue());
-                TaskReminder reminder = reminderMapper.selectOne(wrapper);
-                if(reminder==null)
-                {
-                    reminder = new TaskReminder();
-                    ObjectUtil.copy(model,reminder);
-                    reminder.setTaskId(instanceId);
-                    toInsert.add(reminder);
-                }
-                else toDeleteIds.add(reminder.getId());
+            if(optional.isEmpty())
+            {
+                TaskReminder reminder = ObjectUtil.copy(reminderModel,new TaskReminder());
+                toInsert.add(reminder);
             }
         }
-        try {
-            if(toDeleteIds.size()>0)
-                reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,toDeleteIds));
-            if(toInsert.size()>0)
+        if(toDeleteIds.size()>0)
+            reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,toDeleteIds));
+        if(toInsert.size()>0)
                 reminderMapper.batchInsert(toInsert);
-        }catch (Exception ex){
-            ex.printStackTrace();
-            TransactionAspectSupport.currentTransactionStatus().rollbackToSavepoint(savePoint);
-        }
-        finally {
-            TransactionAspectSupport.currentTransactionStatus().releaseSavepoint(savePoint);
-        }
         return Constants.NormalState;
     }
 

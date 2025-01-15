@@ -66,7 +66,7 @@ public class Task{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return Objects.equals(beginTime, task.beginTime) && Objects.equals(endTime, task.endTime) && Objects.equals(description, task.description) && Objects.equals(priority, task.priority) && Objects.equals(title, task.title) && Objects.equals(repeatable, task.repeatable);
+        return Objects.equals(beginTime, task.beginTime) && Objects.equals(endTime, task.endTime) && Objects.equals(description, task.description) && Objects.equals(priority, task.priority) && Objects.equals(title, task.title);
     }
 
     @Override

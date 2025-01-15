@@ -1,13 +1,18 @@
 package SelfSchedule.Entity.VO;
 
 import SelfSchedule.Entity.Handler.MapTypeHandler;
+import SelfSchedule.Entity.Task;
+import SelfSchedule.Entity.TaskRepeatRule;
+import SelfSchedule.Model.TaskModel;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.type.JdbcType;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -28,4 +33,22 @@ public class TaskRuleComboVO {
     private Integer count;
     private Date deadline;
     private Map<String,Integer> custom;
+
+    public static TaskRuleComboVO combo(Task task, TaskRepeatRule rule){
+         TaskRuleComboVO combo = new TaskRuleComboVO();
+         combo.setTitle(task.getTitle());
+         combo.setDescription(task.getDescription());
+         combo.setUserId(task.getUserId());
+         combo.setBeginTime(task.getBeginTime());
+         combo.setEndTime(task.getEndTime());
+         combo.setPriority(task.getPriority());
+         combo.setCreateTime(task.getCreateTime());
+         combo.setState(task.getState());
+         combo.setPeriod(rule.getPeriod());
+         combo.setPeriodUnit(rule.getPeriodUnit());
+         combo.setDeadline(rule.getDeadline());
+         combo.setCount(rule.getCount());
+         combo.setCustom(rule.getCustom());
+         return combo;
+    }
 }

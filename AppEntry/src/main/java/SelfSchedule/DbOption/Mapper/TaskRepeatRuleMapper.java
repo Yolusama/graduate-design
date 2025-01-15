@@ -4,10 +4,7 @@ import SelfSchedule.Entity.TaskInstance;
 import SelfSchedule.Entity.TaskRepeatRule;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.Date;
 
@@ -21,4 +18,6 @@ public interface TaskRepeatRuleMapper extends BaseMapper<TaskRepeatRule> {
     int setDeadline(@Param("deadline")Date deadline,@Param("taskId")Long taskId);
     @Update("update TaskRepeatRule SET ${ew.sqlSet} ${ew.customSqlSegment}")
     int update(@Param("ew") Wrapper<TaskRepeatRule> wrapper);
+    @Delete("delete from TaskRepeatRule where taskId=#{taskId}")
+    int remove(@Param("taskId")Long taskId);
 }

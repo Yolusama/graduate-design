@@ -545,7 +545,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         TaskRepeatRule toCompareRule = ObjectUtil.copy(model,new TaskRepeatRule());
         if(!task.equals(toCompare)){
             toCompare.setId(taskId);
-            if(task.getRepeatable()){
+            if(model.getTaskId().equals(model.getInstanceId())&&task.getRepeatable()){
                 newTask = ObjectUtil.copy(task,new Task());
                 newTask.setId(null);
                 newTask.setState(TaskState.CANCELLED.value());
@@ -560,7 +560,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             }
             mapper.updateById(toCompare);
         }
-        if(rule==null)
+        if(rule==null&&model.getRepeatable())
         {
             ruleMapper.insert(toCompareRule);
             task.setRepeatable(true);
@@ -638,7 +638,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     public int changePriority(TaskPriorityModel model) {
         LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(Task::getPriority,model.getPriority());
-        if(model.getTaskId().equals(model.getInstanceId()))
+        if(model.getTaskId().equals(model.getInstanceId())&&model.getRepeatable())
         {
             Task task = mapper.selectById(model.getInstanceId());
             Task newTask = ObjectUtil.copy(task,new Task());

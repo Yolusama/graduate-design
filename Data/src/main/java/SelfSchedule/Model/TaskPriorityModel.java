@@ -9,4 +9,5 @@ public class TaskPriorityModel {
     private Long taskId;
     private Long instanceId;
     private Integer priority;
+    private Boolean repeatable;
 }

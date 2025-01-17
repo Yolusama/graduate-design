@@ -92,8 +92,8 @@ public class HabitController extends ControllerBase{
     @PostMapping("/UploadThumb")
     @ApiOperation(value = "用户上传习惯图片",notes = "用户上传习惯图片")
     @ClearRedisCache(keys={CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue})
-    public ActionResult<String> UploadThumb(@RequestPart String habitId, @RequestPart MultipartFile thumb,
-                                            @RequestPart String originalFileName,
+    public ActionResult<String> UploadThumb(@RequestPart("habitId") String habitId, @RequestPart("thumb") MultipartFile thumb,
+                                            @RequestPart("originalFileName") String originalFileName,
                                             HttpServletRequest request){
         String res = habitService.uploadThumb(thumb,habitId,originalFileName,fileService);
         if(res==null)

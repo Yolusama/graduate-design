@@ -26,7 +26,7 @@ public class FileService {
             String fileName = image.getOriginalFilename();
             String suffix = fileName.substring(fileName.lastIndexOf('.'));
             newFileName = UUID.randomUUID() + suffix;
-            FileOutputStream output = new FileOutputStream(imgPath+image);
+            FileOutputStream output = new FileOutputStream(imgPath+newFileName);
             int len;
             byte[] buffer = new byte[bufferSize];
             while((len=stream.read(buffer))>0)

@@ -292,7 +292,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     @Override
     public String uploadThumb(MultipartFile image, String habitId, String originalFileName, FileService fileService) {
         LambdaUpdateWrapper<Habit> wrapper = new LambdaUpdateWrapper<>();
-        if(originalFileName!=null&&!Constants.isDefaultThumb(originalFileName))
+        if(originalFileName!=null&&!originalFileName.equals("null")&&!Constants.isDefaultThumb(originalFileName))
             fileService.removeImage(originalFileName);
         String newFileName = fileService.uploadImage(image);
         wrapper.set(Habit::getThumb,newFileName).eq(Habit::getId,habitId);

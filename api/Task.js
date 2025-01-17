@@ -36,6 +36,6 @@ export function UpdateTask(newTask,mode,successCallback){
 	Post(`/Api/Task/UpdateTask?mode=${mode}`,auth,newTask,successCallback);
 }
 
-export function GetRepeatRule(taskId,successCallback){
-	Get(`/Api/Task/GetRepeatRule/${taskId}`,auth,successCallback);
+export function FinishOrNot(taskId,state,successCallback){
+	Patch(`/Api/Task/FinishOrNot/${taskId}?state=${state}`,auth,{},successCallback);
 }

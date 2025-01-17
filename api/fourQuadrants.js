@@ -1,4 +1,4 @@
-import { Get, Post } from "../module/Request";
+import { Get, Patch, Post } from "../module/Request";
 import { auth } from "./User";
 
 export function UpdateTask(task,successCallback){
@@ -6,5 +6,9 @@ export function UpdateTask(task,successCallback){
 }
 
 export function GetTasks(userId,time,successCallback){
-	Get(`/Api/FourQuadrants/GetTasks/${userId}?time=${time.getTime()}`,auth,successCallBack);
+	Get(`/Api/FourQuadrants/GetTasks/${userId}?time=${time.getTime()}`,auth,successCallback);
+}
+
+export function ChangePriority(task,successCallback){
+	Patch("/Api/FourQuadrants/ChangePriority",auth,task,successCallback);
 }

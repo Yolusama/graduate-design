@@ -229,6 +229,7 @@ export const TaskState = {
 	cancelled:3,
 	abondoned:4
 }
+
 export function onlyDate(date){
 	const res = new Date(date);
 	res.setHours(0);
@@ -256,6 +257,14 @@ export class HabitReminder{
 }
 
 export const ADayMillseconds = 1000*60*60*24;
+
+export class DragQuadantOption{
+	constructor(leftBound,rightBound,itemMoved){
+		this.leftBound = leftBound;
+		this.rightBound = rightBound;
+		this.itemMoved = itemMoved;
+	}
+}
 
 
 

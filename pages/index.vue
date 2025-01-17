@@ -927,7 +927,7 @@
 	}
 	
 	function finishOrNot(task){
-		const state = 0;
+		var state = 0;
 		if(task.state==TaskState.unfinished)
 		 state = TaskState.finished;
 		else if(task.state==TaskState.finished)

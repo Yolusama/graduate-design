@@ -2,27 +2,33 @@
 	<view id="four-quadrants">
 		<view class="header">
 			<text>四象限</text>
+			&nbsp;
+			<text style="color:rgb(25,27,28);font-size: 17px;">
+			{{today.getFullYear()}}年{{today.getMonth()+1}}月{{today.getDate()}}日&nbsp;{{weekDaySign(today.getDay())}}
+			</text>
+			&nbsp;
+			<k-time-counter style="display: inline-block;color: rgb(44,47,49);font-size: 16px;"/>
 		</view>
 		<view class="content">
-			<view class="item" v-for="(item,index) in state.priority" :key="index">
+			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)">
 				<text :class="'quadrant-'+(index+1)">{{item.text}}</text>
-				<scroll-view :scroll-y="true">
-					<view class="item-content">
-						<view class="task" v-for="(task,index1) in state.data['quadrant-'+(index+1)]" :key="index1"
-							@click="toUpdate(index1,index+1)" style="">
+				<view :scroll-y="true" style="width:100%;">
+					<view class="item-content" v-for="(task,index1) in state.data['quadrant-'+(index+1)]" :key="index1" 
+					:style="task.style.length>0?'':'position:relative'">
+						<view class="task" @click="toUpdate(index1,index+1)" @longpress="toDragTaskContent($event,task)" @touchmove="draggingTaskContent($event,task)"
+							 @touchend="taskContentDragged($event,task)" @touchcancel="cancelDragging(task)" :style="task.style">		
 							<checkbox-group @change="finishOrNot(task)">
-								<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.7)" />
+								<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.5)" />
 							</checkbox-group>
-							<view>
-								<text class="task-text">
-									{{task.title}}
+							<view class="info">
+								<text class="task-text" v-html="task.title">
 								</text>
-								<text>开始：{{getTimeStr(task.beginTime)}}</text>
-								<text>结束：{{getTimeStr(task.endTime)}}</text>
+								<text class="text" style="color: rgb(0,75,235);">开始：{{getTimeStr(task.beginTime)}}</text>
+								<text class="text"  style="color:red;">结束：{{getTimeStr(task.endTime)}}</text>
 							</view>
 						</view>
 					</view>
-				</scroll-view>
+				</view>
 			</view>
 		</view>
 		<uni-popup ref="taskEditor" type="bottom" background-color="#fff" @change="beforeEditorClose">
@@ -186,7 +192,8 @@
 	import {
 		onMounted,
 		ref,
-		reactive
+		reactive,
+		nextTick
 	} from 'vue';
 	import {
 		ValueText,
@@ -204,13 +211,18 @@
 		loading,
 		getDateTimeStr,
 		dateEquals,
-		TaskState
+		TaskState,
+		dateGE,
+		DragQuadantOption,
+		weekDaySign
 	} from '../module/Common';
 	import {
 		CreateTask,
-		GetTaskReminders
+		GetTaskReminders,
+		FinishOrNot
 	} from "../api/Task"
 	import {
+		ChangePriority,
 		GetTasks,
 		UpdateTask
 	} from '../api/fourQuadrants';
@@ -230,6 +242,10 @@
 	const priorityPopup = ref(null);
 	const defRulePopup = ref(null);
 	const customPopup = ref(null);
+	const quadrant1 = ref(null);
+	const quadrant2 = ref(null)
+	const quadrant3 = ref(null)
+	const quadrant4 = ref(null)
 
 	const quadrant = ref("quadrant");
 	const startTime = ref({
@@ -240,6 +256,7 @@
 		date: "",
 		time: ""
 	});
+	const today = ref(new Date());
 
 	const state = reactive({
 		priority: [],
@@ -282,7 +299,8 @@
 		canCreateTask: false,
 		selectedTask: null,
 		isTaskUpdate: false,
-		data: {}
+		data: {},
+		dataOption:{}
 	});
 
 	onMounted(() => {
@@ -302,11 +320,10 @@
 		resetBeginEndTime();
 
 		getData();
-
 	});
 
 	function getData() {
-		GetTasks(state.task.userId, new Date(), response => {
+		GetTasks(state.task.userId, today.value, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -323,8 +340,11 @@
 					task.endTime = new Date(task.endTime);
 					if(task.deadline!=null)
 					  task.deadline = new Date(task.deadline);
+					task.style="";  
 				}
+				state.dataOption[pro] = new DragQuadantOption();
 			}
+			
 		});
 	}
 
@@ -537,8 +557,9 @@
 					state.task.taskId = res.data;
 					state.task.instanceId = res.data;
 					const task = {};
+					task.style="";
 					copy(state.task, task);
-					state.data[`${quadrant.value}-${state.task.priority}`].splice(0, 0, task);
+					state.data[`${quadrant.value}-${state.task.priority}`].push(task);
 					taskEditor.value.close();
 				}, 750);
 			});
@@ -564,22 +585,24 @@
 	function selectDay(date) {
 		state.selectedDay = date;
 		resetBeginEndTime();
+		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
+		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
 	}
 	
 	function getTimeStr(date){
-		if(dateEquals(date,new Date()))
+		if(dateEquals(date,today.value))
 		  return timeWithoutSeconds(date);
 		else
-		  return getDateTimeStr(date);
+		  return getDateTimeStr(date,date.getFullYear());
 	}
 	
 	function finishOrNot(task){
-		const state = 0;
+		var state = 0;
 		if(task.state==TaskState.unfinished)
 		 state = TaskState.finished;
 		else if(task.state==TaskState.finished)
 		  state = TaskState.unfinished;
-		 FinishOrNot(task.instanceId,task.state,response=>{
+		 FinishOrNot(task.instanceId,state,response=>{
 			const res = response.data;
 			 if(!res.succeeded){
 				 uni.showToast({
@@ -591,47 +614,161 @@
 			 task.state = state;
 		 });
 	}
+	
+	function toDragTaskContent(event,task){
+		event.stopPropagation();
+	
+		task.style="position:relative;z-index:1000;top:5px;left:-5px;background-color:cyan;";
+		state.selectedTask = task;
+	}
+	
+	function draggingTaskContent(event,task){
+		 event.stopPropagation();
+		
+	     const point = event.touches[0];
+		 const x = point.pageX;
+		 const y = point.pageY;
+		 
+		 if(task.style.length>0)
+		    {
+				task.style =`position:absolute;background-color:cyan;z-index:1000;top:${y}px;left:${x}px;
+				transform:translate(-50%,-50%)`;	
+			}
+	}
+	
+	function taskContentDragged(event,task,index,itemIndex){
+		task.style="";
+		state.selectedTask = null;
+		const point = event.changedTouches[0];
+		const posistion = {
+			x:point.pageX,
+			y:point.pageY
+		};
+		var priority;
+		if(taskContentIn(posistion,getElementBound(quadrant1.value[0].$el))&&task.priority!=state.priority[0].value)
+			priority = state.priority[0].value;
+		else if(taskContentIn(posistion,getElementBound(quadrant2.value[0].$el))&&task.priority!=state.priority[1].value)
+			priority = state.priority[1].value;
+		else if(taskContentIn(posistion,getElementBound(quadrant3.value[0].$el))&&task.priority!=state.priority[2].value)
+			priority = state.priority[2].value;
+		else if(taskContentIn(posistion,getElementBound(quadrant4.value[0].$el))&&task.priority!=state.priority[3].value)
+			priority = state.priority[3].value;
+			
+	    ChangePriority({
+			taskId:task.taskId,
+			instanceId:task.instanceId,
+			priority:priority
+		},response=>{
+			const res = response.data;
+			if(!res.succeeded){
+				uni.showToast({
+					title:res.message,
+					icon:"none"
+				});
+				return;
+			}
+			const quadrantValue = `${quadrant.value}-${index+1}`;
+			const toQuadrant = `${quadrant.value}-${priority}`;
+			state.data[quadrantValue].splice(itemIndex,1);
+			task.priority = priority;
+			state.data[toQuadrant].push(task);
+		});		
+	}
+	
+	function cancelDragging(task){
+		task.style="";
+	}
+	
+	function taskContentIn(position,bound){
+		return position.x>=bound.left&&position.x<=bound.left+bound.width&&
+		          position.y>=bound.top&&position.y<=bound.top+bound.height;
+	}
+	
+	function getElementBound(element){
+		return  {
+				left:element.offsetLeft,
+				top:element.offsetTop,
+				width:element.offsetWidth,
+				height:element.offsetHeight
+			};
+	}
+
 </script>
 
 <style>
 	#four-quadrants {
 		position: relative;
-		padding: 1%;
-		/*#ifdef H5*/
-		padding: 20px;
-		;
-		/*#endif*/
-		/*#ifndef H5*/
-		padding-top: 10%;
-		/*#endif*/
+		display: flex;
 		width: 100%;
 		background-color: aliceblue;
 		height: 96vh;
+		flex-flow:column nowrap;
+		align-items: center;
 	}
 
 	#four-quadrants .content {
 		display: flex;
-		position: relative;
 		flex-flow: row wrap;
 		justify-content: center;
-		width: 90%;
-		height: 92%;
+		align-items: center;
+		width: 96%;
+		height: 90%;
 	}
 
-	#four-quadrants .header {
-		margin-bottom: 1%;
+	#four-quadrants .header 
+	{
+		width: 96%;
+		/*#ifdef H5*/
+		padding-top: 20px;;
+		/*#endif*/
+		/*#ifndef H5*/
+		padding-top: 10%;
+		/*#endif*/
 		font-size: 18px;
 	}
 
 	#four-quadrants .content .item {
-		width: 45%;
+		width: 42vw;
 		background-color: #fff;
 		height: 45%;
 		margin-left: 10px;
 		font-size: 14px;
 		padding: 1%;
+		overflow: hidden auto;
 	}
-
+	
+	#four-quadrants .item-content{
+		height: 45px;
+		width:38vw;
+	}
+		
+	#four-quadrants .task{
+		display: flex;
+		align-items: center;
+		width:44vw;
+		border-radius: 6px;
+	}
+	
+	#four-quadrants .task .task-text{
+		font-size: 12px;
+		text-wrap: nowrap;
+		text-overflow: ellipsis;
+	}
+    
+	#four-quadrants .task .info{
+		display: flex;
+		flex-flow: column nowrap; 
+		color:black;
+	}
+	
+	#four-quadrants .task .info .text{
+		font-size: 10px;
+	}
+	
+	#quadrant-1,#quadrant-2,#quadrant-3,#quadrant-4{
+		
+	}
+	
 	.quadrant-1 {
 		color: red;
 	}

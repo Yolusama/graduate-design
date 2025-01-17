@@ -27,7 +27,8 @@
 		scrollStyle:{
 			left:"",
 			height:"110%",
-			width:""
+			width:"",
+			transform:""
 		},
 		//#endif
 		//#ifndef H5
@@ -85,6 +86,7 @@
 			    state.scrollStyle.left = state.lastXPos + "px";
 			if(state.lastXPos<0&&(state.startX+state.lastXPos)>0)
 				state.scrollStyle.left = (state.startX+state.lastXPos-height.value) + "px";
+			state.scrollStyle.transform = "transfrom:translate(-50%,-50%)";	
 			//#endif
 			//#ifndef H5
 			if(state.lastXPos>=0&&state.lastXPos<width.value - height.value)

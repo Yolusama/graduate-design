@@ -6,6 +6,7 @@ import SelfSchedule.DbOption.Service.ITaskService;
 import SelfSchedule.DbOption.ServiceImpl.TaskService;
 import SelfSchedule.Entity.VO.TaskRuleComboVO;
 import SelfSchedule.Model.TaskModel;
+import SelfSchedule.Model.TaskPriorityModel;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.annotation.ClearRedisCache;
@@ -45,6 +46,16 @@ public class FourQuadrantsController extends ControllerBase {
     public ActionResult UpdateTask(@RequestBody TaskModel model, HttpServletRequest request){
         taskService.updateTask(model);
         return ok("更新完成！");
+    }
+
+    @PatchMapping("/ChangePriority")
+    @ApiOperation(value="在四象限的界面中拖拽至象限改变优先级",tags="修改任务优先级")
+    @ClearRedisCache(keys = {CachingKeys.GetTasks,CachingKeys.GetTasksDateValue})
+    public ActionResult ChangePriority(@RequestBody TaskPriorityModel model, HttpServletRequest request){
+        int res = taskService.changePriority(model);
+        if(res==Constants.AbNormalState)
+            return fail();
+        return ok();
     }
 
 

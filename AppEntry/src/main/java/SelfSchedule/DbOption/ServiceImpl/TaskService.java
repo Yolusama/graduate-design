@@ -19,11 +19,7 @@ import SelfSchedule.Entity.TaskRepeatRule;
 import SelfSchedule.Entity.VO.PagedData;
 import SelfSchedule.Entity.VO.TaskReminderVO;
 import SelfSchedule.Entity.VO.TaskRuleComboVO;
-import SelfSchedule.Entity.VO.TaskRuleVO;
-import SelfSchedule.Model.TaskModel;
-import SelfSchedule.Model.TaskReminderInfoModel;
-import SelfSchedule.Model.TaskReminderModel;
-import SelfSchedule.Model.TaskRepeatRuleModel;
+import SelfSchedule.Model.*;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.Utils.DateUtil;
 import SelfSchedule.Utils.ObjectUtil;
@@ -31,11 +27,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.*;
 
@@ -637,6 +631,30 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     @Transactional
     public int finishOrNot(Long taskId, Integer state) {
         return mapper.changeState(state,taskId);
+    }
+
+    @Override
+    @Transactional
+    public int changePriority(TaskPriorityModel model) {
+        LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(Task::getPriority,model.getPriority());
+        if(model.getTaskId().equals(model.getInstanceId()))
+        {
+            Task task = mapper.selectById(model.getInstanceId());
+            Task newTask = ObjectUtil.copy(task,new Task());
+            newTask.setId(null);
+            newTask.setPriority(model.getPriority());
+            newTask.setState(TaskState.CANCELLED.value());
+            mapper.insert(newTask);
+            TaskInstance instance = new TaskInstance();
+            instance.setTaskId(newTask.getId());
+            instance.setInstanceId(newTask.getId());
+            instanceMapper.insert(instance);
+            ruleMapper.setInstanceId(task.getId(),newTask.getId());
+            wrapper.set(Task::getRepeatable,false);
+        }
+        wrapper.eq(Task::getId,model.getInstanceId());
+        return mapper.update(wrapper);
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

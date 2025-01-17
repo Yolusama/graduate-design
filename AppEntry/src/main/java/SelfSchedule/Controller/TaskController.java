@@ -125,7 +125,7 @@ public class TaskController extends ControllerBase
     @PatchMapping("/FinishOrNot/{taskId}")
     @ApiOperation(value = "完成或取消完成任务",notes = "完成或取消完成")
     @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
-    public ActionResult FinishOrNot(@PathVariable Long taskId,@RequestParam Integer state){
+    public ActionResult FinishOrNot(@PathVariable Long taskId,@RequestParam Integer state,HttpServletRequest request){
        int res = taskService.finishOrNot(taskId,state);
        if(res==Constants.AbNormalState)
            return fail(HttpStatus.NOT_FOUND);

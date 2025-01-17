@@ -3,6 +3,7 @@ package SelfSchedule.DbOption.Service;
 import SelfSchedule.Entity.Task;
 import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.TaskModel;
+import SelfSchedule.Model.TaskPriorityModel;
 import SelfSchedule.Model.TaskReminderModel;
 import SelfSchedule.Model.TaskRepeatRuleModel;
 import SelfSchedule.Service.RedisCache;
@@ -24,4 +25,5 @@ public interface ITaskService extends IService<Task> {
    int removeReminder(TaskReminderModel model,Integer mode);
    int changeRepeatRule(TaskRepeatRuleModel model,Integer mode);
    int finishOrNot(Long taskId,Integer state);
+   int changePriority(TaskPriorityModel model);
 }

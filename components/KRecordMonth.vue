@@ -402,8 +402,12 @@
 		}
 
 		if (frequency.value.period != null)
-			count = Math.floor(state.daysFromBeginDateToNow / frequency.value.period);
-
+			{
+				count = Math.floor(state.daysFromBeginDateToNow / frequency.value.period);
+				if(count == 0)
+				  return 0;
+			}
+		
 		return ((persistDays.value / count).toFixed(2)) * 100;
 	}
 </script>

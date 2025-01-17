@@ -736,7 +736,6 @@
 
 	function dateChange(date) {
 		state.selectedDay = date;
-		console.log(date);
 		getData();	
 	}
 

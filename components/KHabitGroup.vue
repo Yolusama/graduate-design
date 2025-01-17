@@ -60,7 +60,7 @@
 	
 	function remove(index){
 		const group = data.value[index];
-		RemoveGroup(group.id,response=>{
+		RemoveGroup(group.id,state.userId,group.code,response=>{
 			const res = response.data;
 			if(!res.succeeded){
 				uni.showToast({
@@ -71,7 +71,6 @@
 			}
 			data.value.splice(index,1);
 			emits("modelValue:update",data.value);
-			popup.close();
 		})
 	}
 	
@@ -92,12 +91,13 @@
 			    userId:state.userId
 			};
 			data.value.push(group);
+			popup.value.close();
 			emits("modelValue:update",data.value);
 		});
 	}
 	
-	function check(){
-		const value = state.groupName.trimStart().trimEnd();
+	function check(value){
+		value=value.trimStart().trimEnd();
 		state.canAdd = value.length>0;
 	}
 	

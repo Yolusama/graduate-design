@@ -31,11 +31,11 @@ export function RemoveGroup(groupId,userId,code,successCallback){
 }
 
 export function UploadThumb(thumb,habitId,originalFileName,successCallback){
-	const data = new FormData();
-	data.append("habitId",habitId);
-	data.append("thumb",thumb);
-	data.append("originalFileName",originalFileName);
-	UploadFile("/Api/Habit/UploadThumb",formDataAuth,data,successCallback);
+	const data = {
+		habitId:habitId,
+		originalFileName:originalFileName
+	};
+	UploadFile("/Api/Habit/UploadThumb",thumb,formDataAuth,data,successCallback);
 }
 
 export function FinishOrNot(record,successCallback){
@@ -47,7 +47,7 @@ export function GetHabitReminders(habitId,successCallback){
 }
 
 export function RemoveHabit(habitId,successCallback){
-	Delete(`/Api/Habit/RemoveHabit/${habitId}`,successCallback);
+	Delete(`/Api/Habit/RemoveHabit/${habitId}`,auth,successCallback);
 }
 
 export function DayInFrequency(habitId,day,habitBeginDate,successCallback){

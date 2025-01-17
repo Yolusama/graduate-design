@@ -25,12 +25,13 @@
 							<view style="display: flex;justify-content: space-between;" v-for="(habit,index) in data"
 								@click="seeDetail(groupName,index)" :key="index">
 								<view class="info">
-									<image :src="imgSrc(habit.thumb)" style="width: 40px;height: 40px"></image>
+									<image :src="imgSrc(habit.thumb)" style="width: 40px;height: 40px;border-radius:50%;"></image>
 									<text style="margin-left:3px;">{{habit.name}}</text>
 								<k-split :height="20" :width="4" v-if="habit.finished"
-										backgroundColor="black"></k-split>
+										backgroundColor="black"></k-split>		
 									<text v-if="habit.finished" style="font-weight: normal;font-size: 14px;color:blue;
 								margin-left: 4px;margin-right: 4px;">
+								
 										{{dateEquals(habit.finishTime,state.selectedDay)?timeWithoutSeconds(habit.finishTime):
 								getDateStr(habit.finishTime)}}&nbsp;
 										完成</text>
@@ -62,7 +63,7 @@
 							<text>习惯图标与名称</text>
 						</view>
 						<view class="info">
-							<image v-if="state.habit.thumb.length>0" style="width: 30px;height: 30px;"
+							<image style="width: 30px;height: 30px;border-radius:50%;"
 								:src="state.thumbShow"
 								@click="thumbPopup.open();"></image>
 							<view style="width: 40%;margin-left:3px;">
@@ -136,9 +137,10 @@
 							<text class="notify-text">分组</text>
 							<uni-icons type="plusempty" class="add" @click="groupPopup.open()"></uni-icons>
 						</view>
-						<scroll-view class="group" :scroll-x="true">
+						<!--大坑，水平滚动需要设置enable-flex:true,子元素使用行内块元素-->
+						<scroll-view class="group" :scroll-x="true" :enable-flex="true">
 							<uni-tag :inverted="state.groupCode!=group.code" type="primary"
-								style="margin-left: 4px;font-size: 15px;" v-for="(group,index) in state.groups"
+								style="margin-left: 4px;font-size: 15px;display: inline-block;" v-for="(group,index) in state.groups"
 								:text="group.name" :key="index" @click="takeGroup(group)">
 							</uni-tag>
 						</scroll-view>
@@ -414,6 +416,9 @@
 		state.habit.reminderModels = [];
 		state.habit.priority = 4;
 		state.habit.thumb = "habit.png";
+		state.thumbShow = imgSrc(state.habit.thumb);
+		state.thumbChangeCancelled = true;
+		state.selectedImgFile = null;
 		state.habit.userId = user == '' ? uni.getStorageSync("user").uid : user.uid;
 		state.habit.description = "";
 		state.habit.days = null;
@@ -510,15 +515,15 @@
 						return;
 					}
 					UploadThumb(state.selectedImgFile, res.data, null, response1 => {
-						const res1 = response1.data;
+						const res1 =JSON.parse(response1.data);
 						if (!res1.succeeded) {
 							uni.showToast({
-								title: res.message,
+								title: res1.message,
 								icon: "none"
 							});
 							return;
 						}
-						afterCreating(res1.message, res.data, res1.data);
+						afterCreating(res.message, res.data, res1.data);
 					});
 				}
 			});
@@ -537,7 +542,7 @@
 				else {
 					UploadThumb(state.selectedImgFile, state.selectedHabit.habitId, state.habit.thumb,
 						response1 => {
-							const res1 = response1.data;
+							const res1 = JSON.parse(response1.data);
 							if (!res1.succeeded) {
 								uni.showToast({
 									title: res.message,
@@ -545,7 +550,7 @@
 								});
 								return;
 							}
-							state.habit.thumb = res1.data;
+							res.data.thumb = res1.data;
 							afterUpdating(res.data);
 						});
 				}
@@ -561,7 +566,8 @@
 				thumb: thumb,
 				persistDays: 0,
 				groupName: state.groups.filter(g => g.id == state.habit
-					.groupId)[0].name
+					.groupId)[0].name,
+				beginDate:state.task.beginDate
 			};
 			if (habitOption.value.data.length < habitOption.value.size) {
 				habitOption.value.data.push(item);
@@ -575,7 +581,12 @@
 	}
 
 	function afterUpdating(data) {
+		data.beginDate = new Date(data.beginDate);
+		const index = state.selectedHabit.index;
 		state.selectedHabit = data;
+		const groupName =  state.groups.filter(g => g.id == state.selectedHabit
+					.groupId)[0].name;
+		state.data[groupName][index] = data;
 		loading("", () => popup.value.close(), 500);
 	}
 
@@ -688,6 +699,8 @@
 		if (e.show || !state.thumbChangeCancelled) return;
 		state.habit.thumb = "habit.png";
 		state.habit.description = "";
+		state.thumbShow = imgSrc(state.habit.thumb);
+		state.selectedImgFile = null;
 	}
 
 	function selectAsThumb(thumb) {
@@ -755,11 +768,9 @@
 		uni.chooseImage({
 			count: 1,
 			success: result => {
-				console.log(result);
-				const file = result.tempFiles[0];
 				const fileUrl = result.tempFilePaths[0];
 				state.thumbShow = fileUrl;
-				state.selectedImgFile = file;
+				state.selectedImgFile = fileUrl;
 			}
 		});
 	}
@@ -951,12 +962,11 @@
 
 	.habit-item .group {
 		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-		position: relative;
+		flex-flow: row nowrap;
 		height: 50px;
 		line-height: 50px;
 		width: 100%;
+		white-space: nowrap;
 	}
 
 	.habit-item .group-item {
@@ -1073,7 +1083,12 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
+		/*#ifdef H5*/
 		margin-right: 2%;
+		/*#endif*/
+		/*#ifndef H5*/
+		padding-right: 4vw;
+		/*#endif*/
 	}
 
 	#habit .detail {
@@ -1158,6 +1173,9 @@
 		height: 96vw;
 		flex-direction: column;
 		align-items: center;
+		/*#ifndef H5*/
+		padding-top:3vh;
+		/*#endif*/
 	}
 
 	.record .record-calendar {

@@ -117,7 +117,7 @@
           "selectedIconPath": "/static/calendar-fill.png"
         },
         {
-          "pagePath": "pages/index",
+          "pagePath": "pages/fourQuadrants",
           "text": "四象限",
           "iconPath": "/static/分类.png",
           "selectedIconPath": "/static/全部.png"

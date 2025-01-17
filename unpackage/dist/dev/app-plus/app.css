@@ -621,6 +621,15 @@
 		display: flex;
 		align-items: center;
 		position: relative;
+		font-size: 18px;
+		font-weight: 600;
+}
+.k-calendar .title .switch[data-v-517b2787]{
+		position: absolute;
+		right: 9%;
+		display: flex;
+		justify-content: space-between;
+		width: 12%;
 }
 .k-calendar .title .select-date[data-v-517b2787] {
 		position: absolute;
@@ -1268,10 +1277,8 @@
 }
 .k-swiper .scroll[data-v-38f6fe7f]{
 	   position: absolute;
-	   width:50px;
 	   border-radius: 50%;
-	   height: 50px;
-	   left: 0;
+	   left:0;
 	   top:50%;
 
 
@@ -1280,6 +1287,100 @@
 
 	   -webkit-transform:translateY(-50%);
 
-	  
 	   background-color: black;
+}
+
+
+.k-record-month[data-v-e78b580a] {
+		position: relative;
+		width: 100%;
+}
+.k-record-month .title[data-v-e78b580a] {
+		display: flex;
+		font-size: 16px;
+		width: 100%;
+		justify-content: center;
+		align-items: center;
+		height: 30px;
+}
+.k-record-month .day-label[data-v-e78b580a] {
+		display: flex;
+		justify-content: space-around;
+		font-size: 13px;
+}
+.k-record-month .date[data-v-e78b580a] {
+		color: darkgray;
+		height: 30px;
+		width: 30px;
+		border-radius: 50%;
+		text-align: center;
+		line-height: 30px;
+}
+.k-record-month .finished[data-v-e78b580a] {
+		background-color: rgb(0, 75, 245) !important;
+		color: white;
+}
+.k-record-month .unfinished[data-v-e78b580a] {
+		background-color: rgb(225, 225, 225) !important;
+		color: red;
+}
+.k-record-month .month[data-v-e78b580a] {
+		display: flex;
+		flex-wrap: wrap;
+		width: 100%
+}
+.k-record-month .month-container[data-v-e78b580a] {
+		width: 14.28%;
+		display: flex;
+		justify-content: center;
+		margin-bottom: 1%;
+}
+.k-record-month .rercord-card[data-v-e78b580a] {
+		position: relative;
+		background-color: #fff;
+		border-radius: 8px;
+}
+.k-record-month .card-content[data-v-e78b580a] {
+		display: flex;
+		width: 100%;
+		flex-flow: row wrap;
+		justify-content: center;
+}
+.k-record-month .card[data-v-e78b580a] {
+		display: flex;
+		flex-direction: column;
+		width: 44%;
+		background-color: aliceblue;
+		margin-left: 3%;
+		margin-bottom: 3%;
+		border-radius: 5px;
+		font-size: 14px;
+		height: 60px;
+		justify-content: center;
+}
+.k-record-month .card .head[data-v-e78b580a] {
+		display: flex;
+		align-items: center;
+		color: gray
+}
+.k-record-month .card .head-image[data-v-e78b580a] {
+		width: 15px;
+		height: 15px;
+		margin-left: 2%;
+		margin-right: 2%;
+}
+.k-record-month .card .card-option[data-v-e78b580a] {
+		margin-left: 2%;
+		font-size: 18px;
+		font-weight: 600;
+}
+.k-record-month .card .card-option-text[data-v-e78b580a] {
+		font-size: 14px;
+}
+.k-record-month .card-header[data-v-e78b580a] {
+		font-size: 18px;
+		color: black;
+		width: 100%;
+		padding: 1%;
+		font-weight: 600;
 }

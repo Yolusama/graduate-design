@@ -10,7 +10,7 @@
 			<k-time-counter style="display: inline-block;color: rgb(44,47,49);font-size: 16px;"/>
 		</view>
 		<view class="content">
-			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)"
+			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)" :id="getQuadrant(index)"
 			:style="state.dataOption[getQuadrant(index)]?'border:1.5px solid blue;':''">
 				<text :class="getQuadrant(index)">{{item.text}}</text>
 				<view :scroll-y="true" style="width:100%;">
@@ -321,6 +321,14 @@
 		resetBeginEndTime();
 
 		getData();
+		nextTick(()=>{
+			const element = quadrant4.value[0];
+			uni.createSelectorQuery()
+			 .select("#quadrant-4").boundingClientRect()
+			 .exec(res=>{
+				console.log(res[0]); 
+			 });
+		});
 	});
 
 	function getData() {
@@ -907,7 +915,14 @@
 		font-size: 14px;
 		color: gray;
 	}
-
+	/*#ifndef H5*/
+	#four-quadrants .time .select-datetime
+	{
+		font-size: 12px;
+		height: 20px;
+		line-height: 20px;
+	}
+    /*#endif*/
 	#four-quadrants .time .info {
 		align-items: center;
 	}

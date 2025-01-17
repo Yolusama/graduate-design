@@ -33,7 +33,7 @@
 		//#endif
 		//#ifndef H5
 		scrollStyle:"",
-		scrollBaseStyle:""
+		scrollBaseStyle:"",
 		//#endif
         lastXPos:0,
 		canMove:false,

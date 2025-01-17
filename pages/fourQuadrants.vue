@@ -10,13 +10,15 @@
 			<k-time-counter style="display: inline-block;color: rgb(44,47,49);font-size: 16px;"/>
 		</view>
 		<view class="content">
-			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)">
-				<text :class="'quadrant-'+(index+1)">{{item.text}}</text>
+			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)"
+			:style="state.dataOption[getQuadrant(index)]?'border:1.5px solid blue;':''">
+				<text :class="getQuadrant(index)">{{item.text}}</text>
 				<view :scroll-y="true" style="width:100%;">
-					<view class="item-content" v-for="(task,index1) in state.data['quadrant-'+(index+1)]" :key="index1" 
+					<view class="item-content" v-for="(task,index1) in state.data[getQuadrant(index)]" :key="index1" 
 					:style="task.style.length>0?'':'position:relative'">
-						<view class="task" @click="toUpdate(index1,index+1)" @longpress="toDragTaskContent($event,task)" @touchmove="draggingTaskContent($event,task)"
-							 @touchend="taskContentDragged($event,task)" @touchcancel="cancelDragging(task)" :style="task.style">		
+						<view class="task" @click="toUpdate(index1,getQuadrant(index))" @longpress="toDragTaskContent($event,task)" 
+						@touchmove="draggingTaskContent($event,task)"
+							 @touchend="taskContentDragged($event,task,index1)" @touchcancel="cancelDragging(task)" :style="task.style">		
 							<checkbox-group @change="finishOrNot(task)">
 								<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.5)" />
 							</checkbox-group>
@@ -213,7 +215,6 @@
 		dateEquals,
 		TaskState,
 		dateGE,
-		DragQuadantOption,
 		weekDaySign
 	} from '../module/Common';
 	import {
@@ -305,7 +306,7 @@
 
 	onMounted(() => {
 		for (let i = 0; i < 4; i++)
-			state.priority.push(new ValueText(i, ""));
+			state.priority.push(new ValueText(i+1, ""));
 		state.priority[0].text = "Ⅰ " + priority[0].text;
 		state.priority[1].text = "Ⅱ " + priority[1].text;
 		state.priority[2].text = "Ⅲ " + priority[2].text;
@@ -342,9 +343,8 @@
 					  task.deadline = new Date(task.deadline);
 					task.style="";  
 				}
-				state.dataOption[pro] = new DragQuadantOption();
+				state.dataOption[pro] = false;
 			}
-			
 		});
 	}
 
@@ -408,6 +408,7 @@
 	}
 
 	function titleInput(current) {
+		if(state.isTaskUpdate)return;
 		state.canCreateTask = current.length > 0;
 	}
 
@@ -455,9 +456,10 @@
 		}
 	}
 
-	function toUpdate(index, qudrant) {
+	function toUpdate(index,quadrantName) {
 		state.isTaskUpdate = true;
-		const task = state.data[`${quadrant.value}-${qudrant}`][index];
+		const task = state.data[quadrantName][index];
+		task.index = index;
 		GetTaskReminders(task.instanceId, response => {
 			const res = response.data;
 			if (!res.succeeded) {
@@ -486,7 +488,7 @@
 	}
 
 	function takePriority(item) {
-		state.task.priority = item.value + 1;
+		state.task.priority = item.value;
 		priorityPopup.value.close();
 	}
 
@@ -539,6 +541,11 @@
 			state.task.deadline = null;
 		}
 	}
+	
+	function resetDataOption(){
+		for(let pro in state.dataOption)
+		   state.dataOption[pro] = false;
+	}
 
 	function editTask() {
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
@@ -564,6 +571,8 @@
 				}, 750);
 			});
 		} else {
+			if(state.task.title.length==0)
+			   state.task.title = state.selectedTask.title;
 			UpdateTask(state.task, response => {
 				const res = response.data;
 				if (!res.succeeded) {
@@ -574,7 +583,27 @@
 					return;
 				}
 				loading("", () => {
+					const quadrantFrom = `${quadrant.value}-${state.selectedTask.priority}`;
+					const quadrantTo =  `${quadrant.value}-${state.task.priority}`;
 					copy(state.task, state.selectedTask);
+					if(quadrantFrom!=quadrantTo){
+						state.data[quadrantFrom].splice(state.selectedTask.index,1);
+						const data = state.data[quadrantTo];
+						if(data.length==0)
+						   data.push(state.selectedTask);
+						else{
+							var i;
+							for(i=0;i<data.length;i++){
+								if(data[i].createTime<=state.selectedTask.createTime)
+								{
+									data.splice(i,0,state.selectedTask);
+									break;
+								}
+							}
+							if(i==data.length)
+							   data.push(state.selectedTask);
+						} 
+					}
 					taskEditor.value.close();
 				}, 550);
 
@@ -617,47 +646,83 @@
 	
 	function toDragTaskContent(event,task){
 		event.stopPropagation();
-	
+	    const point = event.touches[0];
+		const position = {
+			x:point.pageX,
+			y:point.pageY
+		};
+		if(taskContentIn(position,getElementBound(quadrant1.value[0].$el)))
+			state.dataOption[`${quadrant.value}-1`] = true;		
+		else if(taskContentIn(position,getElementBound(quadrant2.value[0].$el)))
+			state.dataOption[`${quadrant.value}-2`] = true;
+		else if(taskContentIn(position,getElementBound(quadrant3.value[0].$el)))
+			state.dataOption[`${quadrant.value}-3`] = true;
+		else if(taskContentIn(position,getElementBound(quadrant4.value[0].$el)))
+			state.dataOption[`${quadrant.value}-4`] = true;
 		task.style="position:relative;z-index:1000;top:5px;left:-5px;background-color:cyan;";
-		state.selectedTask = task;
 	}
 	
 	function draggingTaskContent(event,task){
 		 event.stopPropagation();
 		
 	     const point = event.touches[0];
-		 const x = point.pageX;
-		 const y = point.pageY;
+		 const position = {
+			 x:point.pageX,
+			 y:point.pageY
+		 };
 		 
 		 if(task.style.length>0)
 		    {
-				task.style =`position:absolute;background-color:cyan;z-index:1000;top:${y}px;left:${x}px;
+				task.style =`position:absolute;background-color:cyan;z-index:1000;top:${position.y}px;left:${position.x}px;
 				transform:translate(-50%,-50%)`;	
+				if(taskContentIn(position,getElementBound(quadrant1.value[0].$el)))
+					{
+						resetDataOption();
+						state.dataOption[`${quadrant.value}-1`] = true;
+				    }		
+				else if(taskContentIn(position,getElementBound(quadrant2.value[0].$el)))
+					{
+						resetDataOption();
+						state.dataOption[`${quadrant.value}-2`] = true;
+					}
+				else if(taskContentIn(position,getElementBound(quadrant3.value[0].$el)))
+					{
+						resetDataOption();
+						state.dataOption[`${quadrant.value}-3`] = true;
+					}
+				else if(taskContentIn(position,getElementBound(quadrant4.value[0].$el)))
+					{
+						resetDataOption();
+						state.dataOption[`${quadrant.value}-4`] = true;
+					}
 			}
 	}
 	
-	function taskContentDragged(event,task,index,itemIndex){
+	function taskContentDragged(event,task,itemIndex){
 		task.style="";
 		state.selectedTask = null;
 		const point = event.changedTouches[0];
-		const posistion = {
+		const position = {
 			x:point.pageX,
 			y:point.pageY
 		};
-		var priority;
-		if(taskContentIn(posistion,getElementBound(quadrant1.value[0].$el))&&task.priority!=state.priority[0].value)
+		resetDataOption();
+		var priority = undefined;
+		if(taskContentIn(position,getElementBound(quadrant1.value[0].$el))&&task.priority!=state.priority[0].value)
 			priority = state.priority[0].value;
-		else if(taskContentIn(posistion,getElementBound(quadrant2.value[0].$el))&&task.priority!=state.priority[1].value)
+		else if(taskContentIn(position,getElementBound(quadrant2.value[0].$el))&&task.priority!=state.priority[1].value)
 			priority = state.priority[1].value;
-		else if(taskContentIn(posistion,getElementBound(quadrant3.value[0].$el))&&task.priority!=state.priority[2].value)
+		else if(taskContentIn(position,getElementBound(quadrant3.value[0].$el))&&task.priority!=state.priority[2].value)
 			priority = state.priority[2].value;
-		else if(taskContentIn(posistion,getElementBound(quadrant4.value[0].$el))&&task.priority!=state.priority[3].value)
+		else if(taskContentIn(position,getElementBound(quadrant4.value[0].$el))&&task.priority!=state.priority[3].value)
 			priority = state.priority[3].value;
-			
+		
+		if(priority==undefined)return;
 	    ChangePriority({
 			taskId:task.taskId,
 			instanceId:task.instanceId,
-			priority:priority
+			priority:priority,
+			repeatable:task.repeatable
 		},response=>{
 			const res = response.data;
 			if(!res.succeeded){
@@ -667,11 +732,26 @@
 				});
 				return;
 			}
-			const quadrantValue = `${quadrant.value}-${index+1}`;
+			const quadrantValue = `${quadrant.value}-${task.priority}`;
+			
 			const toQuadrant = `${quadrant.value}-${priority}`;
 			state.data[quadrantValue].splice(itemIndex,1);
 			task.priority = priority;
-			state.data[toQuadrant].push(task);
+			const data = state.data[toQuadrant];
+			if(data.length==0)
+			   data.push(task);
+			else{
+				var i;
+				for(i=0;i<data.length;i++){
+					if(data[i].createTime<=task.createTime)
+					{
+						data.splice(i,0,task);
+						break;
+					}
+				}
+				if(i==data.length)
+				   data.push(task);
+			} 
 		});		
 	}
 	
@@ -691,6 +771,10 @@
 				width:element.offsetWidth,
 				height:element.offsetHeight
 			};
+	}
+	
+	function getQuadrant(index){
+		return `${quadrant.value}-${index+1}`;
 	}
 
 </script>
@@ -735,6 +819,7 @@
 		font-size: 14px;
 		padding: 1%;
 		overflow: hidden auto;
+		border-radius: 5px;
 	}
 	
 	#four-quadrants .item-content{

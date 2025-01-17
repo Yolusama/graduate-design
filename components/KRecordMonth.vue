@@ -32,7 +32,7 @@
 			<view class="card-content">
 				<view class="card">
 					<view class="head">
-						<image src="../static/percentage.png"  class="head-image"></image>
+						<image src="../static/percentage.png" class="head-image"></image>
 						<text>完成率</text>
 					</view>
 					<view class="card-option">{{getFinishRate()}}
@@ -55,7 +55,7 @@
 				</view>
 				<view class="card">
 					<view class="head">
-						<image src="../static/连续.png"  class="head-image"></image>
+						<image src="../static/连续.png" class="head-image"></image>
 						<text>最多连续</text>
 					</view>
 					<view class="card-option">{{mostDays}}&nbsp;<text class="card-option-text">天</text></view>
@@ -91,7 +91,7 @@
 		continuousDays: Number,
 		mostDays: Number,
 		persistDays: Number,
-		frequency:Object
+		frequency: Object
 	});
 	const emits = defineEmits();
 
@@ -106,7 +106,7 @@
 		],
 		moveLeft: undefined,
 		transformed: false,
-		daysFromBeginDateToNow:0
+		daysFromBeginDateToNow: 0
 	});
 
 	const records = ref(pros.modelValue);
@@ -123,7 +123,7 @@
 		if (beginDate.value == undefined)
 			beginDate.value = today;
 		loadMonthDays();
-		state.daysFromBeginDateToNow = ((today.getTime()-beginDate.value.getTime())/ADayMillseconds)+1;
+		state.daysFromBeginDateToNow = ((today.getTime() - beginDate.value.getTime()) / ADayMillseconds) + 1;
 	});
 
 	function loadMonthDays() {
@@ -156,41 +156,59 @@
 	function select(day) {
 		if (day.record.result) {
 			const record = records.value[day.record.index];
-			uni.showModal({
-				confirmText: "完成",
-				cancelText: "不完成",
-				success: res => {
-					const model = {};
-					copy(record, model);
-					if (res.confirm) {
-						if (record.finsihed) return;
-						model.finished = true;
-					}
-					if (res.cancel) {
-						if (!record.finished) return;
-						model.finished = false;
-					}
-					model.finishTime = model.finished ? new Date() : null;
-					model.habitId = habitId.value;
-					FinishOrNot(model, response => {
-						if (!response.data.succeeded) {
-							uni.showToast({
-								title: response.data.message,
-								icon: "none"
-							});
-							return;
-						}
-						const data = response.data.data;
-						record.finished = model.finished;
-						record.finishTime = model.finishTime;
-						persistDays.value = data.persistDays;
-						mostDays.value = data.mostDays;
-						continuousDays.value = data.continuousDays;
-						day.class = record.finished ? "date finished" : "date unfinished";
-						emits("update:modelValue", records.value);
-						emits("select", data);
+			DayInFrequency(habitId.value, day.date.getTime(), beginDate.value.getTime(), response => {
+				const res = response.data;
+				if (!res.succeeded) {
+					uni.showToast({
+						title: res.message,
+						icon: "none"
 					});
+					return;
 				}
+				if (!res.data) {
+					uni.showToast({
+						title: "非习惯执行频率区段或在当前习惯执行频率区段中，习惯已执行完毕",
+						icon: "none"
+					});
+					return;
+				}
+				uni.showModal({
+					content: "完成/不完成",
+					confirmText: "完成",
+					cancelText: "不完成",
+					success: res => {
+						const model = {};
+						copy(record, model);
+						if (res.confirm) {
+							if (record.finsihed) return;
+							model.finished = true;
+						}
+						if (res.cancel) {
+							if (!record.finished) return;
+							model.finished = false;
+						}
+						model.finishTime = model.finished ? new Date() : null;
+						model.habitId = habitId.value;
+						FinishOrNot(model, response => {
+							if (!response.data.succeeded) {
+								uni.showToast({
+									title: response.data.message,
+									icon: "none"
+								});
+								return;
+							}
+							const data = response.data.data;
+							record.finished = model.finished;
+							record.finishTime = model.finishTime;
+							persistDays.value = data.persistDays;
+							mostDays.value = data.mostDays;
+							continuousDays.value = data.continuousDays;
+							day.class = record.finished ? "date finished" : "date unfinished";
+							emits("update:modelValue", records.value);
+							emits("select", data);
+						});
+					}
+				});
 			});
 		} else {
 			const date = onlyDate(day.date);
@@ -204,10 +222,10 @@
 						});
 						return;
 					}
-					if(!res.data){
+					if (!res.data) {
 						uni.showToast({
-							title:"非习惯执行频率区段",
-							icon:"none"
+							title: "在当前习惯执行频率区段中，习惯已执行完毕",
+							icon: "none"
 						});
 						return;
 					}
@@ -356,39 +374,37 @@
 		state.transformed = false;
 		state.moveLeft = undefined;
 	}
-	
-	function getFinishRate(){
+
+	function getFinishRate() {
 		var count = 0;
-		if(frequency.value.days!=null)
-		{
-			for(let i=0;i<state.daysFromBeginDateToNow;i++){
-				const date = new Date(new Date(beginDate.value).setDate(beginDate.value.getDate()+i));
-				for(let pro in frequency.value.days){
-					if(frequency.value.days[pro]==date.getDay())
-					   {
-						   count++;
-						   break;
-					   }
+		if (frequency.value.days != null) {
+			for (let i = 0; i < state.daysFromBeginDateToNow; i++) {
+				const date = new Date(new Date(beginDate.value).setDate(beginDate.value.getDate() + i));
+				for (let pro in frequency.value.days) {
+					if (frequency.value.days[pro] == date.getDay()) {
+						count++;
+						break;
+					}
 				}
 			}
 		}
-		
-		if(frequency.value.weekPersistDays!=null){
+
+		if (frequency.value.weekPersistDays != null) {
 			const beginDateDay = beginDate.value.getDay();
-			if(beginDateDay<=frequency.value.weekPersistDays)
-			{
+			if (beginDateDay <= frequency.value.weekPersistDays) {
 				count += frequency.value.weekPersistDays;
 			}
-			const leftDays = state.daysFromBeginDateToNow - (7-beginDateDay);
-			const mod = leftDays%7;
-			const left = Math.floor(leftDays/7);
-			count += frequency.value.weekPersistDays*left + mod<=frequency.value.persistDays? mode : frequency.value.weekPersistDays;
+			const leftDays = state.daysFromBeginDateToNow - (7 - beginDateDay);
+			const mod = leftDays % 7;
+			const left = Math.floor(leftDays / 7);
+			count += frequency.value.weekPersistDays * left + mod <= frequency.value.persistDays ? mode : frequency
+				.value.weekPersistDays;
 		}
-		
-		if(frequency.value.period!=null)
-		   count = Math.floor(state.daysFromBeginDateToNow/frequency.value.period);
-	   
-	   return ((persistDays/count).toFixed(2))*100;
+
+		if (frequency.value.period != null)
+			count = Math.floor(state.daysFromBeginDateToNow / frequency.value.period);
+
+		return ((persistDays.value / count).toFixed(2)) * 100;
 	}
 </script>
 
@@ -451,15 +467,15 @@
 		background-color: #fff;
 		border-radius: 8px;
 	}
-	
-	.k-record-month  .card-content{
+
+	.k-record-month .card-content {
 		display: flex;
 		width: 100%;
 		flex-flow: row wrap;
 		justify-content: center;
 	}
-	
-	.k-record-month .card{
+
+	.k-record-month .card {
 		display: flex;
 		flex-direction: column;
 		width: 44%;
@@ -471,30 +487,30 @@
 		height: 60px;
 		justify-content: center;
 	}
-	
-	.k-record-month .card .head{
+
+	.k-record-month .card .head {
 		display: flex;
 		align-items: center;
 		color: gray
 	}
-	
-	.k-record-month .card .head-image{
+
+	.k-record-month .card .head-image {
 		width: 15px;
 		height: 15px;
 		margin-left: 2%;
 		margin-right: 2%;
 	}
-	
-	.k-record-month .card .card-option{
+
+	.k-record-month .card .card-option {
 		margin-left: 2%;
 		font-size: 18px;
 		font-weight: 600;
 	}
-	
-	.k-record-month .card  .card-option-text{
+
+	.k-record-month .card .card-option-text {
 		font-size: 14px;
 	}
-	
+
 	.k-record-month .card-header {
 		font-size: 18px;
 		color: black;

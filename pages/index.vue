@@ -771,6 +771,8 @@
 		state.task.instanceId = state.selectedTask.instanceId;
 		state.task.taskId = state.selectedTask.taskId;
 		state.task.repeatable = state.selectedTask.repeatable;
+		if(state.task.title.length==0)
+		   state.task.title = state.selectedTask.title;
         UpdateTask(state.task,state.mode,response=>{
 			const res = response.data;
 			if(!res.succeeded){
@@ -929,10 +931,10 @@
 	function finishOrNot(task){
 		var state = 0;
 		if(task.state==TaskState.unfinished)
-		 state = TaskState.finished;
+		  state = TaskState.finished;
 		else if(task.state==TaskState.finished)
 		  state = TaskState.unfinished;
-		 FinishOrNot(task.instanceId,task.state,response=>{
+		 FinishOrNot(task.instanceId,state,response=>{
 			const res = response.data;
 			 if(!res.succeeded){
 				 uni.showToast({

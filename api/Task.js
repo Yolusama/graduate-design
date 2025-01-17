@@ -39,3 +39,5 @@ export function UpdateTask(newTask,mode,successCallback){
 export function FinishOrNot(taskId,state,successCallback){
 	Patch(`/Api/Task/FinishOrNot/${taskId}?state=${state}`,auth,{},successCallback);
 }
+
+

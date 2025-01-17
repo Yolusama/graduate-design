@@ -63,8 +63,8 @@
 						</view>
 						<view class="info">
 							<image v-if="state.habit.thumb.length>0" style="width: 30px;height: 30px;"
-								:src="imgSrc(state.habit.thumb)"
-								@click="thumbPopup.open();state.thumbShow=imgSrc(state.habit.thumb);"></image>
+								:src="state.thumbShow"
+								@click="thumbPopup.open();"></image>
 							<view style="width: 40%;margin-left:3px;">
 								<uni-easyinput v-model="state.habit.name" placeholder="习惯名称" @input="habitNameInput">
 								</uni-easyinput>
@@ -275,7 +275,11 @@
 						:current="state.selectedDay" :habitId="state.selectedHabit.habitId"
 						:beginDate="state.selectedHabit.beginDate" @select="recordFinish" 
 						:continuousDays="state.selectedHabit.continuousDays" :mostDays="state.selectedHabit.mostDays" 
-						:persistDays="state.selectedHabit.persistDays">
+						:persistDays="state.selectedHabit.persistDays" :frequency="{
+							days:state.selectedHabit.days,
+							weekPersistDays:state.selectedHabit.weekPersistDays,
+							period:state.selectedHabit.period
+						}">
 					</k-record-month>
 				</view>
 			</uni-popup>
@@ -385,6 +389,7 @@
 		state.habit.beginDate = onlyDate(state.selectedDay);
 		state.habit.userId = user == '' ? uni.getStorageSync("user").uid : user.uid;
 		state.habit.recordDay = onlyDate(state.selectedDay);
+		state.thumbShow = imgSrc(state.habit.thumb);
 		fillWeekdays();
 		for (let day of weekdays) {
 			state.weekDays.push({
@@ -427,6 +432,7 @@
 			.getTime())
 			return;
 		state.selectedHabit.index = index;
+		state.thumbShow = imgSrc(state.selectedHabit.thumb);
 		GetHabitReminders(state.selectedHabit.habitId, response => {
 			const res = response.data;
 			if (!res.succeeded) {
@@ -740,7 +746,8 @@
 
 	function takeHabitThumb() {
 		state.thumbChangeCancelled = false;
-		state.habit.thumb = state.selectedThumb;
+		if(state.selectedThumb.length>0)
+		   state.habit.thumb = state.selectedThumb;
 		thumbPopup.value.close();
 	}
 
@@ -748,6 +755,7 @@
 		uni.chooseImage({
 			count: 1,
 			success: result => {
+				console.log(result);
 				const file = result.tempFiles[0];
 				const fileUrl = result.tempFilePaths[0];
 				state.thumbShow = fileUrl;
@@ -762,8 +770,9 @@
 			habitId: state.selectedHabit.habitId,
 			finishTime: new Date(),
 			finished: finished,
-			day: state.selectedDay
+			day: onlyDate(state.selectedDay)
 		};
+		if(!model.finished&&!state.selectedHabit.finished)return;
 		FinishOrNot(model, response => {
 			const res = response.data;
 			if (!res.succeeded) {
@@ -784,7 +793,7 @@
 		FinishOrNot({
 			habitId: habit.habitId,
 			finished: false,
-			day: state.selectedDay
+			day: onlyDate(state.selectedDay)
 		}, response => {
 			const res = response.data;
 			if (!res.succeeded) {

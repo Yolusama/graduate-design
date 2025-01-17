@@ -1,4 +1,4 @@
-import { Delete, Get, Patch, Post, Put } from "../module/Request";
+import { Delete, Get, Patch, Post, Put, UploadFile } from "../module/Request";
 import { auth, formDataAuth } from "./User";
 
 export function GetDefaultThumbs(successCallback){
@@ -35,7 +35,7 @@ export function UploadThumb(thumb,habitId,originalFileName,successCallback){
 	data.append("habitId",habitId);
 	data.append("thumb",thumb);
 	data.append("originalFileName",originalFileName);
-	Post("/Api/Habit/UploadThumb",formDataAuth,data,successCallback);
+	UploadFile("/Api/Habit/UploadThumb",formDataAuth,data,successCallback);
 }
 
 export function FinishOrNot(record,successCallback){

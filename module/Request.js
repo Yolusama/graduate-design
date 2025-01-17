@@ -40,6 +40,17 @@ class GlobalRequest
 	{
 		return this.request(url,"DELETE",headers,null,successCallback,failCallback);
 	}
+	
+	uploadFile(url,file,headers,successCallback,failCallback){
+		return uni.uploadFile({
+			url:this.baseUrl+url,
+			filePath:file,
+			header:headers,
+			timeout:this.timeout,
+			success:successCallback,
+			fail:failCallback
+		});
+	}
 }
 const timeout = 1000*60*3;
 //const request = new GlobalRequest("http://192.168.43.71:5225",timeout);
@@ -52,7 +63,6 @@ const defaultFailBack = res=>console.log(res);
 			icon:"none"
 	    });
 }*/
-
 
 export function imgSrc(source){
 	return `${request.baseUrl}/img/${source}`;
@@ -81,4 +91,8 @@ export function Patch(url,headers,data,successCallback,failCallback=defaultFailB
 
 export function Delete(url,headers,successCallback,failCallback=defaultFailBack){
 	return request.delete(url,headers,successCallback,failCallback!=undefined?failCallback:null);
+}
+
+export function UploadFile(url,file,headers,successCallback,failCallback=defaultFailBack){
+	return request.uploadFile(url,file,headers,successCallback,failCallback!=undefined?failCallback:null);
 }

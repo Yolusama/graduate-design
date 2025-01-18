@@ -266,5 +266,29 @@ export class DragQuadantOption{
 	}
 }
 
+//#ifndef H5
+export function buildElById(ref){
+	const id = '#'+ref.attributes.id;
+	uni.createSelectorQuery()
+		 .select(id).boundingClientRect()
+		 .exec(res=>{
+			const bound = res[0];
+			const el = {
+				offsetLeft:bound.left,
+				offsetTop:bound.top,
+				offsetHeight:bound.height,
+				offsetWidth:bound.width
+			}
+			ref.$el = el;
+		 });
+}
+
+export function getElBound(selector,callback){
+	uni.createSelectorQuery()
+		 .select(selector).boundingClientRect()
+		 .exec(callback);
+}
+//#endif
+
 
 

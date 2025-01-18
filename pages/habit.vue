@@ -17,32 +17,47 @@
 				>
 					<uni-collapse-item title-border="none" :show-animation="false">
 						<template v-slot:title>
-							<view style="display:flex;align-items: center;">
+							<view style="display:flex;align-items: center;justify-content: space-between;">
 								<text class="title-text">{{groupName}}</text>
+								<text style="font-size: 12px;color:gray">{{data.length}}</text>
 							</view>
 						</template>
 						<scroll-view :scroll-y="true" style="max-height:30vh;height:fit-content;">
-							<view style="display: flex;justify-content: space-between;" v-for="(habit,index) in data"
-								@click="seeDetail(groupName,index)" :key="index">
+							<view v-for="(habit,index) in data" style="display: flex;flex-flow: column nowrap;"
+								 :key="index">
+								 
+							<view style="display: flex;justify-content: space-between;" @click="seeDetail(groupName,index)">
 								<view class="info">
 									<image :src="imgSrc(habit.thumb)" style="width: 40px;height: 40px;border-radius:50%;"></image>
-									<text style="margin-left:3px;">{{habit.name}}</text>
-								<k-split :height="20" :width="4" v-if="habit.finished"
-										backgroundColor="black"></k-split>		
-									<text v-if="habit.finished" style="font-weight: normal;font-size: 14px;color:blue;
-								margin-left: 4px;margin-right: 4px;">
-								
-										{{dateEquals(habit.finishTime,state.selectedDay)?timeWithoutSeconds(habit.finishTime):
-								getDateStr(habit.finishTime)}}&nbsp;
-										完成</text>
-									<text @click="unfinishHabit($event,habit)" v-if="habit.finished">
-										<uni-icons type="close" color="red"></uni-icons>
-									</text>
+									<text style="margin-left:3px;text-wrap: nowrap;text-overflow: ellipsis;">{{habit.name}}</text>	
 								</view>
-								<view class="option">
+								<view class="option" v-if="!state.optionMostCheck" @click.stop="state.optionMostCheck=true">
 									<text>{{habit.persistDays}}天</text>
 									<text>共坚持</text>
 								</view>
+								<view class="option" v-if="state.optionMostCheck" @click.stop="state.optionMostCheck=false">
+									<text>{{habit.mostDays}}天</text>
+									<text>最多连续</text>
+								</view>
+							 </view>
+							  <view class="finish" v-if="habit.finished">
+								  <text  style="font-weight: normal;font-size: 14px;color:blue;
+								  margin-left: 4px;margin-right: 4px;">
+								  
+								  		{{dateEquals(habit.finishTime,state.selectedDay)?timeWithoutSeconds(habit.finishTime):
+								  getDateStr(habit.finishTime)}}&nbsp;
+								  		完成</text>
+								  	<!--#ifndef H5-->	
+								  	<text @tap="unfinishHabit($event,habit)">
+								  		<uni-icons type="close" color="red" :size="20"></uni-icons>
+								  	</text>
+								  	<!--#endif-->
+								  	<!--#ifdef H5-->
+								  	<text @click="unfinishHabit($event,habit)">
+								  		<uni-icons type="close" color="red" :size="20"></uni-icons>
+								  	</text>
+								      <!--#endif-->	
+							  </view>
 							</view>
 						</scroll-view>
 					</uni-collapse-item>
@@ -309,7 +324,8 @@
 		weekdays,
 		getDateTimeStr,
 		CalendarDisplayWay,
-		dateEquals
+		dateEquals,
+		invalidEvent
 	} from "../module/Common";
 	import {
 		user
@@ -384,7 +400,8 @@
 		groupAdd: false,
 		selectedHabit: null,
 		groupCode: 1,
-		data: {}
+		data: {},
+		optionMostCheck:false
 	});
 
 	onMounted(() => {
@@ -617,6 +634,7 @@
 			habitOption.value.data = res.data.data;
 			habitOption.value.total = res.data.total;
 			dataReogrized();
+
 		});
 	}
 
@@ -801,6 +819,7 @@
 
 	function unfinishHabit(e, habit) {
 		e.stopPropagation();
+		console.log(e);
 		FinishOrNot({
 			habitId: habit.habitId,
 			finished: false,
@@ -858,7 +877,6 @@
 		state.selectedHabit.mostDays = data.mostDays;
 		state.selectedHabit.continuousDays = data.continuousDays;
 	}
-	
 	
 </script>
 
@@ -1089,6 +1107,13 @@
 		/*#ifndef H5*/
 		padding-right: 4vw;
 		/*#endif*/
+	}
+	
+	#habit .content .finish{
+		display: flex;
+		padding-left:3%;
+		height: 25px;
+		line-height: 25px;
 	}
 
 	#habit .detail {

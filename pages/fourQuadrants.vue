@@ -23,7 +23,11 @@
 								<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.5)" />
 							</checkbox-group>
 							<view class="info">
-								<text class="task-text" v-html="task.title">
+							<!--#ifdef H5-->
+							<text class="task-text" v-html="task.title">
+							<!--#endif-->
+								<text class="task-text" >
+									{{task.title}}
 								</text>
 								<text class="text" style="color: rgb(0,75,235);">开始：{{getTimeStr(task.beginTime)}}</text>
 								<text class="text"  style="color:red;">结束：{{getTimeStr(task.endTime)}}</text>
@@ -215,7 +219,8 @@
 		dateEquals,
 		TaskState,
 		dateGE,
-		weekDaySign
+		weekDaySign,
+		buildElById
 	} from '../module/Common';
 	import {
 		CreateTask,
@@ -321,14 +326,14 @@
 		resetBeginEndTime();
 
 		getData();
+		//#ifndef H5
 		nextTick(()=>{
-			const element = quadrant4.value[0];
-			uni.createSelectorQuery()
-			 .select("#quadrant-4").boundingClientRect()
-			 .exec(res=>{
-				console.log(res[0]); 
-			 });
+			buildElById(quadrant1.value[0]);
+			buildElById(quadrant2.value[0]);
+			buildElById(quadrant3.value[0]);
+			buildElById(quadrant4.value[0]);
 		});
+		//#endif
 	});
 
 	function getData() {
@@ -681,8 +686,14 @@
 		 
 		 if(task.style.length>0)
 		    {
+				//#ifdef H5
 				task.style =`position:absolute;background-color:cyan;z-index:1000;top:${position.y}px;left:${position.x}px;
-				transform:translate(-50%,-50%)`;	
+				transform:translate(-50%,-50%)`;
+				//#endif
+				//#ifndef H5
+				task.style =`position:absolute;background-color:cyan;z-index:1000;top:${position.y}px;left:${position.x}px;
+				-webkit-transform:translate(-50%,-50%)`;
+				//#endif	
 				if(taskContentIn(position,getElementBound(quadrant1.value[0].$el)))
 					{
 						resetDataOption();

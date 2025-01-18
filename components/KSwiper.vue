@@ -8,7 +8,7 @@
 
 <script setup>
 	import {ref,reactive,onMounted,nextTick} from "vue";
-    import { delayToRun } from "../module/Common";
+    import { delayToRun, getElBound } from "../module/Common";
 	
 	const pros = defineProps({ 
 		backgroundColor:String,
@@ -66,8 +66,13 @@
 		});
 		//#endif
 		//#ifndef H5
-		state.scrollBaseStyle = `height:${height.value*1.1}px;width:${height.value*1.1}`;
+		state.scrollBaseStyle = `height:${height.value*1.1}px;width:${height.value*1.1}px`;
 		state.scrollStyle = state.scrollBaseStyle;
+		nextTick(()=>{
+			getElBound(".k-swiper",res=>{
+				width.value = res[0].width;
+			});
+		});
 		//#endif
 	});
 	
@@ -90,10 +95,10 @@
 			//#endif
 			//#ifndef H5
 			if(state.lastXPos>=0&&state.lastXPos<width.value - height.value)
-			     state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(${state.lastXPos}px,-50%);height:100%`;
+			     state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(${state.lastXPos}px,-50%);`;
 			if(state.lastXPos<0&&(state.startX+state.lastXPos)>0)
 			      state.scrollStyle = `${state.scrollBaseStyle};
-				  -webkit-transform: translate(${state.startX+state.lastXPos-height.value}px,-50%);height:100%`;
+				  -webkit-transform: translate(${state.startX+state.lastXPos-height.value}px,-50%);`;
 			//#endif
 		}
 		
@@ -108,16 +113,16 @@
 			   state.scrollStyle.left = 0;
 			   //#endif
 			   //#ifndef H5
-			    state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(0,-50%);height:100%`; 
+			    state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(0,-50%);`; 
 			   //#endif 
 			   event.finished = false;
 		   }
 		 else{
 			 //#ifdef H5
-			 state.scrollStyle.left = width.value - height.value + "px";
+			 state.scrollStyle.left = width.value - height.value/2+ "px";
 			 //#endif
 			 //#ifndef H5
-			  state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(${width.value-height.value/2}px,-50%);height:100%`; 
+			  state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(${width.value-height.value/2}px,-50%);`; 
 			 //#endif 
 			  event.finished = true;
 		 }  

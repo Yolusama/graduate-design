@@ -2179,6 +2179,12 @@
 
 		padding-right: 4vw;
 }
+#habit .content .finish[data-v-61768113]{
+		display: flex;
+		padding-left:3%;
+		height: 25px;
+		line-height: 25px;
+}
 #habit .detail[data-v-61768113] {
 		width: 100vw;
 		height: 96vh;

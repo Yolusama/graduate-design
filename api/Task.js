@@ -1,3 +1,4 @@
+import { TaskState } from "../module/Common";
 import { Get,Patch,Post,Put } from "../module/Request";
 import { auth} from "./User";
 
@@ -40,4 +41,18 @@ export function FinishOrNot(taskId,state,successCallback){
 	Patch(`/Api/Task/FinishOrNot/${taskId}?state=${state}`,auth,{},successCallback);
 }
 
+export function GetCurrentTaskReminders(userId,currentTime,successCallback){
+	Get(`/Api/Task/GetCurrentTaskReminders/${userId}?currentTime=${currentTime.getTime()}`,auth,successCallback);
+}
+
+export function FinishTask(taskId){
+	FinishOrNot(taskId,TaskState.finished,response=>{
+		if(!response.data.succeeded){
+			uni.showToast({
+				title:response.data.message,
+				icon:"none"
+			});
+		}
+	});
+}
 

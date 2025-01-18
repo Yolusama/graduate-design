@@ -266,7 +266,6 @@ export class DragQuadantOption{
 	}
 }
 
-//#ifndef H5
 export function buildElById(ref){
 	const id = '#'+ref.attributes.id;
 	uni.createSelectorQuery()
@@ -288,7 +287,44 @@ export function getElBound(selector,callback){
 		 .select(selector).boundingClientRect()
 		 .exec(callback);
 }
-//#endif
+
+export function notifyTask(reminder,finishCallback){
+	//#ifdef APP-PLUS
+	   uni.createPushMessage({
+	   	title:reminder.taskTitle,
+		content:`${priority[reminder.taskPriority-1].text}\n${reminder.taskDescription}`,
+		sound:"system"
+	   });
+	//#endif
+	//#ifdef H5
+	  uni.showModal({
+	  	title:reminder.taskTitle,
+	    content:`  ${priority[reminder.taskPriority-1].text}\n${reminder.taskDescription}`,
+		confirmText:"关闭",
+		cancelText:"完成",
+		success:res=>finishCallback(res)
+	  });
+	//#endif
+}
+
+export function notifyHabit(reminder,finishCallback){
+	//#ifdef APP-PLUS
+	   uni.createPushMessage({
+	   	title:reminder.habitName,
+	   	content:reminder.habitDescription,
+	   	sound:"system"
+	   });
+	//#endif
+	//#ifdef H5
+	  uni.showModal({
+	  	title:reminder.habitName,
+	    content:reminder.habitDescription,
+		confirmText:"关闭",
+		cancelText:"完成",
+		success:res=>finishCallback(res)
+	  });
+	//#endif
+}
 
 
 

@@ -57,3 +57,18 @@ export function DayInFrequency(habitId,day,habitBeginDate,successCallback){
 export function GetHabitRecords(habitId,successCallback){
 	Get(`/Api/Habit/GetHabitRecords/${habitId}`,auth,successCallback);
 }
+
+export function GetCurrentHabitReminders(habitId,currentTime,successCallback){
+	Get(`/Api/Habit/GetCurrentHabitReminders/${habitId}?currentTime=${currentTime.getTime()}`,auth,successCallback);
+}
+
+export function FinishHabit(record){
+	FinishOrNot(record,response=>{
+		if(!response.data.succeeded){
+			uni.showToast({
+				title:response.data.message,
+				icon:"none"
+			});
+		}
+	});
+}

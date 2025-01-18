@@ -9,7 +9,6 @@
 <script setup>
 	import {ref,reactive,onMounted,nextTick} from "vue";
     import { delayToRun, getElBound } from "../module/Common";
-	
 	const pros = defineProps({ 
 		backgroundColor:String,
 		height:Number,

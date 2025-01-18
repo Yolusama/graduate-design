@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface HabitGroupMapper extends BaseMapper<HabitGroup> {
     Integer batchInsert(@Param("groups")List<HabitGroup> groups);
-    @Select("select max(code) where userId = #{userId}")
+    @Select("select max(code) from HabitGroup where userId = #{userId}")
     Integer getMaxCode(@Param("userId")String userId);
 
     /**

@@ -149,14 +149,14 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
             if(habit.getPeriod()!=null)
             {
                 Date beginDate = new Date(habit.getBeginDate().getTime());
-                if(beginDate.getTime()==date.getTime()){
+                if(beginDate.getTime()==date.getTime())
                     res.getData().add(habit);
-                    continue;
+               else {
+                    Duration period = Duration.ofDays(habit.getPeriod());
+                    if ((date.getTime() - beginDate.getTime()) % period.toMillis() != 0)
+                        continue;
+                    res.getData().add(habit);
                 }
-                Duration period = Duration.ofDays(habit.getPeriod());
-                if((date.getTime()-beginDate.getTime())%period.toMillis()!=0)
-                    continue;
-                res.getData().add(habit);
             }
             if(habit.getDays()!=null){
                 Map<String,Integer> days = habit.getDays();

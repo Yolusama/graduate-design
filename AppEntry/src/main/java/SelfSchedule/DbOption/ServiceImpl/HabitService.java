@@ -407,4 +407,14 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     public List<HabitRecordVO> getHabitRecords(String habitId) {
         return recordMapper.getHabitRecords(habitId);
     }
+
+    @Override
+    public List<HabitReminderInfoVO> getCurrentReminders(String userId, Date currentTime) {
+        Date date = new Date(currentTime.getTime());
+        date.setDate(currentTime.getDate()+1);
+        date.setHours(Constants.None);
+        date.setMinutes(Constants.None);
+        date.setSeconds(Constants.None);
+        return reminderMapper.getRemindersOver(userId,currentTime,date);
+    }
 }

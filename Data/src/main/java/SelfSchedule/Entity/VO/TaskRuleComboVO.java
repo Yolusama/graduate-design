@@ -1,18 +1,12 @@
 package SelfSchedule.Entity.VO;
 
-import SelfSchedule.Entity.Handler.MapTypeHandler;
 import SelfSchedule.Entity.Task;
 import SelfSchedule.Entity.TaskRepeatRule;
-import SelfSchedule.Model.TaskModel;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.ibatis.type.JdbcType;
 
-import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
 
 @Getter
 @Setter

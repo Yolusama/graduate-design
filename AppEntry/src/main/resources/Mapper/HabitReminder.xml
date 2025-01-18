@@ -8,4 +8,8 @@
             (null,#{reminder.habitId},#{reminder.time},null)
         </foreach>
     </insert>
+    <select id="getCurrentReminders" resultType="SelfSchedule.Entity.VO.HabitReminderInfoVO">
+        select r.habitId,r.time,h.name as habitName,h.description as habitDescription from HabitReminder r
+            join Habit h on h.id = r.habitId where h.userId = #{userId} and r.time&gt;=#{leftBound} and r.time&lt;#{rightBound}
+    </select>
 </mapper>

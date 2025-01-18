@@ -138,4 +138,16 @@ public class HabitController extends ControllerBase{
         return CompletableFuture.completedFuture(successWithData(habitService.getHabitRecords(habitId)));
     }
 
+    @GetMapping("/GetCurrentHabitReminders/{userId}")
+    @ApiOperation(value = "获取用户当前时间下的习惯提醒",notes = "获取用户当前时间下的习惯提醒")
+    public CompletableFuture<ActionResult<List<HabitReminderInfoVO>>> GetCurrentHabitReminders(
+            @PathVariable String userId,@RequestParam Long currentTime
+    ){
+        return CompletableFuture.completedFuture(
+                successWithData(habitService.getCurrentReminders(
+                        userId,new Date(currentTime)
+                ))
+        );
+    }
+
 }

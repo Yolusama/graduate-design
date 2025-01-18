@@ -132,4 +132,14 @@ public class TaskController extends ControllerBase
        return ok();
     }
 
+    @GetMapping("/GetCurrentTaskRemindersOver/{userId}")
+    @ApiOperation(value = "获取用户当前时间下的任务提醒",notes = "获取用户当前时间下的任务提醒")
+    public CompletableFuture<ActionResult<List<TaskReminderInfoVO>>> GetCurrentTaskReminders(
+            @PathVariable String userId,@RequestParam Long currentTime){
+        return CompletableFuture.completedFuture(
+                successWithData(
+                        taskService.getCurrentTaskReminders(userId,new Date(currentTime))
+                ));
+    }
+
 }

@@ -26,4 +26,5 @@ public interface ITaskService extends IService<Task> {
    int changeRepeatRule(TaskRepeatRuleModel model,Integer mode);
    int finishOrNot(Long taskId,Integer state);
    int changePriority(TaskPriorityModel model);
+   List<TaskReminderInfoVO> getCurrentTaskReminders(String userId, Date currentTime);
 }

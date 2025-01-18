@@ -17,6 +17,7 @@ import SelfSchedule.Entity.Task;
 import SelfSchedule.Entity.TaskReminder;
 import SelfSchedule.Entity.TaskRepeatRule;
 import SelfSchedule.Entity.VO.PagedData;
+import SelfSchedule.Entity.VO.TaskReminderInfoVO;
 import SelfSchedule.Entity.VO.TaskReminderVO;
 import SelfSchedule.Entity.VO.TaskRuleComboVO;
 import SelfSchedule.Model.*;
@@ -655,6 +656,16 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         }
         wrapper.eq(Task::getId,model.getInstanceId());
         return mapper.update(wrapper);
+    }
+
+    @Override
+    public List<TaskReminderInfoVO> getCurrentTaskReminders(String userId, Date currentTime) {
+        Date date = new Date(currentTime.getTime());
+        date.setDate(currentTime.getDate()+1);
+        date.setHours(Constants.None);
+        date.setMinutes(Constants.None);
+        date.setSeconds(Constants.None);
+        return reminderMapper.getCurrentReminders(userId,currentTime,date);
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

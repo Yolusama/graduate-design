@@ -5,6 +5,7 @@ import { auth} from "./User";
 
 export function CreateTask(task,successCallback){
 	 Put("/Api/Task/CreateTask",auth,task,successCallback);
+	 uni.removeStorageSync(TaskReminderKey);
 }
 
 export function GetTaskReminders(taskId,successCallback){
@@ -45,6 +46,10 @@ export function GetCurrentTaskReminders(userId,currentTime,successCallback){
 	Get(`/Api/Task/GetCurrentTaskReminders/${userId}?currentTime=${currentTime.getTime()}`,auth,successCallback);
 }
 
+export	function FreshReminderTiming(taskId,taskBeginTime,successCallback){
+	Post(`/Api/Task/FreshReminderTiming/${taskId}?taskBeginTime=${taskBeginTime.getTime()}`,auth,{},successCallback);
+}
+
 export function FinishTask(taskId){
 	FinishOrNot(taskId,TaskState.finished,response=>{
 		if(!response.data.succeeded){
@@ -52,7 +57,12 @@ export function FinishTask(taskId){
 				title:response.data.message,
 				icon:"none"
 			});
+			return;
 		}
+		const route = getCurrentPages()[0].route;
+		uni.reLaunch({
+			url:'/'+route
+		});
 	});
 }
 

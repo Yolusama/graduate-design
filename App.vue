@@ -12,12 +12,15 @@
 		GetCurrentTaskReminders
 	} from './api/Task';
 	import {
+		HabitReminderKey,
+		TaskReminderKey,
 		notifyHabit,
 		notifyTask,
 		onlyDate
 	} from './module/Common';
 	import {
-		FinishHabit
+		FinishHabit,
+		GetCurrentHabitReminders
 	} from './api/Habit';
 	const timeOpt = ref({
 		timer: 0,
@@ -28,8 +31,9 @@
 		trTimer: 0,
 		hrTimer: 0,
 		expire: 1000,
-		key_TR: "task-reminders",
-		key_HR: "habit-reminders"
+		key_TR: TaskReminderKey,
+		key_HR: HabitReminderKey,
+		userId: ""
 	});
 
 
@@ -38,9 +42,10 @@
 		timeOpt.value.timer = setInterval(() => {
 			Get("/Api/Common/Heartbeat");
 		}, timeOpt.value.expire);
-
+		if (user == '' || user == null) return;
+		notifyOpt.value.userId = user.uid;
 		notifyOpt.value.trTimer = setInterval(watchReminders, notifyOpt.value.expire, notifyOpt.value.key_TR);
-		notifyOpt.value.hrTimer = setInterval(watchReminders,notifyOpt.value.expire,notifyOpt.value.key_HR));
+		notifyOpt.value.hrTimer = setInterval(watchReminders, notifyOpt.value.expire, notifyOpt.value.key_HR);
 	});
 
 	onBeforeUnmount(() => {
@@ -53,57 +58,80 @@
 		const reminders = uni.getStorageSync(key);
 		const isTaskReminder = key == notifyOpt.value.key_TR;
 		const isHabitReminder = key == notifyOpt.value.key_HR;
-		if (reminders == "" || reminders == null) {
+		if (reminders === "" || reminders == null) {
 			const current = new Date();
 			current.setMilliseconds(0);
+			if (isHabitReminder) {
+				current.setHours(0);
+				current.setMinutes(0);
+				current.setSeconds(0);
+			}
 			if (isTaskReminder)
-				GetCurrentTaskReminders(user.uid, current, response => {
-					const res = response.data;
-					if (!res.succeeded) {
-						uni.showToast({
-							title: res.message,
-							icon: "none"
-						});
-						return;
-					}
-					reminders = res.data;
-					for (let reminder of reminders) {
-						if (isTaskReminder)
-							reminder.timing = new Date(reminder.timing);
-						if (isHabitReminder)
-							reminder.time = new Date(reminder.time);
-					}
-				});
+				GetCurrentTaskReminders(notifyOpt.value.userId, current, response => getRemindersCallback(response,
+					reminders,
+					true, false));
 			if (isHabitReminder)
-				GetCurrentTaskReminders()
+				GetCurrentHabitReminders(notifyOpt.value.userId, current, response => getRemindersCallback(response,
+					reminders, false, true));
 		}
-		for (let reminder of reminders) {
-			const today = new Date();
-			if (today.getTime() == reminder.timing.getTime() && isTaskReminder) {
-				notifyTask(reminder, res => {
-					if (res.confirm) {
-						return;
-					}
-					if (res.cancel) {
-						FinishTask(reminder.taskId);
-					}
-				});
+		if (isTaskReminder) {
+			for (let reminder of reminders.filter(r=>!r.worked)) {
+				const today = new Date();
+				today.setMilliseconds(0);
+				reminder.timing = new Date(reminder.timing);
+				if (today.getTime() == reminder.timing.getTime()) {
+					notifyTask(reminder, res => {
+						if (res.confirm) {
+							return;
+						}
+						if (res.cancel) {
+							reminder.worked = true;
+							FinishTask(reminder.taskId);
+						}
+					});
+				}
 			}
-			if (today.getTime() == reminder.time.getTime() && isHabitReminder) {
-				notifyHabit(reminder, res => {
-					if (res.confirm) {
-						return;
-					}
-					if (res.cancel) {
-						FinishHabit({
-							finished: true,
-							finishTime: today,
-							day: onlyDate(today)
-						});
-					}
-				});
+			if (isHabitReminder) {
+				for (let reminder of reminders.filter(r=>!r.worked)) {
+					const today = new Date();
+					today.setMilliseconds(0);
+					const reminderTime = new Date(
+						`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} ${reminder.time}`);
+					if (reminderTime.getTime != today.getTime()) continue;
+					notifyHabit(reminder, res => {
+						if (res.confirm) {
+							return;
+						}
+						if (res.cancel) {
+							reminder.worked = true;
+							FinishHabit({
+								finished: true,
+								finishTime: today,
+								day: onlyDate(today)
+							});
+						}
+					});
+				}
 			}
 		}
+	}
+
+	function getRemindersCallback(response, reminders, isTaskReminder, isHabitReminder) {
+		const res = response.data;
+		if (!res.succeeded) {
+			uni.showToast({
+				title: res.message,
+				icon: "none"
+			});
+			return;
+		}
+		reminders = res.data;
+		for(let reminder of reminders)
+		  reminder.worked = false;
+		if (isTaskReminder)
+			uni.setStorageSync(notifyOpt.value.key_TR, reminders);
+		if (isHabitReminder)
+			uni.setStorageSync(notifyOpt.value.key_HR, reminders);
 	}
 </script>
 

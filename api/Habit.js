@@ -10,12 +10,12 @@ export function GetHabitGroups(userId,successCallback){
 }
 
 export function GetHabits(pageOption,userId,time,successCallback){
-	Get(`/Api/Habit/GetHabits/${userId}?page=${pageOption.current}&pageSize=${pageOption.size}&time=${time}`,
-	auth,successCallback);
+	Get(`/Api/Habit/GetHabits/${userId}?page=${pageOption.current}&pageSize=${pageOption.size}&time=${time}`,auth,successCallback);
 }
 
 export function CreateHabit(habit,successCallback){
 	Put("/Api/Habit/CreateHabit",auth,habit,successCallback);
+	uni.removeStorageSync(HabitReminderKey);
 }
 
 export function UpdateHabit(habit,successCallback){
@@ -58,8 +58,8 @@ export function GetHabitRecords(habitId,successCallback){
 	Get(`/Api/Habit/GetHabitRecords/${habitId}`,auth,successCallback);
 }
 
-export function GetCurrentHabitReminders(habitId,currentTime,successCallback){
-	Get(`/Api/Habit/GetCurrentHabitReminders/${habitId}?currentTime=${currentTime.getTime()}`,auth,successCallback);
+export function GetCurrentHabitReminders(userId,currentTime,successCallback){
+	Get(`/Api/Habit/GetCurrentHabitReminders/${userId}?currentTime=${currentTime.getTime()}`,auth,successCallback);
 }
 
 export function FinishHabit(record){

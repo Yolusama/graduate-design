@@ -26,8 +26,10 @@
 							<!--#ifdef H5-->
 							<text class="task-text" v-html="task.title">
 							<!--#endif-->
-								<text class="task-text" >
+							<!--#ifndef H5-->
+							<text class="task-text" >
 									{{task.title}}
+							<!--#endif-->
 								</text>
 								<text class="text" style="color: rgb(0,75,235);">开始：{{getTimeStr(task.beginTime)}}</text>
 								<text class="text"  style="color:red;">结束：{{getTimeStr(task.endTime)}}</text>

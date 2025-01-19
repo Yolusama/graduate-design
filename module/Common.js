@@ -299,7 +299,7 @@ export function notifyTask(reminder,finishCallback){
 	//#ifdef H5
 	  uni.showModal({
 	  	title:reminder.taskTitle,
-	    content:`  ${priority[reminder.taskPriority-1].text}\n${reminder.taskDescription}`,
+	    content:`${priority[reminder.taskPriority-1].text}\n${reminder.taskDescription}`,
 		confirmText:"关闭",
 		cancelText:"完成",
 		success:res=>finishCallback(res)
@@ -325,6 +325,9 @@ export function notifyHabit(reminder,finishCallback){
 	  });
 	//#endif
 }
+
+export const TaskReminderKey = "task-reminders";
+export const HabitReminderKey = "habit-reminders";
 
 
 

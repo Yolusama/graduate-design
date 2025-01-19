@@ -13,8 +13,7 @@
 				<!--#endif-->
 			</k-calendar>
 			<scroll-view class="content" :scroll-y="true">
-				<uni-collapse class="habit" v-for="(data,groupName) in state.data" :key="groupName" 
-				>
+				<uni-collapse class="habit" v-for="(data,groupName) in state.data" :key="groupName">
 					<uni-collapse-item title-border="none" :show-animation="false">
 						<template v-slot:title>
 							<view style="display:flex;align-items: center;justify-content: space-between;">
@@ -24,40 +23,52 @@
 						</template>
 						<scroll-view :scroll-y="true" style="max-height:30vh;height:fit-content;">
 							<view v-for="(habit,index) in data" style="display: flex;flex-flow: column nowrap;"
-								 :key="index">
-								 
-							<view style="display: flex;justify-content: space-between;" @click="seeDetail(groupName,index)">
-								<view class="info">
-									<image :src="imgSrc(habit.thumb)" style="width: 40px;height: 40px;border-radius:50%;"></image>
-									<text style="margin-left:3px;text-wrap: nowrap;text-overflow: ellipsis;">{{habit.name}}</text>	
-								</view>
-								<view class="option" v-if="!state.optionMostCheck" @click.stop="state.optionMostCheck=true">
-									<text>{{habit.persistDays}}天</text>
-									<text>共坚持</text>
-								</view>
-								<view class="option" v-if="state.optionMostCheck" @click.stop="state.optionMostCheck=false">
-									<text>{{habit.mostDays}}天</text>
-									<text>最多连续</text>
-								</view>
-							 </view>
-							  <view class="finish" v-if="habit.finished">
-								  <text  style="font-weight: normal;font-size: 14px;color:blue;
+								:key="index">
+								<uni-swipe-action>
+									<uni-swipe-action-item :disabled="habit.finished">
+										<template v-slot:right>
+											<view class="finishBtn" @click.stop="
+											state.selectedHabit=habit;finishHabit({finished:true})" >完成</view>
+										</template>
+										<view style="display: flex;justify-content: space-between;"
+											@click="seeDetail(groupName,index)">
+											<view class="info">
+												<image :src="imgSrc(habit.thumb)"
+													style="width: 40px;height: 40px;border-radius:50%;"></image>
+												<text
+													style="margin-left:3px;text-wrap: nowrap;text-overflow: ellipsis;">{{habit.name}}</text>
+											</view>
+											<view class="option" v-if="!state.optionMostCheck"
+												@click.stop="state.optionMostCheck=true">
+												<text>{{habit.persistDays}}天</text>
+												<text>共坚持</text>
+											</view>
+											<view class="option" v-if="state.optionMostCheck"
+												@click.stop="state.optionMostCheck=false">
+												<text>{{habit.mostDays}}天</text>
+												<text>最多连续</text>
+											</view>
+										</view>
+										<view class="finish" v-if="habit.finished">
+											<text style="font-weight: normal;font-size: 14px;color:blue;
 								  margin-left: 4px;margin-right: 4px;">
-								  
-								  		{{dateEquals(habit.finishTime,state.selectedDay)?timeWithoutSeconds(habit.finishTime):
+
+												{{dateEquals(habit.finishTime,state.selectedDay)?timeWithoutSeconds(habit.finishTime):
 								  getDateStr(habit.finishTime)}}&nbsp;
-								  		完成</text>
-								  	<!--#ifndef H5-->	
-								  	<text @tap="unfinishHabit($event,habit)">
-								  		<uni-icons type="close" color="red" :size="20"></uni-icons>
-								  	</text>
-								  	<!--#endif-->
-								  	<!--#ifdef H5-->
-								  	<text @click="unfinishHabit($event,habit)">
-								  		<uni-icons type="close" color="red" :size="20"></uni-icons>
-								  	</text>
-								      <!--#endif-->	
-							  </view>
+												完成</text>
+											<!--#ifndef H5-->
+											<text @tap="unfinishHabit($event,habit)">
+												<uni-icons type="close" color="red" :size="20"></uni-icons>
+											</text>
+											<!--#endif-->
+											<!--#ifdef H5-->
+											<text @click="unfinishHabit($event,habit)">
+												<uni-icons type="close" color="red" :size="20"></uni-icons>
+											</text>
+											<!--#endif-->
+										</view>
+									</uni-swipe-action-item>
+								</uni-swipe-action>
 							</view>
 						</scroll-view>
 					</uni-collapse-item>
@@ -78,8 +89,7 @@
 							<text>习惯图标与名称</text>
 						</view>
 						<view class="info">
-							<image style="width: 30px;height: 30px;border-radius:50%;"
-								:src="state.thumbShow"
+							<image style="width: 30px;height: 30px;border-radius:50%;" :src="state.thumbShow"
 								@click="thumbPopup.open();"></image>
 							<view style="width: 40%;margin-left:3px;">
 								<uni-easyinput v-model="state.habit.name" placeholder="习惯名称" @input="habitNameInput">
@@ -155,8 +165,9 @@
 						<!--大坑，水平滚动需要设置enable-flex:true,子元素使用行内块元素-->
 						<scroll-view class="group" :scroll-x="true" :enable-flex="true">
 							<uni-tag :inverted="state.groupCode!=group.code" type="primary"
-								style="margin-left: 4px;font-size: 15px;display: inline-block;" v-for="(group,index) in state.groups"
-								:text="group.name" :key="index" @click="takeGroup(group)">
+								style="margin-left: 4px;font-size: 15px;display: inline-block;"
+								v-for="(group,index) in state.groups" :text="group.name" :key="index"
+								@click="takeGroup(group)">
 							</uni-tag>
 						</scroll-view>
 					</view>
@@ -290,8 +301,8 @@
 					</view>
 					<k-record-month class="record-calendar" v-model="state.selectedHabit.records"
 						:current="state.selectedDay" :habitId="state.selectedHabit.habitId"
-						:beginDate="state.selectedHabit.beginDate" @select="recordFinish" 
-						:continuousDays="state.selectedHabit.continuousDays" :mostDays="state.selectedHabit.mostDays" 
+						:beginDate="state.selectedHabit.beginDate" @select="recordFinish"
+						:continuousDays="state.selectedHabit.continuousDays" :mostDays="state.selectedHabit.mostDays"
 						:persistDays="state.selectedHabit.persistDays" :frequency="{
 							days:state.selectedHabit.days,
 							weekPersistDays:state.selectedHabit.weekPersistDays,
@@ -401,7 +412,7 @@
 		selectedHabit: null,
 		groupCode: 1,
 		data: {},
-		optionMostCheck:false
+		optionMostCheck: false
 	});
 
 	onMounted(() => {
@@ -447,7 +458,7 @@
 		fillWeekdays();
 	}
 
-	function seeDetail(groupName,index) {
+	function seeDetail(groupName, index) {
 		state.selectedHabit = state.data[groupName][index];
 		if (state.selectedDay.getTime() > today.value.getTime() || state.selectedDay.getTime() < state.selectedHabit
 			.beginDate
@@ -532,7 +543,7 @@
 						return;
 					}
 					UploadThumb(state.selectedImgFile, res.data, null, response1 => {
-						const res1 =JSON.parse(response1.data);
+						const res1 = JSON.parse(response1.data);
 						if (!res1.succeeded) {
 							uni.showToast({
 								title: res1.message,
@@ -584,7 +595,7 @@
 				persistDays: 0,
 				groupName: state.groups.filter(g => g.id == state.habit
 					.groupId)[0].name,
-				beginDate:state.task.beginDate
+				beginDate: state.task.beginDate
 			};
 			if (habitOption.value.data.length < habitOption.value.size) {
 				habitOption.value.data.push(item);
@@ -601,8 +612,8 @@
 		data.beginDate = new Date(data.beginDate);
 		const index = state.selectedHabit.index;
 		state.selectedHabit = data;
-		const groupName =  state.groups.filter(g => g.id == state.selectedHabit
-					.groupId)[0].name;
+		const groupName = state.groups.filter(g => g.id == state.selectedHabit
+			.groupId)[0].name;
 		state.data[groupName][index] = data;
 		loading("", () => popup.value.close(), 500);
 	}
@@ -777,8 +788,8 @@
 
 	function takeHabitThumb() {
 		state.thumbChangeCancelled = false;
-		if(state.selectedThumb.length>0)
-		   state.habit.thumb = state.selectedThumb;
+		if (state.selectedThumb.length > 0)
+			state.habit.thumb = state.selectedThumb;
 		thumbPopup.value.close();
 	}
 
@@ -796,12 +807,12 @@
 	function finishHabit(e) {
 		const finished = e.finished;
 		const model = {
-			habitId: state.selectedHabit.habitId,
+			habitId:state.selectedHabit.habitId,
 			finishTime: new Date(),
 			finished: finished,
 			day: onlyDate(state.selectedDay)
 		};
-		if(!model.finished&&!state.selectedHabit.finished)return;
+		if (!model.finished && !state.selectedHabit.finished) return;
 		FinishOrNot(model, response => {
 			const res = response.data;
 			if (!res.succeeded) {
@@ -819,7 +830,6 @@
 
 	function unfinishHabit(e, habit) {
 		e.stopPropagation();
-		console.log(e);
 		FinishOrNot({
 			habitId: habit.habitId,
 			finished: false,
@@ -863,21 +873,20 @@
 			datum.beginDate = new Date(datum.beginDate);
 			datum.finishTime = new Date(datum.finishTime);
 			const groupName = datum.groupName;
-		
+
 			if (state.data[groupName] != undefined)
 				state.data[groupName].push(datum);
-			else {	
+			else {
 				state.data[groupName] = [datum];
 			}
 		}
 	}
-	
-	function recordFinish(data){
+
+	function recordFinish(data) {
 		state.selectedHabit.persistDays = data.persistDays;
 		state.selectedHabit.mostDays = data.mostDays;
 		state.selectedHabit.continuousDays = data.continuousDays;
 	}
-	
 </script>
 
 <style scoped>
@@ -1108,10 +1117,10 @@
 		padding-right: 4vw;
 		/*#endif*/
 	}
-	
-	#habit .content .finish{
+
+	#habit .content .finish {
 		display: flex;
-		padding-left:3%;
+		padding-left: 3%;
 		height: 25px;
 		line-height: 25px;
 	}
@@ -1199,7 +1208,7 @@
 		flex-direction: column;
 		align-items: center;
 		/*#ifndef H5*/
-		padding-top:3vh;
+		padding-top: 3vh;
 		/*#endif*/
 	}
 
@@ -1208,5 +1217,18 @@
 		background-color: rgb(99%, 99%, 99%);
 		border-radius: 10px;
 		height: 220px;
+	}
+	
+	#habit .finishBtn{
+		position: relative;
+		border: none;
+		color: white;
+		background-color: rgb(0,255,0);
+		font-size: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 7px;
+		width: 60px;
 	}
 </style>

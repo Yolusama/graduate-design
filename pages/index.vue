@@ -4,20 +4,31 @@
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
 			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
 				<view class="mask" v-if="!dateGE(task.beginTime,today)&&!dateGE(task.endTime,today)"></view>
-				<view class="title">
-					<checkbox-group @change="finishOrNot(task)">
-						<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.7)" />
-					</checkbox-group>
-					<view class="time" v-html="beginEndTimeStr(task)">
-					</view>
-					<view style="display: flex;align-items: center;">
-						<k-split :width="4" :height="18"></k-split>
-						<view class="title-text">
-							<view class="title-content">{{task.title}}</view>
-							<view class="title-description">{{task.description}}</view>
+				<uni-swipe-action style="width: 100%;">
+					<uni-swipe-action-item>
+						<template v-slot:left>
+							<view class="finishBtn" @click.stop="finishOrNot(task)"
+								v-if="task.state==TaskState.unfinished">完成</view>
+							<view class="finishBtn" @click.stop="finishOrNot(task)"
+								style="background-color: red;width: 60px;" v-if="task.state==TaskState.finished">取消完成
+							</view>
+						</template>
+						<view class="title">
+							<checkbox-group @change="finishOrNot(task)">
+								<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.7)" />
+							</checkbox-group>
+							<view class="time" v-html="beginEndTimeStr(task)">
+							</view>
+							<view style="display: flex;align-items: center;">
+								<k-split :width="4" :height="18"></k-split>
+								<view class="title-text">
+									<view class="title-content">{{task.title}}</view>
+									<view class="title-description">{{task.description}}</view>
+								</view>
+							</view>
 						</view>
-					</view>
-				</view>
+					</uni-swipe-action-item>
+				</uni-swipe-action>
 			</view>
 		</scroll-view>
 	</view>
@@ -64,8 +75,7 @@
 							<text>开始</text>
 							<view style="display: flex;">
 								<picker mode="date" :value="state.startTime.date" start="1970-01-01"
-									@change="pick($event,'begin-date')" :disabled="state.allday"
-									>
+									@change="pick($event,'begin-date')" :disabled="state.allday">
 									<text class="time-str">{{state.startTime.date}}</text>
 								</picker>
 								&nbsp;
@@ -83,7 +93,7 @@
 							<text>结束</text>
 							<view style="display: flex;">
 								<picker mode="date" :value="state.endTime.date" start="1970-01-01"
-									:disabled="state.allday" @change="pick($event,'end-date')" >
+									:disabled="state.allday" @change="pick($event,'end-date')">
 									<text class="time-str"> {{state.endTime.date}}</text>
 								</picker>
 								&nbsp;
@@ -101,10 +111,9 @@
 							<text>设置优先级</text>
 							<view @click="priorityPopup.open()">
 								<uni-icons type="gear"></uni-icons>
-								<text
-									style="font-size: 13px;color:rgb(0,75,213) ">
+								<text style="font-size: 13px;color:rgb(0,75,213) ">
 									{{state.priority[state.task.priority-1].text}}</text>
-								</view>
+							</view>
 						</view>
 					</template>
 				</uni-list-item>
@@ -116,7 +125,7 @@
 							<view style="display: flex;align-items: center;">
 								<image src="../static/闪电.png" style="width: 24px;height: 24px;"></image>
 								<text style="margin-left: 3px;">重复</text>
-								
+
 							</view>
 							<view v-if="state.isTaskUpdate&&state.frequency.selection>0" @click="changeRepeatRule"
 								size="mini" style="margin-left: 5px;font-size: 13px;">修改</view>
@@ -152,9 +161,9 @@
 			</uni-list>
 			<uni-popup type="center" ref="frequencyPopup" background-color="#fff" border-radius="5px 5px 5px 5px"
 				style="height: 75vh;">
-		        <k-radio-group :data="state.frequency.data" v-model="state.frequency.selection" :containDef="true"
-		        @onChange="notify">	
-		        </k-radio-group>
+				<k-radio-group :data="state.frequency.data" v-model="state.frequency.selection" :containDef="true"
+					@onChange="notify">
+				</k-radio-group>
 			</uni-popup>
 			<uni-popup ref="defRulePopup" type="center" background-color="#fff">
 				<scroll-view :scroll-y="true" class="popup">
@@ -176,8 +185,8 @@
 								<text
 									style="font-size: 13px;color: gray;letter-spacing: 1px;">{{state.defOpt.text}}</text>
 							</view>
-							<k-radio-group :data="state.weekdays" :checkMode="true" @onChange="takeCustom"	
-							v-show="state.task.periodUnit==2">	
+							<k-radio-group :data="state.weekdays" :checkMode="true" @onChange="takeCustom"
+								v-show="state.task.periodUnit==2">
 							</k-radio-group>
 						</picker>
 						<uni-list style="width: 94%;">
@@ -186,11 +195,10 @@
 									<view style="display: flex;justify-content: space-between;width: 100%;">
 										<text>有效</text>
 										<view style="display: flex;">
-												<text class="def-text"
-													style="margin-right: 5px;" 
-													@click="customPopup.open()">
-													{{state.defOpt.mode}}
-													</text>
+											<text class="def-text" style="margin-right: 5px;"
+												@click="customPopup.open()">
+												{{state.defOpt.mode}}
+											</text>
 											<picker mode="date" v-if="state.defOpt.val==1" :value="state.task.deadline"
 												fields="year month day" @change="takeDeadline">
 												<text class="def-text">
@@ -235,7 +243,7 @@
 					<template v-slot:body>
 						<view style="display: flex;justify-content: space-between;width:100%">
 							<text style="height: 25px;line-height: 25px;font-size: 14px;color:rgb(0,75,213)">
-							{{ReminderInfo.getModeValueText(reminder)}}
+								{{ReminderInfo.getModeValueText(reminder)}}
 							</text>
 						</view>
 					</template>
@@ -251,23 +259,24 @@
 					</template>
 				</uni-list-item>
 			</uni-list>
-			<view v-if="state.selectedTask.repeatable&&state.selectedTask.taskId==state.selectedTask.instanceId" class="tips">
+			<view v-if="state.selectedTask.repeatable&&state.selectedTask.taskId==state.selectedTask.instanceId"
+				class="tips">
 				tips:重复任务下的主任务的“仅此任务”编辑模式只针对任务基本信息，编辑规则/提醒默认为全部
 			</view>
 			<view class="func">
-					<view class="detail-func" @click="openEditUI">
-						<uni-icons type="compose" :size="30"></uni-icons>
-						<text>编辑</text>
-					</view>
-					<view class="detail-func" @click="state.isTaskCancel=true;openEditUI();">
-						<uni-icons type="trash" :size="30"></uni-icons>
-						<text>删除</text>
-					</view>
+				<view class="detail-func" @click="openEditUI">
+					<uni-icons type="compose" :size="30"></uni-icons>
+					<text>编辑</text>
+				</view>
+				<view class="detail-func" @click="state.isTaskCancel=true;openEditUI();">
+					<uni-icons type="trash" :size="30"></uni-icons>
+					<text>删除</text>
+				</view>
 			</view>
 		</scroll-view>
 	</uni-popup>
 	<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="priorityPopup"
-	style="z-index:101">
+		style="z-index:101">
 		<k-radio-group :data="state.priority" v-model="state.task.priority" @onChange="priorityPopup.close()">
 		</k-radio-group>
 	</uni-popup>
@@ -279,7 +288,7 @@
 		<k-radio-group :data="state.modeContent" v-model="state.mode" @onChange="openEditOrCancelTask">
 		</k-radio-group>
 	</uni-popup>
-	
+
 	<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" horizontal="right" @fabClick="openToEdit" />
 </template>
 
@@ -310,7 +319,8 @@
 		getRuleText,
 		dateGE,
 		onlyDate,
-		TaskState
+		TaskState,
+		TaskReminderKey
 	} from "../module/Common";
 	import {
 		CreateTask,
@@ -321,7 +331,8 @@
 		RemoveReminder,
 		UpdateTask,
 		ChangeRepeatRule,
-		FinishOrNot
+		FinishOrNot,
+		FreshReminderTiming
 	} from "../api/Task.js"
 	import {
 		user
@@ -361,7 +372,7 @@
 			deadline: null,
 			count: 0,
 			userId: user.uid,
-			repeatable:false
+			repeatable: false
 		},
 		startTime: {
 			date: "",
@@ -389,7 +400,7 @@
 		],
 		weekdays: weekdays,
 		defOpt: {
-			data: [new ValueText(0,"一直"), new ValueText(1,"截止到"), new ValueText(2,"重复")],
+			data: [new ValueText(0, "一直"), new ValueText(1, "截止到"), new ValueText(2, "重复")],
 			val: 0,
 			modal: undefined,
 			mode: "一直",
@@ -400,16 +411,16 @@
 		mode: 0,
 		modeContent: [],
 		isTaskUpdate: false,
-		isTaskCancel:false
+		isTaskCancel: false
 	});
 
 	onMounted(function() {
 		state.startTime.date = getDateStr(today.value);
 		state.startTime.time = timeWithoutSeconds(today.value);
-        if(user=='')
-		   state.task.userId = uni.getStorageSync("user").uid;
+		if (user == '')
+			state.task.userId = uni.getStorageSync("user").uid;
 		else
-		   state.task.userId = user.uid;
+			state.task.userId = user.uid;
 		const date = new Date(today.value);
 		date.setHours(date.getHours() + 1);
 		state.endTime.date = getDateStr(date);
@@ -420,14 +431,15 @@
 		state.frequency.multiData.push(numbers);
 		state.frequency.multiData.push(["天", "周", "月", "年"]);
 		const counts = [];
-		for(let i=1;i<=1000;i++)
-		   counts.push(i);
+		for (let i = 1; i <= 1000; i++)
+			counts.push(i);
 		state.frequency.multiData.push(counts);
 		state.notifyOpt[0] = remindModeValues(1);
 		state.task.beginTime = new Date(today.value);
 		state.task.endTime = date;
-		state.modeContent = [new ValueText(0,"全部重复任务"),new ValueText(1,"仅此任务"),
-		new ValueText(2,"此任务及往后的任务")];
+		state.modeContent = [new ValueText(0, "全部重复任务"), new ValueText(1, "仅此任务"),
+			new ValueText(2, "此任务及往后的任务")
+		];
 
 		getData();
 	});
@@ -481,7 +493,7 @@
 			else
 				state.task[pro] = 4;
 		}
-		const temp =new Date(state.selectedDay);
+		const temp = new Date(state.selectedDay);
 		state.startTime.date = getDateStr(temp);
 		state.startTime.time = timeWithoutSeconds(temp);
 
@@ -492,7 +504,7 @@
 		state.task.beginTime = new Date(state.startTime.date + " " + state.startTime.time);
 		state.task.endTime = new Date(state.endTime.date + " " + state.endTime.time);
 
-        
+
 		state.task.custom = null;
 		state.task.deadline = null;
 		state.frequency.defText = "不重复";
@@ -500,10 +512,10 @@
 		state.defOpt.mode = "一直";
 		state.defOpt.val = 0;
 		state.task.period = 1;
-		state.task.periodUnit =1;
+		state.task.periodUnit = 1;
 		state.task.count = 0;
 		state.task.reminderInfoModels = [];
-		state.task.userId = user==''?uni.getStorageSync("user").uid:user.uid;
+		state.task.userId = user == '' ? uni.getStorageSync("user").uid : user.uid;
 		state.manualPopup = false;
 		state.canCreateTask = false;
 		state.isTaskUpdate = false;
@@ -511,7 +523,7 @@
 		if (state.task.changed == undefined)
 			state.task.changed = function() {
 				return this.title.length > 0 || this.description.length > 0 || this.priority != 3;
-			};				
+			};
 	}
 
 	function pick(event, sign) {
@@ -533,6 +545,12 @@
 		}
 		state.task.beginTime = new Date(state.startTime.date + " " + state.startTime.time);
 		state.task.endTime = new Date(state.endTime.date + " " + state.endTime.time);
+		if (state.task.beginTime.getTime() >= state.task.endTime.getTime()) {
+			state.task.endTime = new Date(state.task.beginTime);
+			state.task.endTime.setHours(state.task.endTime.getHours() + 1);
+			state.endTime.date = getDateStr(state.task.endTime);
+			state.endTime.time = timeWithoutSeconds(state.task.endTime);
+		}
 	}
 
 	function allDay() {
@@ -550,21 +568,25 @@
 	}
 
 	function seeTaskDetail(index) {
-		state.task.changed = ()=>false;
+		state.task.changed = () => false;
 		const task = taskPageOpt.value.data[index];
-		GetTaskReminders(task.instanceId, (response) => {
+		GetTaskReminders(task.instanceId, response => {
 			const res = response.data;
 			if (res.succeeded) {
 				state.selectedTask = task;
 				const notifications = res.data;
-				for(let datum of notifications)
-				    datum.timing = new Date(datum.timing);
+				for (let datum of notifications)
+					datum.timing = new Date(datum.timing);
 				state.selectedTask.reminderInfoModels = notifications;
 				state.selectedTask.index = index;
-				if(task.repeatable)
-		        {
-					state.frequency.selection = task.custom==null?state.selectedTask.periodUnit:5;
-				    state.frequency.defText = task.custom!=null||state.selectedTask.period>1?"自定义":frequency[state.selectedTask.periodUnit].text;
+				state.startTime.date = getDateStr(task.beginTime);
+				state.startTime.time = timeWithoutSeconds(task.beginTime);
+				state.endTime.date = getDateStr(task.endTime);
+				state.endTime.time = timeWithoutSeconds(task.endTime);
+				if (task.repeatable) {
+					state.frequency.selection = task.custom == null ? state.selectedTask.periodUnit : 5;
+					state.frequency.defText = task.custom != null || state.selectedTask.period > 1 ? "自定义" :
+						frequency[state.selectedTask.periodUnit].text;
 				}
 				detailPopup.value.open();
 			} else {
@@ -608,18 +630,19 @@
 							copy(state.task, task);
 							task.taskId = res.data;
 							task.instanceId = res.data;
-							taskPageOpt.value.data.splice(0, 0, task);
+							taskPageOpt.value.data.push(task);
 						}
 						taskPageOpt.value.total++;
 						reloadTaskModel();
+						uni.removeStorageSync(TaskReminderKey);
 					}, expire);
 				}
 			});
 		} else {
-			  if(state.task.changed())
-                 updateTask();
-			  else
-			    popup.value.close();
+			if (state.task.changed())
+				updateTask();
+			else
+				popup.value.close();
 		}
 	}
 
@@ -644,8 +667,8 @@
 			else {
 				for (let i = 0; i < data.length; i++) {
 					if (instance.timing.getTime() < data[i].timing.getTime()) {
-						if(data.findIndex(e=>e.timing==instance.timing)<0)
-						    data.splice(i, 0, instance);
+						if (data.findIndex(e => e.timing == instance.timing) < 0)
+							data.splice(i, 0, instance);
 						break;
 					}
 				}
@@ -654,10 +677,10 @@
 		if (state.isTaskUpdate) {
 			instance.taskId = state.selectedTask.taskId;
 			instance.instanceId = state.selectedTask.instanceId;
-			if(state.selectedTask.taskId==state.selectedTask.instanceId&&state.mode==1)
-			   state.mode = 0;
+			if (state.selectedTask.taskId == state.selectedTask.instanceId && state.mode == 1)
+				state.mode = 0;
 			instance.taskBeginTime = state.selectedTask.beginTime;
-			AddReminder(instance,state.mode,response => {
+			AddReminder(instance, state.mode, response => {
 				const res = response.data;
 				if (!res.succeeded) {
 					uni.showToast({
@@ -667,10 +690,10 @@
 				} else {
 					instance.reminderId = res.data;
 					func();
+					uni.removeStorageSync(TaskReminderKey);
 				}
 			});
-		}
-		else func();
+		} else func();
 	}
 
 	function changeNotifyMode(e) {
@@ -682,12 +705,12 @@
 
 	function notify(e) {
 		const value = e.value;
-		if(state.isTaskUpdate&&value==0){
+		if (state.isTaskUpdate && value == 0) {
 			frequencyPopup.value.close();
 			return;
 		}
 		if (value < state.frequency.data.length) {
-			state.task.repeatable = value>0;
+			state.task.repeatable = value > 0;
 			state.task.period = 1;
 			state.task.periodUnit = value;
 			state.frequency.defText = state.frequency.data[value].text;
@@ -736,11 +759,11 @@
 
 	function dateChange(date) {
 		state.selectedDay = date;
-		getData();	
+		getData();
 	}
 
 	function getData() {
-		GetTasks(taskPageOpt.value, state.task.userId,state.selectedDay,getDataCallback);
+		GetTasks(taskPageOpt.value, state.task.userId, state.selectedDay, getDataCallback);
 	}
 
 	function getDataCallback(response) {
@@ -762,30 +785,43 @@
 						task.deadline = new Date(task.deadline);
 					}
 				}
+				uni.removeStorageSync(TaskReminderKey);
 			}, 750);
 		}
 	}
 
 	function updateTask() {
-		state.task.instanceId = state.selectedTask.instanceId;
-		state.task.taskId = state.selectedTask.taskId;
-		state.task.repeatable = state.selectedTask.repeatable;
-		if(state.task.title.length==0)
-		   state.task.title = state.selectedTask.title;
-        UpdateTask(state.task,state.mode,response=>{
+		FreshReminderTiming(state.selectedTask.instanceId, state.task.beginTime, response => {
 			const res = response.data;
 			if(!res.succeeded){
 				uni.showToast({
 					title:res.message,
 					icon:"none"
 				});
+				return;
 			}
-			else{
-				for(let pro in state.task)
-				   state.selectedTask[pro] = state.task[pro];
-				loading("",()=>{popup.value.close();},500)
-			}
-	
+			state.task.instanceId = state.selectedTask.instanceId;
+			state.task.taskId = state.selectedTask.taskId;
+			state.task.repeatable = state.selectedTask.repeatable;
+			if (state.task.title.length == 0)
+				state.task.title = state.selectedTask.title;
+			UpdateTask(state.task, state.mode, response1 => {
+				const res1 = response1.data;
+				if (!res1.succeeded) {
+					uni.showToast({
+						title: res.message,
+						icon: "none"
+					});
+				} else {
+					for (let pro in state.task)
+						state.selectedTask[pro] = state.task[pro];
+					loading("", () => {
+						popup.value.close();
+						uni.removeStorageSync(TaskReminderKey);
+					}, 500)
+				}
+			});
+
 		});
 	}
 
@@ -801,9 +837,9 @@
 			reminder.taskId = state.selectedTask.taskId;
 			reminder.instanceId = state.selectedTask.instanceId;
 			reminder.taskBeginTime = state.selectedTask.beginTime;
-			if(state.selectedTask.taskId==state.selectedTask.instanceId&&state.mode==1)
-			   state.mode = 0;
-			RemoveReminder(reminder,state.mode, response => {
+			if (state.selectedTask.taskId == state.selectedTask.instanceId && state.mode == 1)
+				state.mode = 0;
+			RemoveReminder(reminder, state.mode, response => {
 				const res = response.data;
 				if (!res.succeeded) {
 					uni.showToast({
@@ -811,139 +847,140 @@
 						icon: "none"
 					});
 				} else {
-					  state.task.reminderInfoModels.splice(index, 1);
+					state.task.reminderInfoModels.splice(index, 1);
+					uni.removeStorageSync(TaskReminderKey);
 				}
 			});
 		}
 	}
 
 	function openEditOrCancelTask() {
-		if(state.isTaskCancel){
-			CancelTask(state.selectedTask,state.mode,response=>{
+		if (state.isTaskCancel) {
+			CancelTask(state.selectedTask, state.mode, response => {
 				const res = response.data;
-				if(!res.succeeded){
+				if (!res.succeeded) {
 					uni.showToast({
-						title:res.message,
-						icon:"none"
+						title: res.message,
+						icon: "none"
 					});
+				} else {
+					state.isTaskCancel = false;
+					taskPageOpt.value.data.splice(state.selectedTask.index, 1);
+					editModePopup.value.close();
+					detailPopup.value.close();
 				}
-				else{
-				  state.isTaskCancel = false;
-				  taskPageOpt.value.data.splice(state.selectedTask.index,1);
-				  editModePopup.value.close();
-				  detailPopup.value.close();
-				}
-			});		
+			});
 			return;
 		}
-		copy(state.selectedTask,state.task);
+		copy(state.selectedTask, state.task);
 		state.startTime.date = getDateStr(state.task.beginTime);
 		state.startTime.time = timeWithoutSeconds(state.task.beginTime);
 		state.endTime.date = getDateStr(state.task.endTime);
 		state.endTime.time = timeWithoutSeconds(state.task.endTime);
-		state.task.changed = ()=>{
-			return state.task.title!=state.selectedTask.title||state.task.description!=state.selectedTask.description
-			||state.task.priority!=state.selectedTask.priority||
-			state.task.beginTime.getTime()!=state.selectedTask.beginTime.getTime()
-			||state.task.endTime.getTime()!=state.selectedTask.endTime.getTime();
+		state.task.changed = () => {
+			return state.task.title != state.selectedTask.title || state.task.description != state.selectedTask
+				.description ||
+				state.task.priority != state.selectedTask.priority ||
+				state.task.beginTime.getTime() != state.selectedTask.beginTime.getTime() ||
+				state.task.endTime.getTime() != state.selectedTask.endTime.getTime();
 		};
 		state.isTaskUpdate = true;
 		state.canCreateTask = true;
 		openToEdit();
 		editModePopup.value.close();
 	}
-	
-	function openEditUI(){
-		if(!state.selectedTask.repeatable)
-		{
-			copy(state.selectedTask,state.task);
-			state.task.changed = ()=>{
-				return state.task.title!=state.selectedTask.title||state.task.description!=state.selectedTask.description
-				||state.task.priority!=state.selectedTask.priority||state.task.beginTime!=state.selectedTask.beginTime
-				||state.task.endTime!=state.selectedTask.endTime;
+
+	function openEditUI() {
+		if (!state.selectedTask.repeatable) {
+			copy(state.selectedTask, state.task);
+			state.task.changed = () => {
+				return state.task.title != state.selectedTask.title || state.task.description != state.selectedTask
+					.description ||
+					state.task.priority != state.selectedTask.priority || state.task.beginTime != state.selectedTask
+					.beginTime ||
+					state.task.endTime != state.selectedTask.endTime;
 			};
 			state.isTaskUpdate = true;
 			state.canCreateTask = true;
 			openToEdit();
-		}
-		else
-		{
-			if(state.selectedTask.taskId == state.selectedTask.instanceId)
-			   state.modeContent =  [new ValueText(0,"全部重复任务"),new ValueText(1,"仅此任务")];
+		} else {
+			if (state.selectedTask.taskId == state.selectedTask.instanceId)
+				state.modeContent = [new ValueText(0, "全部重复任务"), new ValueText(1, "仅此任务")];
 			else
-			   state.modeContent =  [new ValueText(0,"全部重复任务"),new ValueText(1,"仅此任务"),
-		new ValueText(2,"此任务及往后的任务")];
+				state.modeContent = [new ValueText(0, "全部重复任务"), new ValueText(1, "仅此任务"),
+					new ValueText(2, "此任务及往后的任务")
+				];
 			editModePopup.value.open();
 		}
-			
+
 
 	}
-	
-	function beginEndTimeStr(task){
+
+	function beginEndTimeStr(task) {
 		const beginTime = task.beginTime;
 		const endTime = task.endTime;
 		var res;
-		if(dateEquals(beginTime,endTime))
-		   res = `<text>${timeWithoutSeconds(beginTime)}</text></text>${timeWithoutSeconds(endTime)}</text>`;
-		else if(dateEquals(beginTime,state.selectedDay)&&!dateEquals(beginTime,endTime))
-		   res = `<text style="color:rgb(0,75,225)">开始</text></text>${timeWithoutSeconds(beginTime)}</text>`;
-	    else if(dateEquals(endTime,state.selectedDay)&&!dateEquals(beginTime,endTime))
-		   res = `<text text style="color:black">结束</text></text>${timeWithoutSeconds(endTime)}</text>`;
+		if (dateEquals(beginTime, endTime))
+			res = `<text>${timeWithoutSeconds(beginTime)}</text></text>${timeWithoutSeconds(endTime)}</text>`;
+		else if (dateEquals(beginTime, state.selectedDay) && !dateEquals(beginTime, endTime))
+			res = `<text style="color:rgb(0,75,225)">开始</text></text>${timeWithoutSeconds(beginTime)}</text>`;
+		else if (dateEquals(endTime, state.selectedDay) && !dateEquals(beginTime, endTime))
+			res = `<text text style="color:black">结束</text></text>${timeWithoutSeconds(endTime)}</text>`;
 		return res;
 	}
-	
-	function changeRepeatRule(){
-		if(state.selectedTask.period==state.task.period&&state.selectedTask.periodUnit==state.task.periodUnit
-		&&state.selectedTask.deadline==state.task.deadline&&state.selectedTask.count==state.task.count&&state.selectedTask
-		.custom==state.task.custom)return;
+
+	function changeRepeatRule() {
+		if (state.selectedTask.period == state.task.period && state.selectedTask.periodUnit == state.task.periodUnit &&
+			state.selectedTask.deadline == state.task.deadline && state.selectedTask.count == state.task.count && state
+			.selectedTask
+			.custom == state.task.custom) return;
 		ChangeRepeatRule({
-			count:state.task.count,
+			count: state.task.count,
 			taskId: state.selectedTask.taskId,
-			instanceId:state.selectedTask.instanceId,
-			period:state.task.period,
-			periodUnit:state.task.periodUnit,
-			deadline:state.task.deadline,
-			custom:state.task.custom,
-			taskBeginTime:state.selectedTask.beginTime
-		},state.mode,response=>{
+			instanceId: state.selectedTask.instanceId,
+			period: state.task.period,
+			periodUnit: state.task.periodUnit,
+			deadline: state.task.deadline,
+			custom: state.task.custom,
+			taskBeginTime: state.selectedTask.beginTime
+		}, state.mode, response => {
 			const res = response.data;
-			if(!res.succeeded){
+			if (!res.succeeded) {
 				uni.showToast({
-					title:res.message,
-					icon:"none"
+					title: res.message,
+					icon: "none"
 				});
-			}
-			else{
+			} else {
 				uni.showToast({
-					title:"已修改",
-					icon:"none"
+					title: "已修改",
+					icon: "none"
 				});
-				state.selectedTask.period=state.task.period;
-				state.selectedTask.periodUnit=state.task.periodUnit;
-				state.selectedTask.deadline=state.task.deadline;
-				state.selectedTask.count=state.task.count;
-				state.selectedTask.custom=state.task.custom
+				state.selectedTask.period = state.task.period;
+				state.selectedTask.periodUnit = state.task.periodUnit;
+				state.selectedTask.deadline = state.task.deadline;
+				state.selectedTask.count = state.task.count;
+				state.selectedTask.custom = state.task.custom
 			}
 		});
 	}
-	
-	function finishOrNot(task){
+
+	function finishOrNot(task) {
 		var state = 0;
-		if(task.state==TaskState.unfinished)
-		  state = TaskState.finished;
-		else if(task.state==TaskState.finished)
-		  state = TaskState.unfinished;
-		 FinishOrNot(task.instanceId,state,response=>{
+		if (task.state == TaskState.unfinished)
+			state = TaskState.finished;
+		else if (task.state == TaskState.finished)
+			state = TaskState.unfinished;
+		FinishOrNot(task.instanceId, state, response => {
 			const res = response.data;
-			 if(!res.succeeded){
-				 uni.showToast({
-				 	title:res.message,
-					icon:"none"
-				 });
-				 return;
-			 }
-			 task.state = state;
-		 });
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			task.state = state;
+		});
 	}
 </script>
 
@@ -1120,10 +1157,10 @@
 		font-size: 16px;
 		font-weight: 600;
 	}
-	
-	.task-detail .tips{
+
+	.task-detail .tips {
 		font-size: 13px;
-		color:darkgray;
+		color: darkgray;
 	}
 
 	.task-detail .func {
@@ -1133,10 +1170,10 @@
 		width: 100%;
 		justify-content: center;
 	}
-	
-	.task-detail .repeat{
+
+	.task-detail .repeat {
 		font-size: 14px;
-		color:gray;
+		color: gray;
 	}
 
 	.task-detail .detail-func {
@@ -1153,12 +1190,25 @@
 		font-size: 15px;
 		line-height: 10px;
 	}
-	
-	.todo .mask{
+
+	.todo .mask {
 		height: 100%;
 		width: 100%;
 		position: absolute;
-		z-index:-1;
-		background-color: rgb(0,0,0,0.25);
+		z-index: -1;
+		background-color: rgb(0, 0, 0, 0.25);
+	}
+
+	.todo .finishBtn {
+		position: relative;
+		border: none;
+		color: white;
+		background-color: rgb(0, 255, 0);
+		font-size: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 7px;
+		width: 40px;
 	}
 </style>

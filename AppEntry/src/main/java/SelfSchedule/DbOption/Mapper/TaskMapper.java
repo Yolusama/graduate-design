@@ -27,4 +27,8 @@ public interface TaskMapper extends BaseMapper<Task> {
     int update(@Param(Constants.WRAPPER)Wrapper<Task> wrapper);
     @Select("select repeatable from Task where id=#{taskId}")
     Boolean isRepeatable(@Param("taskId")Long taskId);
+    @Select("select beginTime from Task where id=#{taskId}")
+    Date getTaskBeginTime(@Param("taskId")Long taskId);
+
+
 }

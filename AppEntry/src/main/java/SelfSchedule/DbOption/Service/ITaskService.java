@@ -27,4 +27,5 @@ public interface ITaskService extends IService<Task> {
    int finishOrNot(Long taskId,Integer state);
    int changePriority(TaskPriorityModel model);
    List<TaskReminderInfoVO> getCurrentTaskReminders(String userId, Date currentTime);
+   boolean freshReminderTiming(Long taskId,Date taskBeginTime);
 }

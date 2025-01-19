@@ -132,7 +132,7 @@ public class TaskController extends ControllerBase
        return ok();
     }
 
-    @GetMapping("/GetCurrentTaskRemindersOver/{userId}")
+    @GetMapping("/GetCurrentTaskReminders/{userId}")
     @ApiOperation(value = "获取用户当前时间下的任务提醒",notes = "获取用户当前时间下的任务提醒")
     public CompletableFuture<ActionResult<List<TaskReminderInfoVO>>> GetCurrentTaskReminders(
             @PathVariable String userId,@RequestParam Long currentTime){
@@ -140,6 +140,16 @@ public class TaskController extends ControllerBase
                 successWithData(
                         taskService.getCurrentTaskReminders(userId,new Date(currentTime))
                 ));
+    }
+
+    @PostMapping("/FreshReminderTiming/{taskId}")
+    @ApiOperation(value = "刷新当前任务id下提醒时间",notes = "刷新用户当前时间下的任务提醒时间")
+    public ActionResult FreshReminderTiming(@PathVariable Long taskId,@RequestParam Long taskBeginTime){
+        boolean res = taskService.freshReminderTiming(taskId,new Date(taskBeginTime));
+        if(res)
+            return ok("已刷新提醒时间！");
+        else
+            return ok();
     }
 
 }

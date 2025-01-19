@@ -105,6 +105,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     @Override
     public List<TaskReminderVO> getTaskReminders(Long taskId) {
         return reminderMapper.getTaskReminders(taskId);
+
     }
 
     /*形式删除，取消任务，更新任务状态至3（取消状态）
@@ -665,7 +666,28 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         date.setHours(Constants.None);
         date.setMinutes(Constants.None);
         date.setSeconds(Constants.None);
+
         return reminderMapper.getCurrentReminders(userId,currentTime,date);
+    }
+
+    @Override
+    @Transactional
+    public boolean freshReminderTiming(Long taskId, Date taskBeginTime) {
+        Date beginTime = mapper.getTaskBeginTime(taskId);
+        if(beginTime.getTime()==taskBeginTime.getTime())
+            return false;
+        List<TaskReminderVO> reminders = reminderMapper.getTaskReminders(taskId);
+        if(reminders.size()==0) return false;
+        for(var reminder:reminders){
+            Date newTiming = TaskReminder.reloadTiming(reminder.getMode(),reminder.getValue(),taskBeginTime);
+            if(reminder.getTiming().getTime()!=newTiming.getTime())
+            {
+                LambdaUpdateWrapper<TaskReminder> wrapper = new LambdaUpdateWrapper<>();
+                wrapper.set(TaskReminder::getTiming,newTiming).eq(TaskReminder::getId,reminder.getReminderId());
+                reminderMapper.update(wrapper);
+            }
+        }
+        return true;
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

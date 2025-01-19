@@ -1,7 +1,6 @@
 package SelfSchedule.Entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -33,5 +32,16 @@ public class TaskReminder{
      */
     private Integer value;
 
+    public static Date reloadTiming(Integer mode,Integer value,Date beginTime){
+        Date date = new Date(beginTime.getTime());
+        switch(mode){
+            case 1: date.setMinutes(date.getMinutes()-value);break;
+            case 2: date.setHours(date.getHours()-value);break;
+            case 3: date.setDate(date.getDate()-value);break;
+            case 4: date.setDate(date.getDate()-value*7);break;
+            case 5: date.setMonth(date.getMonth()-value);break;
+        }
+       return date;
+    }
 }
 

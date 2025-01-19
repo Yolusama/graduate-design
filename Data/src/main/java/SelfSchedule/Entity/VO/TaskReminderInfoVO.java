@@ -12,5 +12,7 @@ public class TaskReminderInfoVO {
     private String taskTitle;
     private String taskDescription;
     private Integer taskPriority;
+    private Integer mode;
+    private Integer value;
     private Date timing;
 }

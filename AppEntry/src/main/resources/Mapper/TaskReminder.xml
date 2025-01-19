@@ -10,7 +10,8 @@
    </insert>
 
     <select id="getCurrentReminders" resultType="SelfSchedule.Entity.VO.TaskReminderInfoVO">
-        select r.taskId,r.timing,t.priority as taskPriority,t.title as taskTitle,t.descrition as taskDescription from TaskReminder r join Task t
-           on r.taskId = t.id where t.userId = #{userId} and (r.timing&gt;=#{leftBound} and r.timing&lt;#{rightBound})
+        select r.taskId,r.mode,r.value,r.timing,t.priority as taskPriority,t.title as taskTitle,t.description as taskDescription from TaskReminder r
+            join Task t on r.taskId = t.id where t.userId = #{userId} and (r.timing&gt;=#{leftBound} and r.timing&lt;#{rightBound})
+               and t.state = 2
     </select>
 </mapper>

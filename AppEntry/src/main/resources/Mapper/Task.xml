@@ -22,5 +22,4 @@
                        (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound})
                        ) and (t.id in (select instanceId from TaskInstance where taskId=#{taskId}))
     </select>
-
 </mapper>

@@ -415,6 +415,6 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         date.setHours(Constants.None);
         date.setMinutes(Constants.None);
         date.setSeconds(Constants.None);
-        return reminderMapper.getRemindersOver(userId,currentTime,date);
+        return reminderMapper.getCurrentReminders(userId,currentTime,date);
     }
 }

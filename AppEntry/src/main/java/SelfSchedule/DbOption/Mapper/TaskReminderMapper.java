@@ -1,6 +1,5 @@
 package SelfSchedule.DbOption.Mapper;
 
-import SelfSchedule.Entity.TaskInstance;
 import SelfSchedule.Entity.TaskReminder;
 import SelfSchedule.Entity.VO.TaskReminderInfoVO;
 import SelfSchedule.Entity.VO.TaskReminderVO;
@@ -22,8 +21,8 @@ public interface TaskReminderMapper extends BaseMapper<TaskReminder> {
 
     @Select("select tr.id as reminderId,tr.mode,tr.value,tr.timing from TaskReminder tr where tr.taskId=#{taskId} order by timing")
     List<TaskReminderVO> getTaskReminders(@Param("taskId")Long taskId);
-    @Update("update TaskReminder set ${wrapper.sqlSet} ${wrapper.sqlSegment}")
-    int update(@Param("wrapper") Wrapper<TaskInstance> wrapper);
+    @Update("update TaskReminder set ${ew.sqlSet} ${ew.customSqlSegment}")
+    int update(@Param("ew") Wrapper<TaskReminder> wrapper);
     @Update("update TaskReminder set taskId=#{newTaskId} where taskId=#{taskId}")
     int updateTaskId(@Param("newTaskId")Long newTaskId,@Param("taskId")Long taskId);
 }

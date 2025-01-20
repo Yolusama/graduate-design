@@ -222,7 +222,8 @@
 		TaskState,
 		dateGE,
 		weekDaySign,
-		buildElById
+		buildElById,
+		TaskReminderKey
 	} from '../module/Common';
 	import {
 		CreateTask,
@@ -360,6 +361,7 @@
 				}
 				state.dataOption[pro] = false;
 			}
+			uni.removeStorageSync(TaskReminderKey);
 		});
 	}
 
@@ -617,6 +619,7 @@
 							}
 							if(i==data.length)
 							   data.push(state.selectedTask);
+							uni.removeStorageSync(TaskReminderKey);   
 						} 
 					}
 					taskEditor.value.close();

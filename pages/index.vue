@@ -98,7 +98,7 @@
 								</picker>
 								&nbsp;
 								<picker mode="time" :value="state.endTime.time" :start="state.endTime.time" end="23:59"
-									@change="pick($event,'end-time')" :disabled="state.allday" fields="year month day">
+									@change="pick($event,'end-time')" :disabled="state.allday" >
 									<text class="time-str">{{state.endTime.time}}</text>
 								</picker>
 							</view>
@@ -817,6 +817,7 @@
 						state.selectedTask[pro] = state.task[pro];
 					loading("", () => {
 						popup.value.close();
+						detailPopup.value.close();
 						uni.removeStorageSync(TaskReminderKey);
 					}, 500)
 				}

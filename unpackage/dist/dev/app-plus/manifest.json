@@ -17,6 +17,7 @@
     "url": ""
   },
   "permissions": {
+    "Push": {},
     "UniNView": {
       "description": "UniNView原生渲染"
     }
@@ -41,6 +42,24 @@
     "nvueStyleCompiler": "uni-app",
     "compilerVersion": 3,
     "distribute": {
+      "icons": {
+        "android": {
+          "hdpi": "static/icon.png",
+          "xhdpi": "static/icon.png",
+          "xxhdpi": "static/icon.png",
+          "xxxhdpi": "static/icon.png"
+        },
+        "ios": {
+          "appstore": "",
+          "iphone": {
+            "app@2x": "",
+            "app@3x": "",
+            "spotlight@2x": "",
+            "spotlight@3x": "",
+            "settings@2x": ""
+          }
+        }
+      },
       "google": {
         "permissions": [
           "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
@@ -62,6 +81,22 @@
       },
       "apple": {},
       "plugins": {
+        "geolocation": {},
+        "push": {
+          "unipush": {
+            "version": "2",
+            "offline": false,
+            "icons": {
+              "small": {
+                "ldpi": "static/icon.png",
+                "mdpi": "static/icon.png",
+                "hdpi": "static/icon.png",
+                "xhdpi": "static/icon.png",
+                "xxhdpi": "static/icon.png"
+              }
+            }
+          }
+        },
         "audio": {
           "mp3": {
             "description": "Android平台录音支持MP3格式文件"

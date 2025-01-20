@@ -17,7 +17,9 @@
             "delay" : 0
         },
         /* 模块配置 */
-        "modules" : {},
+        "modules" : {
+            "Push" : {}
+        },
         /* 应用发布信息 */
         "distribute" : {
             /* android打包配置 */
@@ -43,7 +45,42 @@
             /* ios打包配置 */
             "ios" : {},
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "geolocation" : {},
+                "push" : {
+                    "unipush" : {
+                        "version" : "2",
+                        "offline" : false,
+                        "icons" : {
+                            "small" : {
+                                "ldpi" : "static/icon.png",
+                                "mdpi" : "static/icon.png",
+                                "hdpi" : "static/icon.png",
+                                "xhdpi" : "static/icon.png",
+                                "xxhdpi" : "static/icon.png"
+                            }
+                        }
+                    }
+                }
+            },
+            "icons" : {
+                "android" : {
+                    "hdpi" : "static/icon.png",
+                    "xhdpi" : "static/icon.png",
+                    "xxhdpi" : "static/icon.png",
+                    "xxxhdpi" : "static/icon.png"
+                },
+                "ios" : {
+                    "appstore" : "",
+                    "iphone" : {
+                        "app@2x" : "",
+                        "app@3x" : "",
+                        "spotlight@2x" : "",
+                        "spotlight@3x" : "",
+                        "settings@2x" : ""
+                    }
+                }
+            }
         }
     },
     /* 快应用特有相关 */

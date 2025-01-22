@@ -272,7 +272,7 @@
 						<image class="background" :src="imgSrc(state.selectedHabit.thumb)"></image>
 						<view class="detail-option">
 							<text class="detail-title">{{state.selectedHabit.name}}</text>
-							<text class="detail-descritpion" v-html="state.selectedHabit.description"></text>
+							<view class="detail-descritpion" v-html="state.selectedHabit.description"></view>
 							<k-swiper @finish="finishHabit" :height="60"
 								v-if="!state.selectedHabit.finished"></k-swiper>
 							<view class="content-show" v-if="state.selectedHabit.finished">
@@ -1150,9 +1150,9 @@
 		/*#ifndef H5*/
 		padding-top: 3vh;
 		/*#endif*/
-		background-color: cornsilk;
+		background-color: rgb(98%,98%,98%);
 	}
-
+	
 	#habit .detail .detail-content {
 		display: flex;
 		position: relative;
@@ -1162,7 +1162,7 @@
 		align-items: center;
 		padding: 1%;
 	}
-
+	
 	.detail .background {
 		position: absolute;
 		width: 90px;

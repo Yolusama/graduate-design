@@ -59,7 +59,7 @@ export function FinishTask(taskId){
 			});
 			return;
 		}
-		const route = "/pages/index"
+		const route = "/pages/task"
 		uni.reLaunch({
 			url: route
 		});

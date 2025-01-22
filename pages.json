@@ -16,6 +16,13 @@
 			
 		},
 		{
+			"path": "pages/task",
+			"style": {
+				"navigationStyle": "custom"
+			}
+			
+		},
+		{
 			"path" : "pages/habit",
 			"style": {
 				"navigationStyle": "custom"
@@ -49,9 +56,15 @@
       {
         "pagePath":"pages/index", //页面路径
         "text":"首页" ,                //tab字体显示
-		"iconPath": "static/calendar.png",
-		"selectedIconPath": "static/calendar-fill.png"
+		"iconPath": "static/home.png",
+		"selectedIconPath": "static/home-fill.png"
       },
+	  {
+	    "pagePath":"pages/task", //页面路径
+	    "text":"任务管理" ,                //tab字体显示
+	  	"iconPath": "static/calendar.png",
+	  	"selectedIconPath": "static/calendar-fill.png"
+	  },
 	  {
 	    "pagePath":"pages/fourQuadrants", //页面路径
 	    "text":"四象限"   ,                //tab字体显示

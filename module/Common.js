@@ -357,7 +357,7 @@ export function notifyTask(isbackGround,reminder, finishCallback) {
 	const payload = {};
 	copy(reminder, payload);
 	payload.timing = payload.timing.getTime();
-	payload.route = "/pages/index";
+	payload.route = "/pages/task";
 	plus.push.createMessage(reminder.taskDescription, payload, {
 		title: `任务：${reminder.taskTitle}        --${priority[reminder.taskPriority-1].text}`,
 		when: new Date()

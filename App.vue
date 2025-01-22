@@ -88,7 +88,7 @@
 						notifyHabitWithModal(reminder);
 				}
 			});
-			/*
+			
 		   plus.push.addEventListener("receive", function(msg) {   
 		   		var platform = uni.getSystemInfoSync().platform;
 		   		if(platform == "ios"){
@@ -101,10 +101,10 @@
 		   			plus.push.createMessage(msg.content, JSON.stringify(msg.payload), { title: msg.title });
 		   			
 		   		}
-		   	}, false); */
-			//#endif
+		   	}, false); 
 		});
-	});
+		//#endif
+	}); 
 
 	onBeforeUnmount(() => {
 		clearInterval(timeOpt.value.timer);

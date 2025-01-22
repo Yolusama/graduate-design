@@ -6,6 +6,7 @@ import KRdaioGroup from './components/KRdaioGroup.vue';
 import KHabitGroup from './components/KHabitGroup.vue';
 import KSwiper from './components/KSwiper.vue';
 import KRecordMonth from './components/KRecordMonth.vue';
+import HabitReminderModal from './components/HabitReminderModal.vue'
 // #ifndef VUE3
 import Vue from 'vue'
 import './uni.promisify.adaptor'
@@ -30,6 +31,8 @@ export function createApp() {
   app.component("k-habit-group",KHabitGroup);
   app.component("k-swiper",KSwiper);
   app.component('k-record-month',KRecordMonth);
+  app.component('habit-reminder-modal',HabitReminderModal);
+  
   return {
     app
   }

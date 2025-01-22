@@ -58,8 +58,8 @@ export function GetHabitRecords(habitId,successCallback){
 	Get(`/Api/Habit/GetHabitRecords/${habitId}`,auth,successCallback);
 }
 
-export function GetCurrentHabitReminders(userId,currentTime,successCallback){
-	Get(`/Api/Habit/GetCurrentHabitReminders/${userId}?currentTime=${currentTime.getTime()}`,auth,successCallback);
+export function GetCurrentHabitReminders(userId,current,successCallback){
+	Get(`/Api/Habit/GetCurrentHabitReminders/${userId}?current=${current.getTime()}`,auth,successCallback);
 }
 
 export function FinishHabit(record){
@@ -70,5 +70,9 @@ export function FinishHabit(record){
 				icon:"none"
 			});
 		}
+		const route = "/pages/habit"
+		uni.reLaunch({
+			url: route
+		});
 	});
 }

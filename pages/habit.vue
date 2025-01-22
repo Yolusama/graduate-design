@@ -103,11 +103,11 @@
 								<template v-slot:body>
 									<view class="between">
 										<view class="info">
-											<image src="../static/time.png" style="height: 25px;width: 25px;"></image>
+											<image src="../static/time.png" style="height: 20px;width: 20px;"></image>
 											<text>开始日期</text>
 										</view>
 
-										<picker mode="date" fields="year month day" @change="selectBeginDate">
+										<picker mode="date"  @change="selectBeginDate">
 											{{getDateStr(state.habit.beginDate)}}
 										</picker>
 									</view>
@@ -117,7 +117,7 @@
 								<template v-slot:body>
 									<view class="between">
 										<view class="info">
-											<uni-icons type="medal" :size="30"></uni-icons>
+											<uni-icons type="medal" :size="24"></uni-icons>
 											<text>坚持天数</text>
 										</view>
 										<text v-if="state.persistDaysIndex!=state.persistDays.length"
@@ -263,7 +263,7 @@
 						<uni-icons type="arrow-left" :size="25" @click="detailPopup.close()"></uni-icons>
 						<view style="margin-right: 7px;">
 							<uni-icons type="trash" :size="25" @click="removeHabit"></uni-icons>
-							<uni-icons type="compose" :size="25" @click="toEdit"></uni-icons>
+							<uni-icons type="compose" :size="25" @click="toEdit" style="margin-left: 3vw;margin-right: 2%;"></uni-icons>
 						</view>
 					</view>
 					<view class="detail-content">
@@ -336,7 +336,8 @@
 		getDateTimeStr,
 		CalendarDisplayWay,
 		dateEquals,
-		invalidEvent
+		invalidEvent,
+		HabitReminderKey
 	} from "../module/Common";
 	import {
 		user
@@ -595,7 +596,7 @@
 				persistDays: 0,
 				groupName: state.groups.filter(g => g.id == state.habit
 					.groupId)[0].name,
-				beginDate: state.task.beginDate
+				beginDate: state.habit.beginDate
 			};
 			if (habitOption.value.data.length < habitOption.value.size) {
 				habitOption.value.data.push(item);
@@ -604,6 +605,7 @@
 				else
 					state.data[item.groupName].push(item);
 			}
+			uni.removeStorageSync(HabitReminderKey);
 			popup.value.close();
 		}, 750);
 	}
@@ -615,7 +617,10 @@
 		const groupName = state.groups.filter(g => g.id == state.selectedHabit
 			.groupId)[0].name;
 		state.data[groupName][index] = data;
-		loading("", () => popup.value.close(), 500);
+		loading("", () => {
+			popup.value.close();
+			uni.removeStorageSync(HabitReminderKey);
+			}, 500);
 	}
 
 	function openToEdit() {
@@ -645,7 +650,6 @@
 			habitOption.value.data = res.data.data;
 			habitOption.value.total = res.data.total;
 			dataReogrized();
-
 		});
 	}
 
@@ -715,7 +719,7 @@
 				}
 			}
 			if (i == data.length && index < 0)
-				data.push(new HabitReminder(value, habitId));
+				data.push(new HabitReminder(value, habitId));	
 		}
 	}
 
@@ -830,6 +834,7 @@
 
 	function unfinishHabit(e, habit) {
 		e.stopPropagation();
+		state.selectedHabit = habit;
 		FinishOrNot({
 			habitId: habit.habitId,
 			finished: false,
@@ -849,17 +854,27 @@
 	}
 
 	function removeHabit() {
-		RemoveHabit(state.selectedHabit.habitId, response => {
-			const res = response.data;
-			if (!res.succeeded) {
-				uni.showToast({
-					title: res.message,
-					icon: "none"
-				});
-				return;
+		uni.showModal({
+			confirmText:"确定",
+			cancelText:"取消",
+			title:"删除习惯",
+			content:"习惯将移至回收站",
+			success:res=>{
+				if(res.confirm){
+					RemoveHabit(state.selectedHabit.habitId, response => {
+						const res = response.data;
+						if (!res.succeeded) {
+							uni.showToast({
+								title: res.message,
+								icon: "none"
+							});
+							return;
+						}
+						habitOption.value.data.splice(state.selectedHabit.index, 1);
+					});
+				}
 			}
-			habitOption.value.data.splice(state.selectedHabit.index, 1);
-		});
+		})
 	}
 
 	function openRecord() {

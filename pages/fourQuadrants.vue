@@ -234,7 +234,7 @@
 		ChangePriority,
 		GetTasks,
 		UpdateTask
-	} from '../api/fourQuadrants';
+	} from '../api/FourQuadrants';
 	import {
 		user
 	} from '../api/User';

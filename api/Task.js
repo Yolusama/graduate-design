@@ -59,9 +59,9 @@ export function FinishTask(taskId){
 			});
 			return;
 		}
-		const route = getCurrentPages()[0].route;
+		const route = "/pages/index"
 		uni.reLaunch({
-			url:'/'+route
+			url: route
 		});
 	});
 }

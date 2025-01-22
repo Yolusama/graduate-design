@@ -1,20 +1,10 @@
-<!--#ifdef APP-PLUS-->
-<template>
-	<uni-popup type="top" ref="popup" @change="closePopup" >
-		<view>
-			<view>
-			<image src="./static/icon.png" style="height: 30px;width:30px"></image>
-			<text>{{reminder.title}}</text>
-			</view>
-		</view>
-	</uni-popup>
-</template>
-<!--#endif-->
 <script setup>
 	import {
 		onMounted,
 		onBeforeUnmount,
-		ref
+		ref,
+		nextTick,
+		getCurrentInstance
 	} from 'vue';
 	import {
 		Get
@@ -27,15 +17,20 @@
 		HabitReminderKey,
 		TaskReminderKey,
 		delayToRun,
+		getDateStr,
 		notifyHabit,
+		notifyHabitWithModal,
 		notifyTask,
 		notifyTaskWithModal,
 		onlyDate
 	} from './module/Common';
 	import {
-		FinishHabit,
 		GetCurrentHabitReminders
 	} from './api/Habit';
+	import {
+		imgSrc
+	} from './module/Request';
+
 	const timeOpt = ref({
 		timer: 0,
 		expire: 1000 * 60 * 3
@@ -49,12 +44,10 @@
 		key_HR: HabitReminderKey,
 		userId: ""
 	});
-	
 	//#ifdef APP-PLUS
-	const currentReminder = ref(null);
 	const isBackGround = ref(false);
 	//#endif
-    
+	const instance = getCurrentInstance();
 
 	onMounted(() => {
 		const user = uni.getStorageSync("user");
@@ -65,38 +58,37 @@
 		notifyOpt.value.userId = user.uid;
 		notifyOpt.value.trTimer = setInterval(watchReminders, notifyOpt.value.expire, notifyOpt.value.key_TR);
 		notifyOpt.value.hrTimer = setInterval(watchReminders, notifyOpt.value.expire, notifyOpt.value.key_HR);
-		
-		uni.onAppHide(function(){
+		//#ifdef APP-PLUS
+		uni.onAppHide(function() {
 			isBackGround.value = true;
 		});
-		
-		uni.onAppShow(function(){
+
+		uni.onAppShow(function() {
 			isBackGround.value = false;
 		});
-		
-		//#ifdef APP-PLUS
-		 /* uni.onPushMessage(res=>{
+
+
+		/* uni.onPushMessage(res=>{
 			console.log(res);
 			 const page = getCurrentPages()[0];
 			 uni.reLaunch({
 			 	url:'/'+page.route
 			 });
 		   });*/
-		   plus.push.addEventListener("click",msg=>{
-			   //点击通知信息回到应用需要时间设置后台弹窗权限
-			   const reminder = msg.payload;
-			   if(isBackGround.value)
-				delayToRun(()=>uni.reLaunch({
-			    	url:reminder.route,
-					success:res=>{
-						plus.push.remove(msg);
-						if(reminder.isTaskReminder)
-						   notifyTaskWithModal(reminder,notifyTaskCallback);
-					}
-			    }),notifyOpt.value.expire);
-				else
-				 notifyTaskWithModal(reminder,notifyTaskCallback);
-		   });
+		plus.push.addEventListener("click", msg => {
+			//点击通知信息回到应用需要手机设置后台弹窗权限
+			const reminder = msg.payload;
+			uni.reLaunch({
+				url: reminder.route,
+				success: res => {
+					plus.push.remove(msg);
+					if (reminder.isTaskReminder)
+						notifyTaskWithModal(reminder, notifyTaskCallback);
+					if(reminder.isHabitReminder)
+						notifyHabitWithModal(reminder);
+				}
+			});
+			/*
 		   plus.push.addEventListener("receive", function(msg) {   
 		   		var platform = uni.getSystemInfoSync().platform;
 		   		if(platform == "ios"){
@@ -109,9 +101,9 @@
 		   			plus.push.createMessage(msg.content, JSON.stringify(msg.payload), { title: msg.title });
 		   			
 		   		}
-		   	}, false); 
-             
-		//#endif
+		   	}, false); */
+			//#endif
+		});
 	});
 
 	onBeforeUnmount(() => {
@@ -119,7 +111,7 @@
 		clearInterval(notifyOpt.value.trTimer);
 		clearInterval(notifyOpt.value.hrTimer);
 		//#ifdef APP-PLUS
-		uni.offPushMessage();
+		//uni.offPushMessage();
 		//#endif
 	});
 
@@ -144,23 +136,40 @@
 					reminders, false, true));
 		}
 		if (isTaskReminder) {
-			for (let reminder of reminders.filter(r=>!r.worked)) {
+			for (let reminder of reminders) {
 				const today = new Date();
 				today.setMilliseconds(0);
 				reminder.timing = new Date(reminder.timing);
-				if (today.getTime() == reminder.timing.getTime())
-					notifyTask(reminder,notifyTaskCallback);
+				if (!reminder.worked && today.getTime() == reminder.timing.getTime()) {
+					//#ifdef H5
+					notifyTask(reminder, notifyTaskCallback);
+					//#endif
+					//#ifdef APP-PLUS
+					notifyTask(isBackGround.value, reminder, notifyTaskCallback);
+					//#endif
+				}
 			}
-			if (isHabitReminder) {
-				for (let reminder of reminders.filter(r=>!r.worked)) {
-					const today = new Date();
-					today.setMilliseconds(0);
-					const reminderTime = new Date(
-						`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} ${reminder.time}`);
-					if (!reminder.worked||(reminderTime.getTime < today.getTime()||
-					reminderTime.getTime()>=new Date(today).setMinutes(today.getMinutes()+1)))
-					    continue;
-					notifyHabit(reminder,notifyHabitCallback);
+		}
+		if (isHabitReminder) {
+			for (let reminder of reminders) {
+				const today = new Date();
+				today.setMilliseconds(0);
+				const reminderTime = new Date(`${getDateStr(today)} ${reminder.time}`);
+				if (!reminder.worked && (today.getTime() >= reminderTime.getTime() &&
+						today.getTime() < new Date(reminderTime).setMinutes(reminderTime.getMinutes() + 1))) {
+					reminder.worked = true;
+					uni.setStorage({
+						key:notifyOpt.value.key_HR,
+						data:reminders,
+						success:res=>{ 
+							//#ifdef H5
+							notifyHabit(reminder);
+							//#endif
+							//#ifdef APP-PLUS
+							notifyHabit(isBackGround.value, reminder);
+							//#endif
+						} 
+					});
 				}
 			}
 		}
@@ -176,42 +185,24 @@
 			return;
 		}
 		reminders = res.data;
-		for(let reminder of reminders)
-		  {
-			  reminder.worked = false;
-			  //#ifdef APP-PLUS
-			  reminder.isTaskReminder = isTaskReminder;
-			  reminder.isHabitReminder = isHabitReminder;
-			  //#endif
-		  }
+		for (let reminder of reminders) {
+			reminder.worked = false;
+			reminder.isTaskReminder = isTaskReminder;
+			reminder.isHabitReminder = isHabitReminder;
+		}
 		if (isTaskReminder)
 			uni.setStorageSync(notifyOpt.value.key_TR, reminders);
 		if (isHabitReminder)
 			uni.setStorageSync(notifyOpt.value.key_HR, reminders);
 	}
-	
-	function notifyTaskCallback(reminder,res){
+
+	function notifyTaskCallback(reminder, res) {
 		if (res.confirm) {
 			return;
 		}
 		if (res.cancel) {
 			reminder.worked = true;
 			FinishTask(reminder.taskId);
-		}
-	}
-	
-	function notifyHabitCallback(reminder,res){
-		if (res.confirm) {
-			return;
-		}
-		if (res.cancel) {
-			reminder.worked = true;
-			FinishHabit({
-				habitId:reminder.habitId,
-				finished: true,
-				finishTime: today,
-				day: onlyDate(today)
-			});
 		}
 	}
 </script>

@@ -27,6 +27,16 @@
 			{
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			//自定义页面实现“模态对话框效果”
+			"path" : "pages/usage/modal",
+			"style" : 
+			{
+				"navigationStyle": "custom",
+				"background": "transparent", //把页面背景设置透明，默认是白色
+				"animationType": "fade-in"
+			}
 		}
 	],
 	"tabBar": {

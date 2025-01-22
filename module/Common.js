@@ -1,3 +1,5 @@
+import { KShowModal } from "./KShowModal";
+
 export function loading(title, func, expire) {
 	uni.showLoading({
 		title: title,
@@ -326,7 +328,6 @@ export function getElBound(selector, callback) {
 }
 
 export function notifyTaskWithModal(reminder, finishCallback) {
-	console.log(reminder);
 	uni.showModal({
 		title: `任务：${reminder.taskTitle}        --${priority[reminder.taskPriority-1].text}`,
 		content: reminder.taskDescription,
@@ -337,24 +338,22 @@ export function notifyTaskWithModal(reminder, finishCallback) {
 	});
 }
 
-export function notifyHabitWithModal(reminder, finishCallback) {
-	//#ifdef  H5
-	return;
-	//#endif
-	//#ifdef APP-PLUS
-	uni.showModal({
-		title: reminder.habitName,
-		content: reminder.habitDescription,
-		confirmText: "关闭",
-		cancelText: "完成",
-		cancelColor: "rgb(0,75,235)",
-		success: res => finishCallback(reminder, res)
+export function notifyHabitWithModal(reminder) {
+	KShowModal({
+		title: `习惯：${reminder.habitName},完成提醒`,
+		content:reminder.habitDescription,
+		thumb:reminder.habitThumb,
+        habitId:reminder.habitId
 	});
-	//#endif
+	
 }
 
-export function notifyTask(reminder, finishCallback) {
-	//#ifdef APP-PLUS
+//#ifdef APP-PLUS
+export function notifyTask(isbackGround,reminder, finishCallback) {
+	if(!isbackGround){
+		notifyTaskWithModal(reminder,finishCallback);
+		return;
+	}
 	const payload = {};
 	copy(reminder, payload);
 	payload.timing = payload.timing.getTime();
@@ -372,18 +371,27 @@ export function notifyTask(reminder, finishCallback) {
 		when:new Date(),
 		success:res=>finishCallback(res)
 	   });*/
-	//#endif
-	//#ifdef H5
-	notifyTaskWithModal(reminder, finishCallback);
-	//#endif
 }
 
-export function notifyHabit(reminder, finishCallback) {
-	//#ifdef APP-PLUS
+//#endif
+
+
+//#ifdef H5
+export function notifyTask(reminder, finishCallback) {
+	notifyTaskWithModal(reminder, finishCallback);
+}
+//#endif
+
+//#ifdef APP-PLUS
+export function notifyHabit(isBackground,reminder){
+	if(!isBackground){
+		notifyHabitWithModal(reminder);
+		return;
+	}
 	const payload = {};
 	copy(reminder, payload);
 	payload.route = "/pages/habit";
-	plus.push.createMessage(reminder.taskDescription, payload, {
+	plus.push.createMessage(reminder.habitDescription, payload, {
 		title: `习惯：${reminder.habitName}`,
 		when: new Date()
 	});
@@ -397,18 +405,15 @@ export function notifyHabit(reminder, finishCallback) {
 		
 		success:res=>finishCallback(res)
 	   });*/
-	//#endif
-	//#ifdef H5
-	uni.showModal({
-		title: reminder.habitName,
-		content: reminder.habitDescription,
-		confirmText: "关闭",
-		cancelText: "完成",
-		cancelColor: "rgb(0,75,235)",
-		success: res => finishCallback(reminder, res)
-	});
-	//#endif
 }
+
+//#endif 
+
+//#ifdef H5
+export function notifyHabit(reminder) {
+	notifyHabitWithModal(reminder);
+}
+//#endif
 
 export const TaskReminderKey = "task-reminders";
 export const HabitReminderKey = "habit-reminders";

@@ -37,7 +37,7 @@ public class TaskController extends ControllerBase
 
     @PutMapping("/CreateTask")
     @ApiOperation(value ="创建任务",notes="创建任务")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData})
     public ActionResult<Long> CreateTask(@RequestBody TaskModel model,HttpServletRequest request){
         Long res = taskService.createTask(model);
         if(res>0)
@@ -68,7 +68,7 @@ public class TaskController extends ControllerBase
 
     @PostMapping("/CancelTask")
     @ApiOperation(value = "取消任务，表示用户界面的删除",notes = "形式删除")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData})
     public ActionResult CancelTask(@RequestBody TaskModel model, @RequestParam Integer mode, HttpServletRequest request){
         int res = taskService.cancelTask(model,mode);
         if(res== Constants.EOF)
@@ -103,7 +103,7 @@ public class TaskController extends ControllerBase
 
     @PatchMapping("/ChangeRepeatRule")
     @ApiOperation(value = "修改可重复任务的重复规则",notes = "只有任务的主任务能够修改重复规则")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData})
     public ActionResult ChangeRepeatRule(@RequestBody TaskRepeatRuleModel model,@RequestParam Integer mode, HttpServletRequest request){
         int res = taskService.changeRepeatRule(model,mode);
         if(res == Constants.AbNormalState)
@@ -114,7 +114,7 @@ public class TaskController extends ControllerBase
 
     @PostMapping("/UpdateTask")
     @ApiOperation(value = "更新任务的基本信息",notes = "不同的更新下的效果会不同")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData})
     public ActionResult UpdateTask(@RequestBody TaskModel model,@RequestParam Integer mode, HttpServletRequest request){
         int res = taskService.updateTask(model,mode);
         if(res == Constants.EOF)
@@ -124,7 +124,7 @@ public class TaskController extends ControllerBase
 
     @PatchMapping("/FinishOrNot/{taskId}")
     @ApiOperation(value = "完成或取消完成任务",notes = "完成或取消完成")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData})
     public ActionResult FinishOrNot(@PathVariable Long taskId,@RequestParam Integer state,HttpServletRequest request){
        int res = taskService.finishOrNot(taskId,state);
        if(res==Constants.AbNormalState)

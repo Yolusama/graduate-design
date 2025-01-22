@@ -42,7 +42,7 @@ public class FourQuadrantsController extends ControllerBase {
 
     @PostMapping("/UpdateTask")
     @ApiOperation(value="在四象限的编辑界面中更新任务",tags="更新任务")
-    @ClearRedisCache(keys = {CachingKeys.GetTasks,CachingKeys.GetTasksDateValue})
+    @ClearRedisCache(keys = {CachingKeys.GetTasks,CachingKeys.GetTasksDateValue,CachingKeys.GetIndexData})
     public ActionResult UpdateTask(@RequestBody TaskModel model, HttpServletRequest request){
         taskService.updateTask(model);
         return ok("更新完成！");
@@ -50,7 +50,7 @@ public class FourQuadrantsController extends ControllerBase {
 
     @PatchMapping("/ChangePriority")
     @ApiOperation(value="在四象限的界面中拖拽至象限改变优先级",tags="修改任务优先级")
-    @ClearRedisCache(keys = {CachingKeys.GetTasks,CachingKeys.GetTasksDateValue})
+    @ClearRedisCache(keys = {CachingKeys.GetTasks,CachingKeys.GetTasksDateValue,CachingKeys.GetIndexData})
     public ActionResult ChangePriority(@RequestBody TaskPriorityModel model, HttpServletRequest request){
         int res = taskService.changePriority(model);
         if(res==Constants.AbNormalState)

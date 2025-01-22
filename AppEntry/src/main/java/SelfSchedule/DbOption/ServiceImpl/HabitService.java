@@ -253,7 +253,6 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
             if(reminderModel.getReminderId()==null){
                 if(reminderModel.getToDelete()){
                     toDeleteIndexes.add(i);
-
                     continue;
                 }
                 HabitReminder reminder = new HabitReminder();
@@ -410,7 +409,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
 
     @Override
     public List<HabitReminderInfoVO> getCurrentReminders(String userId, Date current, RedisCache redis) {
-        String key = String.format("Caching_%s",CachingKeys.GetUserHabitReminders);
+        String key = String.format("Caching_%s_%s",userId,CachingKeys.GetUserHabitReminders);
         ArrayDataModel<HabitReminderInfoVO> model;
         if(redis.has(key)){
             model = (ArrayDataModel<HabitReminderInfoVO>) redis.get(key);

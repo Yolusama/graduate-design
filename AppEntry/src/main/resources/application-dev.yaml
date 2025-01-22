@@ -1,6 +1,6 @@
 server:
   port: 5225
-  #address: 192.168.43.71
+  address: 192.168.43.71
 
 
 spring:

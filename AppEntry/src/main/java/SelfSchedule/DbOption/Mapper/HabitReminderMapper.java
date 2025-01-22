@@ -14,8 +14,7 @@ import java.util.List;
 @Mapper
 public interface HabitReminderMapper extends BaseMapper<HabitReminder> {
     Integer batchInsert(@Param("reminders") List<HabitReminder> reminders);
-    List<HabitReminderInfoVO> getCurrentReminders(@Param("userId")String userId,@Param("leftBound") Date leftBound,
-                                                   @Param("rightBound")Date rightBound);
+    List<HabitReminderInfoVO> getUserReminders(@Param("userId")String userId);
 
     @Update("update HabitReminder set ${ew.sqlSet} ${ew.customSqlSegment}")
     Integer update(@Param(Constants.WRAPPER) Wrapper<HabitReminder> wrapper);

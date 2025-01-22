@@ -409,12 +409,26 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     }
 
     @Override
-    public List<HabitReminderInfoVO> getCurrentReminders(String userId, Date currentTime) {
-        Date date = new Date(currentTime.getTime());
-        date.setDate(currentTime.getDate()+1);
-        date.setHours(Constants.None);
-        date.setMinutes(Constants.None);
-        date.setSeconds(Constants.None);
-        return reminderMapper.getCurrentReminders(userId,currentTime,date);
+    public List<HabitReminderInfoVO> getCurrentReminders(String userId, Date current, RedisCache redis) {
+        String key = String.format("Caching_%s",CachingKeys.GetUserHabitReminders);
+        ArrayDataModel<HabitReminderInfoVO> model;
+        if(redis.has(key)){
+            model = (ArrayDataModel<HabitReminderInfoVO>) redis.get(key);
+            return List.of(model.getData());
+        }
+        var res = new ArrayList<HabitReminderInfoVO>();
+        var reminders = reminderMapper.getUserReminders(userId);
+        for(var reminder:reminders){
+            if(isInFrequency(reminder.getHabitId(),current,reminder.getHabitBeginDate().getTime()))
+            {
+                res.add(reminder);
+            }
+        }
+        HabitReminderInfoVO[] data = new HabitReminderInfoVO[res.size()];
+        model = new ArrayDataModel<>();
+        res.toArray(data);
+        model.setData(data);
+        redis.set(key,model,Constants.CachingExpire);
+        return res;
     }
 }

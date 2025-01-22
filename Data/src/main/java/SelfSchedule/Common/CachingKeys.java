@@ -9,4 +9,5 @@ public final class CachingKeys {
     public static final String GetHabitRecords = "GetHabitRecords";
     public static final String GetHabitGroups = "GetHabitGroups";
     public static final String GetDefaultThumbs = "GetDefaultThumbs";
+    public static final String GetUserHabitReminders = "GetUserHabitReminders";
 }

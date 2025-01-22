@@ -12,5 +12,6 @@ public class HabitReminderInfoVO {
     private String habitName;
     private String habitDescription;
     private String habitThumb;
-    private Date time;
+    private Date habitBeginDate;
+    private String time;
 }

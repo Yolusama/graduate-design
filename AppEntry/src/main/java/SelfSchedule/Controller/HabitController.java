@@ -54,7 +54,7 @@ public class HabitController extends ControllerBase{
 
     @PutMapping("/CreateHabit")
     @ApiOperation(value = "用户添加习惯",notes = "用户创建习惯")
-    @ClearRedisCache(keys = {CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue})
+    @ClearRedisCache(keys = {CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue,CachingKeys.GetUserHabitReminders})
     public ActionResult<String> CreateHabit(@RequestBody HabitModel model, HttpServletRequest request){
         String res = habitService.createHabit(model);
         if(res==null)
@@ -63,7 +63,7 @@ public class HabitController extends ControllerBase{
     }
 
     @PatchMapping("/UpdateHabit")
-    @ClearRedisCache(keys = {CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue})
+    @ClearRedisCache(keys = {CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue,CachingKeys.GetUserHabitReminders})
     public ActionResult<HabitModel> UpdateHabit(@RequestBody HabitModel model,HttpServletRequest request){
         return successWithData(habitService.updateHabit(model));
     }
@@ -141,11 +141,11 @@ public class HabitController extends ControllerBase{
     @GetMapping("/GetCurrentHabitReminders/{userId}")
     @ApiOperation(value = "获取用户当前时间下的习惯提醒",notes = "获取用户当前时间下的习惯提醒")
     public CompletableFuture<ActionResult<List<HabitReminderInfoVO>>> GetCurrentHabitReminders(
-            @PathVariable String userId,@RequestParam Long currentTime
+            @PathVariable String userId,@RequestParam Long current
     ){
         return CompletableFuture.completedFuture(
                 successWithData(habitService.getCurrentReminders(
-                        userId,new Date(currentTime)
+                        userId,new Date(current),redis
                 ))
         );
     }

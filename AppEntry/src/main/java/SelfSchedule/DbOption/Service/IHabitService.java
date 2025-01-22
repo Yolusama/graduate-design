@@ -26,5 +26,5 @@ public interface IHabitService extends IService<Habit> {
     int removeHabit(String habitId);
     boolean isInFrequency(String habitId,Date day,Long habitBeginDate);
     List<HabitRecordVO> getHabitRecords(String habitId);
-    List<HabitReminderInfoVO> getCurrentReminders(String userId, Date currentTime);
+    List<HabitReminderInfoVO> getCurrentReminders(String userId, Date currentTime,RedisCache redis);
 }

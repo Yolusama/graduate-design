@@ -59,6 +59,10 @@ public class Task{
      * 任务信息更新时间
      */
     private Date updateTime;
+    /**
+    *用户自定义标签时带有的标签id
+    */
+    private Long labelId;
 
 
     @Override

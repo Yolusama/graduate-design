@@ -17,7 +17,8 @@ import java.util.List;
 @Mapper
 public interface TaskMapper extends BaseMapper<Task> {
     List<TaskRuleComboVO> getTasks(Page<TaskRuleComboVO>page, @Param("userId")String UserId,
-                                   @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound);
+                                   @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound,
+                                   @Param("labelId")Long labelId);
     TaskRuleComboVO getTask(@Param("userId")String userId,@Param("taskId")Long taskId,
                             @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound);
 

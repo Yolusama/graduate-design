@@ -141,7 +141,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
      */
     @Override
     @Transactional
-    public PagedData<TaskRuleComboVO> getTasks(Integer current, Integer pageSize, String userId, Date time, RedisCache redis) {
+    public PagedData<TaskRuleComboVO> getTasks(Integer current, Integer pageSize, String userId, Date time, Long labelId, RedisCache redis) {
         final String key1 = String.format("Caching_%s_%s",userId,CachingKeys.GetTasks);
         final String key2 = String.format("Caching_%s_%s",userId,CachingKeys.GetTasksDateValue);
         if(redis.has(key1)&&(redis.has(key2)&&
@@ -155,7 +155,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
 
         Page<TaskRuleComboVO> page = Page.of(current,pageSize);
         Pair<Date,Date> bound = DateUtil.bound(time);
-        List<TaskRuleComboVO> tasks = mapper.getTasks(page,userId,bound.getItem1(),bound.getItem2());
+        List<TaskRuleComboVO> tasks = mapper.getTasks(page,userId,bound.getItem1(),bound.getItem2(),labelId);
 
         boolean flag = true;
         for(TaskRuleComboVO task:tasks){
@@ -619,7 +619,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     @Override
     public Map<String, List<TaskRuleComboVO>> getTasks(String userId, Date time, RedisCache redis) {
         HashMap<String,List<TaskRuleComboVO>> res = new HashMap<>();
-        List<TaskRuleComboVO> totalData = getTasks(1,1000,userId,time,redis).getData();
+        List<TaskRuleComboVO> totalData = getTasks(1,1000,userId,time,null, redis).getData();
         for(int i = SchedulePriority.NIONU.value();i>=SchedulePriority.INU.value();i--)
             res.put(String.format("%s-%d",Constants.Quadrant,i),new ArrayList<TaskRuleComboVO>());
         for(TaskRuleComboVO item:totalData){

@@ -15,7 +15,7 @@ import java.util.Map;
 
 public interface ITaskService extends IService<Task> {
    Long createTask(TaskModel model);
-   PagedData<TaskRuleComboVO> getTasks(Integer current, Integer pageSize, String userId, Date time, RedisCache redis);
+   PagedData<TaskRuleComboVO> getTasks(Integer current, Integer pageSize, String userId, Date time,Long labelId, RedisCache redis);
    Map<String,List<TaskRuleComboVO>> getTasks(String userId,Date time,RedisCache redis);
    List<TaskReminderVO> getTaskReminders(Long taskId);
    int cancelTask(TaskModel model,Integer mode);

@@ -19,6 +19,7 @@ public class TaskRuleComboVO {
     private Date createTime;
     private String title;
     private String description;
+    private Long labelId;
     private Integer priority;
     private Boolean repeatable;
     private Integer state;

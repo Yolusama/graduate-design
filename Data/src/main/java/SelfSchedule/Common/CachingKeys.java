@@ -11,4 +11,5 @@ public final class CachingKeys {
     public static final String GetDefaultThumbs = "GetDefaultThumbs";
     public static final String GetUserHabitReminders = "GetUserHabitReminders";
     public static final String GetIndexData = "GetTasksAndHabitsAsData";
+    public static final String GetTaskLabels = "GetTaskLabels";
 }

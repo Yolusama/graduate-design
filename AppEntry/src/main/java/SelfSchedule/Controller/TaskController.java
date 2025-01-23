@@ -54,7 +54,7 @@ public class TaskController extends ControllerBase
     ){
         return CompletableFuture.completedFuture(
                 successWithData(
-                        taskService.getTasks(page,pageSize,userId,new Date(time),redis)
+                        taskService.getTasks(page,pageSize,userId,new Date(time),null , redis)
                 ));
     }
 

@@ -14,6 +14,7 @@ public final class Constants {
     public static final String DefaultThumb = "habit.png";
     public static final String CheckCodeTitle = "验证码";
     public static final String Quadrant = "quadrant";
+    public static final String TokenExpireSign = "TokenExprie";
     public static final int None = 0;
     public static final int EOF = -1;
     public static final Integer Week = 7;

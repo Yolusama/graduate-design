@@ -155,19 +155,20 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
 
         Page<TaskRuleComboVO> page = Page.of(current,pageSize);
         Pair<Date,Date> bound = DateUtil.bound(time);
-        List<TaskRuleComboVO> tasks = mapper.getTasks(page,userId,bound.getItem1(),bound.getItem2(),labelId);
+        List<TaskRuleComboVO> tasks = mapper.getTasks(page,userId,time,bound.getItem1(),bound.getItem2(),labelId);
 
         boolean flag = true;
         for(TaskRuleComboVO task:tasks){
             if(task.getDeadline()!=null&&task.getDeadline().getTime()<time.getTime())
                 continue;
             if(!task.getRepeatable()){
-                if(DateUtil.onlyDateEquals(task.getBeginTime(),time)||DateUtil.onlyDateEquals(task.getEndTime(),time)) {
+                if(DateUtil.onlyDateEquals(task.getBeginTime(),time)||DateUtil.onlyDateEquals(task.getEndTime(),time)
+                ||(task.getBeginTime().getTime()<time.getTime()&&task.getEndTime().getTime()>=time.getTime())) {
                     res.getData().add(task);
                 }
                 continue;
             }
-            TaskRuleComboVO queryTask = mapper.getTask(userId,task.getTaskId(),bound.getItem1(),bound.getItem2());
+            TaskRuleComboVO queryTask = mapper.getTask(userId,task.getTaskId(),time,bound.getItem1(),bound.getItem2());
             if(queryTask==null) {
                 if(!DateUtil.over(time,task.getBeginTime())&&!DateUtil.over(time,task.getEndTime()))
                     continue;

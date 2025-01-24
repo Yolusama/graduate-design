@@ -16,10 +16,11 @@ import java.util.List;
 
 @Mapper
 public interface TaskMapper extends BaseMapper<Task> {
-    List<TaskRuleComboVO> getTasks(Page<TaskRuleComboVO>page, @Param("userId")String UserId,
+    List<TaskRuleComboVO> getTasks(Page<TaskRuleComboVO>page, @Param("userId")String UserId,@Param("time")Date time,
                                    @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound,
                                    @Param("labelId")Long labelId);
-    TaskRuleComboVO getTask(@Param("userId")String userId,@Param("taskId")Long taskId,
+    List<TaskRuleComboVO> getTasksWithState(Page<TaskRuleComboVO>page,Integer state);
+    TaskRuleComboVO getTask(@Param("userId")String userId,@Param("taskId")Long taskId,@Param("time")Date time,
                             @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound);
 
     @Update("update Task set state=#{state} where id=#{taskId}")

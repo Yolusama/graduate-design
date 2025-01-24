@@ -6,14 +6,14 @@
         select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
               t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
                  join TaskInstance i on i.instanceId = t.id and i.instanceId = i.taskId
-                 left join TaskRepeatRule r on t.id = r.taskId where t.userId=#{userId}  and ((
-                ((t.beginTime&gt;=#{leftBound} and t.beginTime&lt;#{rightBound}) or
-                (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound}))
-                    and t.repeatable=0) or t.repeatable=1)
+                 left join TaskRepeatRule r on t.id = r.taskId
                   <where>
-                    and
+                      t.userId=#{userId}  and ((
+                      ((t.beginTime&gt;=#{leftBound} and t.beginTime&lt;#{rightBound}) or
+                      (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound})) or (t.beginTime&lt;=#{time} and t.endTime&gt;#{time})
+                      and t.repeatable=0) or t.repeatable=1)
                       <if test="labelId!=null">
-                          t.labelId = #{labelId}
+                          and  t.labelId = #{labelId}
                       </if>
                   </where>
     </select>
@@ -25,7 +25,14 @@
                                 left join TaskRepeatRule r on t.id = r.taskId
                    where t.userId=#{userId} and (
                        (t.beginTime&gt;=#{leftBound} and t.beginTime&lt;#{rightBound}) or
-                       (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound})
+                       (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound}) or (t.beginTime&lt;=#{time} and t.endTime&gt;#{time})
                        ) and (t.id in (select instanceId from TaskInstance where taskId=#{taskId}))
+    </select>
+    <select id="getTasksWithState" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
+        select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
+               t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
+                                 join TaskInstance i on i.instanceId = t.id
+                            left join TaskRepeatRule r on t.id = r.taskId
+                where t.state = #{state}
     </select>
 </mapper>

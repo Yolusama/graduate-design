@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class HabitVO {
+public class HabitVO extends IndexDisplayVO {
     private String habitId;
     private String userId;
     private String name;

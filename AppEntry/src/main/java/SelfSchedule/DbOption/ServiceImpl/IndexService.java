@@ -47,13 +47,7 @@ public class IndexService implements IndexServiceInterface {
 
     private void setTasks(Map<String, List<IndexDisplayVO>> res, String key, List<TaskRuleComboVO> tasks) {
         for (var task : tasks) {
-            IndexDisplayVO indexDatum = new IndexDisplayVO();
-            indexDatum.setAssociatedId(task.getInstanceId());
-            indexDatum.setTitle(task.getTitle());
-            indexDatum.setContent(task.getDescription());
-            indexDatum.setFinished(task.getState().equals(TaskState.FINISHED.value()));
-            indexDatum.setPriority(task.getPriority());
-            res.get(key).add(indexDatum);
+            res.get(key).add(task);
         }
     }
 
@@ -79,17 +73,10 @@ public class IndexService implements IndexServiceInterface {
                 else if (labelId.equals(TaskLabel.Abandoned))
                     state = TaskState.ABANDONED.value();
                 else state = TaskState.CANCELLED.value();
-                LambdaQueryWrapper<Task> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(Task::getState, state);
 
-                List<Task> tasks = taskMapper().selectPage(Page.of(current,size),wrapper).getRecords();
+                var tasks = taskMapper().getTasksWithState(Page.of(current,size),state);
                 for (var task : tasks) {
-                    IndexDisplayVO indexDatum = new IndexDisplayVO();
-                    indexDatum.setAssociatedId(task.getId());
-                    indexDatum.setTitle(task.getTitle());
-                    indexDatum.setContent(task.getDescription());
-                    indexDatum.setPriority(task.getPriority());
-                    res.get(key1).add(indexDatum);
+                    res.get(key1).add(task);
                 }
             }
             else{
@@ -101,13 +88,7 @@ public class IndexService implements IndexServiceInterface {
                 setTasks(res, key1, tasks);
                 List<HabitVO> habits = habitService.getHabits(current,size,userId,time,redis).getData();
                 for(var habit:habits){
-                    IndexDisplayVO indexDatum = new IndexDisplayVO();
-                    indexDatum.setAssociatedId(habit.getHabitId());
-                    indexDatum.setTitle(habit.getName());
-                    indexDatum.setContent(habit.getDescription());
-                    indexDatum.setFinished(habit.getFinished());
-                    indexDatum.setThumb(habit.getThumb());
-                    res.get(key2).add(indexDatum);
+                    res.get(key2).add(habit);
                 }
             }
         }

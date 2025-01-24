@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class TaskRuleComboVO {
+public class TaskRuleComboVO extends IndexDisplayVO{
     private Long taskId;
     private Long instanceId;
     private String userId;

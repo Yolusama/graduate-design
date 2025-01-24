@@ -5,7 +5,6 @@ import { auth} from "./User";
 
 export function CreateTask(task,successCallback){
 	 Put("/Api/Task/CreateTask",auth,task,successCallback);
-	 uni.removeStorageSync(TaskReminderKey);
 }
 
 export function GetTaskReminders(taskId,successCallback){

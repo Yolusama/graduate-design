@@ -927,6 +927,7 @@
 			res = `<text style="color:rgb(0,75,225)">开始</text></text>${timeWithoutSeconds(beginTime)}</text>`;
 		else if (dateEquals(endTime, state.selectedDay) && !dateEquals(beginTime, endTime))
 			res = `<text text style="color:black">结束</text></text>${timeWithoutSeconds(endTime)}</text>`;
+	    else res =  `<text text style="color:black">全天</text>`;		
 		return res;
 	}
 
@@ -985,7 +986,7 @@
 	}
 </script>
 
-<style scoped>
+<style>
 	#task {
 		position: relative;
 		background-color: azure;

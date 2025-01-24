@@ -877,22 +877,6 @@
 	#quadrant-1,#quadrant-2,#quadrant-3,#quadrant-4{
 		
 	}
-	
-	.quadrant-1 {
-		color: red;
-	}
-
-	.quadrant-2 {
-		color: rgb(255, 195, 0);
-	}
-
-	.quadrant-3 {
-		color: blue;
-	}
-
-	.quadrant-4 {
-		color: springgreen;
-	}
 
 	#four-quadrants .task-edit {
 		position: relative;

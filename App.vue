@@ -216,6 +216,22 @@
 		display: flex;
 		align-items: center;
 	}
+	
+	.quadrant-1 {
+		color: red;
+	}
+	
+	.quadrant-2 {
+		color: rgb(255, 195, 0);
+	}
+	
+	.quadrant-3 {
+		color: blue;
+	}
+	
+	.quadrant-4 {
+		color: springgreen;
+	}
 
 	/*每个页面公共css */
 </style>

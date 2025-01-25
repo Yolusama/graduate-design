@@ -1,20 +1,20 @@
 package SelfSchedule.Controller;
 
 import SelfSchedule.Common.CachingKeys;
+import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
 import SelfSchedule.DbOption.ServiceImpl.IndexService;
 import SelfSchedule.Entity.TaskLabel;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
 import SelfSchedule.Result.ActionResult;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.annotation.ClearRedisCache;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -26,9 +26,11 @@ import java.util.concurrent.CompletableFuture;
 @Api(tags = "首页功能控制api")
 public class IndexController extends ControllerBase{
     private final IndexServiceInterface indexService;
+    private final FileService fileService;
     @Autowired
-    public IndexController(IndexService indexService, RedisCache redis){
+    public IndexController(IndexService indexService,FileService fileService, RedisCache redis){
         this.indexService = indexService;
+        this.fileService = fileService;
         this.redis = redis;
     }
 
@@ -46,6 +48,37 @@ public class IndexController extends ControllerBase{
     @ApiOperation(value="获取用户的标签/清单",notes = "用户id为空的是系统自带清单")
     public CompletableFuture<ActionResult<List<TaskLabel>>> GetLabels(@PathVariable String userId){
         return CompletableFuture.completedFuture(successWithData(indexService.getLabels(userId,redis)));
+    }
+
+    @PostMapping("/CreateLabel")
+    @ApiOperation(value="创建标签",notes = "创建标签")
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData})
+    public ActionResult<Pair<Long,String>> CreateLabel(@RequestPart("labelName") String labelName,
+                                                       @RequestPart("userId") String userId,@RequestPart("icon")String icon,
+                                                       @RequestPart("isList")Boolean isList,
+                                                       @RequestPart("file")MultipartFile file,HttpServletRequest request)
+    {
+        if(indexService.checkLabelNameExists(labelName))
+            return fail("标签名重复！");
+          return successWithData(indexService.createLabel(labelName,userId,icon,isList,file,fileService));
+    }
+
+    @PostMapping("/UpdateLabel")
+    @ApiOperation(value="更新标签",notes = "更新标签")
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData})
+    public ActionResult<String> UpdateLabel(@RequestPart("labelId")Long labelId,@RequestPart("labelName") String labelName,
+                                            @RequestPart("icon")String icon, @RequestPart("isList")Boolean isList,
+                                            @RequestPart("file")MultipartFile file,HttpServletRequest request)
+    {
+        if(indexService.checkLabelNameExists(labelName))
+            return fail("标签名重复！");
+        return successWithData(indexService.updateLabel(labelId,labelName,icon,isList,file,fileService));
+    }
+
+    @GetMapping("/CheckLabelNameExists")
+    @ApiOperation(value="检查标签名是否存在",notes = "标签名为清单时可重复，为标签时不可重复")
+    public ActionResult<Boolean> CheckLabelExists(@RequestParam String labelName){
+        return successWithData(indexService.checkLabelNameExists(labelName));
     }
 
 }

@@ -2,6 +2,7 @@ package SelfSchedule.DbOption.ServiceImpl;
 
 import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
+import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Mapper.HabitMapper;
 import SelfSchedule.DbOption.Mapper.TaskLabelMapper;
 import SelfSchedule.DbOption.Mapper.TaskMapper;
@@ -16,11 +17,15 @@ import SelfSchedule.Entity.VO.HabitVO;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
 import SelfSchedule.Entity.VO.TaskRuleComboVO;
 import SelfSchedule.Model.ArrayDataModel;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -120,5 +125,67 @@ public class IndexService implements IndexServiceInterface {
         model.setData(data);
         redis.set(key,model,Constants.CachingExpire);
         return res;
+    }
+
+    @Override
+    @Transactional
+    public Pair<Long,String> createLabel(String labelName, String userId, String icon, Boolean isList, MultipartFile file, FileService fileService) {
+       TaskLabel label = new TaskLabel();
+       label.setName(labelName);
+       label.setIsList(isList);
+       label.setCreateTime(Constants.Now());
+       label.setNotCustom(false);
+       label.setUserId(userId);
+
+       if(file==null){
+           if(label.getIsList()&&icon.equals(Constants.DefaultListIcon))
+               label.setIcon(Constants.DefaultListIcon);
+           else if(!label.getIsList()&&icon.equals(Constants.DefaultLabelIcon))
+               label.setIcon(Constants.DefaultLabelIcon);
+       }
+       else
+           label.setIcon(updateIconOptions(isList,icon,file,fileService));
+       labelMapper.insert(label);
+       return Pair.makePair(label.getId(),label.getIcon());
+    }
+
+    @Override
+    @Transactional
+    public String updateLabel(Long labelId, String labelName, String icon, Boolean isList, MultipartFile file, FileService fileService) {
+        LambdaUpdateWrapper<TaskLabel> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(TaskLabel::getName,labelName);
+        if(file!=null)
+        {
+            icon = updateIconOptions(isList,icon,file,fileService);
+            wrapper.set(TaskLabel::getIcon,icon);
+        }
+        wrapper.eq(TaskLabel::getId,labelId);
+        labelMapper.update(wrapper);
+        return icon;
+    }
+
+    /*
+    * 标签名不可重复，清单可以，故需要在键入标签名检测
+     */
+    @Override
+    public boolean checkLabelNameExists(String labelName) {
+        LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false);
+        Long count = labelMapper.selectCount(wrapper);
+        return count > 0;
+    }
+
+    private String updateIconOptions(boolean isList, String icon, MultipartFile file, FileService fileService){
+        String fileName;
+        if(isList){
+            if(!icon.equals(Constants.DefaultListIcon))
+                fileService.removeImage(icon);
+        }
+        else{
+            if(!icon.equals(Constants.DefaultLabelIcon))
+                fileService.removeImage(icon);
+        }
+        fileName = fileService.uploadImage(file);
+        return fileName;
     }
 }

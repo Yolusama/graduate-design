@@ -10,6 +10,7 @@ import HabitReminderModal from './components/HabitReminderModal.vue'
 import TaskEditor from './components/TaskEditor.vue';
 import HabitEditor from './components/HabitEditor.vue';
 import HabitDetail from './components/HabitDetail.vue';
+import LabelEditor from './components/LabelEditor.vue';
 // #ifndef VUE3
 import Vue from 'vue'
 import './uni.promisify.adaptor'
@@ -38,6 +39,7 @@ export function createApp() {
   app.component('task-editor',TaskEditor);
   app.component("habit-editor",HabitEditor);
   app.component("habit-detail",HabitDetail);
+  app.component("label-editor",LabelEditor);
   
   return {
     app

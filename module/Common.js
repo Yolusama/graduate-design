@@ -417,3 +417,5 @@ export function notifyHabit(reminder) {
 
 export const TaskReminderKey = "task-reminders";
 export const HabitReminderKey = "habit-reminders";
+export const DefaultListIcon = "list.png";
+export const DefaultLabelIcon = "label.png";

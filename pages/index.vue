@@ -15,9 +15,11 @@
 									<image :src="imgSrc(list.icon)" class="label-icon"></image>
 									<text class="text">{{list.name}}</text>
 									<view style="margin-left: 5%;display: flex;width:80px">
-										<uni-icons type="compose" v-if="!list.notCustom"></uni-icons>
+										<uni-icons type="compose" v-if="!list.notCustom"
+											@click="openLabelEditor(list,true);">
+										</uni-icons>
 										<text class="hide">隐藏</text>
-										<uni-icons type="trash"  v-if="!list.notCustom"></uni-icons>
+										<uni-icons type="trash" v-if="!list.notCustom"></uni-icons>
 									</view>
 								</view>
 								<view style="height: 100%;width:100%" v-if="list.id==IdOfLableNamed">
@@ -25,21 +27,25 @@
 										<image :src="imgSrc(list.icon)" class="label-icon"></image>
 										<text class="text">{{list.name}}</text>
 										<view @click.stop="state.labelsExpand=!state.labelsExpand" class="right"
-											:style="state.labelsExpand?state.labelsExpandStyle:''">
+											:style="state.labelsExpand?state.labelsExpandStyle:''"
+											v-if="state.labels.length>0">
 											<uni-icons type="right" color="rgb(187, 187, 187)">
 											</uni-icons>
 										</view>
 									</view>
 									<scroll-view style="height: 30vh;" v-if="state.labelsExpand">
-										<view class="label-info" v-for="(label,index1) in state.labels" :key="index1">
+										<view class="label-info" v-for="(label,index1) in state.labels" :key="index1"
+											style="margin-left: 4%;">
 											<image :src="imgSrc(label.icon)" class="label-icon"></image>
-											<text class="text">{{label.name}}</text>
+											<text class="text" syule="width:80px;">{{label.name}}</text>
+											<view style="margin-left: 5%;display: flex;width:80px">
+												<uni-icons type="compose"
+													@click="openLabelEditor(label,false);"></uni-icons>
+												<text class="hide" style="margin-left: 6%;margin-right: 6%;">隐藏</text>
+												<uni-icons type="trash"></uni-icons>
+											</view>
 										</view>
-										<view style="margin-left: 5%;display: flex;width:80px">
-											<uni-icons type="compose"></uni-icons>
-											<text class="hide">隐藏</text>
-											<uni-icons type="trash"></uni-icons>
-										</view>
+
 									</scroll-view>
 								</view>
 							</template>
@@ -47,14 +53,19 @@
 					</uni-list>
 				</scroll-view>
 				<view class="add-list">
-					<view class="add">
-					<uni-icons type="plusempty" color="rgb(0,75,235)"></uni-icons><text style="margin-left: 2px;">清单</text>
+					<view class="add" @click="openLabelEditor(null,true)">
+						<uni-icons type="plusempty" color="rgb(0,75,235)"></uni-icons><text
+							style="margin-left: 2px;">清单</text>
 					</view>
-					<view class="add" style="margin-left:4%;margin-right: 4%;">
-					<uni-icons type="plusempty" color="rgb(0,75,235)"></uni-icons><text style="margin-left: 2px;">标签</text>
+					<view class="add" style="margin-left:4%;margin-right: 4%;" @click="openLabelEditor(null,false)">
+						<uni-icons type="plusempty" color="rgb(0,75,235)"></uni-icons><text
+							style="margin-left: 2px;">标签</text>
 					</view>
 					<text style="font-size: 13px;color: rgb(0,75,235);">查看隐藏</text>
 				</view>
+				<label-editor :label="state.label" :isLabelUpdate="state.label!=null" v-if="state.show.label"
+					:isList="state.isList" @created="labelCreated" @updated="labelUpdated" @close="labelEditorClose"
+					ref="indexLabelEditor"></label-editor>
 			</view>
 		</uni-popup>
 		<scroll-view class="index-content" direction="vertical">
@@ -126,9 +137,12 @@
 		task: null,
 		show: {
 			task: false,
-			habit: false
+			habit: false,
+			label: false
 		},
 		habit: null,
+		label: null,
+		isList: false,
 		lists: [],
 		labels: [],
 		labelsExpand: false,
@@ -138,6 +152,7 @@
 
 	const indexTaskEditor = ref(null);
 	const indexDetail = ref(null);
+	const indexLabelEditor = ref(null);
 	const labelDrawer = ref(null);
 	const currentLabel = ref("current-label");
 
@@ -173,6 +188,33 @@
 		});
 	}
 
+	function openLabelEditor(label,isList) {
+		state.show.label = true;
+		state.isList = isList;
+		if(label!=null)
+		   state.label = label;
+		nextTick(() => {
+			indexLabelEditor.value.open();
+		});
+	}
+
+	function labelCreated(e) {
+		const label = e.item;
+		if (label.isList)
+			state.lists.splice(IdOfLableNamed, 0, label);
+		else
+			state.labels.push(label);
+	}
+
+	function labelUpdated(e) {
+		const index = e.index;
+		const label = e.item;
+		if (label.isList)
+			state.lists[index] = label;
+		else
+			state.labels[index] = label;
+	}
+
 	function seeHabitDetail(habit) {
 		state.habit = habit;
 		state.show.habit = true;
@@ -185,6 +227,10 @@
 
 	function habitDetailClose() {
 		delayToRun(() => state.show.habit = false, 150);
+	}
+
+	function labelEditorClose() {
+		delayToRun(() => state.show.label = false, 150);
 	}
 
 	function getData(lableId) {
@@ -289,8 +335,8 @@
 		margin-left: 6%;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		text-wrap:nowrap;
-		width:100px;
+		text-wrap: nowrap;
+		width: 100px;
 	}
 
 	#task-labels .label-info .right {
@@ -317,9 +363,9 @@
 		height: 20px;
 		align-items: center;
 	}
-	
-	#task-labels .add-list .add{
-		color: rgb(3%,3%,3%);
+
+	#task-labels .add-list .add {
+		color: rgb(3%, 3%, 3%);
 		font-size: 13px;
 	}
 </style>

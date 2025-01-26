@@ -10,12 +10,22 @@ export function GetLabels(userId,successCallback){
 	Get(`/Api/Index/GetLabels/${userId}`,auth,successCallback);
 }
 
-export function createLabel(label,file,successCallback){
-	UploadFile("/Api/Index/CreateLabel",file,formDataAuth,label,successCallback);
+export function CreateLabel(label,file,successCallback){
+	const data = {};
+	data.labelName = label.name;
+	copy(label,data);
+	UploadFile("/Api/Index/CreateLabel",file,formDataAuth,data,successCallback);
 }
 
-export function updateLabel(label,file,successCallback){
-	UploadFile("/Api/Index/UpdateLabel",file,formDataAuth,label,successCallback);
+export function UpdateLabel(label,file,successCallback){
+	const data = {};
+	data.labelName = label.name;
+	copy(label,data);
+	UploadFile("/Api/Index/UpdateLabel",file,formDataAuth,data,successCallback);
+}
+
+export function CheckLabelNameExists(labelName,successCallback){
+	Get(`/Api/Index/CheckLabelNameExists?labelName=${labelName}`,auth,successCallback);
 }
 
 export const IdOfLableNamed = 4;

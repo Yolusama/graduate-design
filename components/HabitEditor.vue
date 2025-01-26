@@ -439,10 +439,6 @@
 		});
 		loading("", () => {
 			popup.value.close();
-			uni.showToast({
-				title:"已更新",
-				icon:"success"
-			});
 		}, 750);
 	}
 

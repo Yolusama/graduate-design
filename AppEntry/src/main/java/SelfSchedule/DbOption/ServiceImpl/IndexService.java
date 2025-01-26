@@ -57,7 +57,7 @@ public class IndexService implements IndexServiceInterface {
     }
 
     @Override
-    public Map<String, List<IndexDisplayVO>> getData(String userId, Long labelId, RedisCache redis) {
+    public Map<String, List<IndexDisplayVO>> getData(String userId, Long labelId, Date time, RedisCache redis) {
 
         final String key = String.format("Caching_%s_%s",userId, CachingKeys.GetIndexData);
         if(redis.has(key))
@@ -68,7 +68,6 @@ public class IndexService implements IndexServiceInterface {
         res.put(key1,new ArrayList<IndexDisplayVO>());
         res.put(key2,new ArrayList<IndexDisplayVO>());
 
-        Date time = Constants.Now();
         final int current = 1, size = 1000;
         if(TaskLabel.isBaseLabel(labelId)) {
             if(labelId.equals(TaskLabel.Finished)||labelId.equals(TaskLabel.Abandoned)||labelId.equals(TaskLabel.RecycleBin)) {
@@ -117,7 +116,7 @@ public class IndexService implements IndexServiceInterface {
         }
 
         LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(TaskLabel::getUserId,null).or().eq(TaskLabel::getUserId,userId);
+        wrapper.isNull(TaskLabel::getUserId).or().eq(TaskLabel::getUserId,userId);
         List<TaskLabel> res = labelMapper.selectList(wrapper);
         TaskLabel[] data = new TaskLabel[res.size()];
         res.toArray(data);
@@ -136,11 +135,10 @@ public class IndexService implements IndexServiceInterface {
        label.setCreateTime(Constants.Now());
        label.setNotCustom(false);
        label.setUserId(userId);
-
-       if(file==null){
-           if(label.getIsList()&&icon.equals(Constants.DefaultListIcon))
+       if(file.getOriginalFilename().indexOf('.')<0){
+           if(label.getIsList())
                label.setIcon(Constants.DefaultListIcon);
-           else if(!label.getIsList()&&icon.equals(Constants.DefaultLabelIcon))
+           else if(!label.getIsList())
                label.setIcon(Constants.DefaultLabelIcon);
        }
        else
@@ -154,7 +152,7 @@ public class IndexService implements IndexServiceInterface {
     public String updateLabel(Long labelId, String labelName, String icon, Boolean isList, MultipartFile file, FileService fileService) {
         LambdaUpdateWrapper<TaskLabel> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(TaskLabel::getName,labelName);
-        if(file!=null)
+        if(file.getOriginalFilename().indexOf('.')<0)
         {
             icon = updateIconOptions(isList,icon,file,fileService);
             wrapper.set(TaskLabel::getIcon,icon);
@@ -173,6 +171,20 @@ public class IndexService implements IndexServiceInterface {
         wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false);
         Long count = labelMapper.selectCount(wrapper);
         return count > 0;
+    }
+
+    @Override
+    @Transactional
+    public int hideOrShowLabel(Boolean display, Long labelId) {
+        LambdaUpdateWrapper<TaskLabel> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(TaskLabel::getDisplay,display).eq(TaskLabel::getId,labelId);
+        return labelMapper.update(wrapper);
+    }
+
+    @Override
+    @Transactional
+    public int removeLabel(Long labelId) {
+        return labelMapper.deleteById(labelId);
     }
 
     private String updateIconOptions(boolean isList, String icon, MultipartFile file, FileService fileService){

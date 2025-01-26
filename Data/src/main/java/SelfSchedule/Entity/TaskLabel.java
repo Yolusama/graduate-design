@@ -26,9 +26,10 @@ public class TaskLabel {
      */
     private String name;
     /**
-     * 显示模式，1.显示，2.有内容时显示，3.隐藏
+     * 显示模式，1.显示，0.隐藏
      */
-    private Integer showMode;
+    @TableField(jdbcType = JdbcType.TINYINT)
+    private Boolean display;
     /**
      * 创建时间
      */

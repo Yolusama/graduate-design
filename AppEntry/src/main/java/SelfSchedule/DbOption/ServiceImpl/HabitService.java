@@ -2,6 +2,7 @@ package SelfSchedule.DbOption.ServiceImpl;
 
 import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
+import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Mapper.*;
 import SelfSchedule.DbOption.Service.IHabitService;
 import SelfSchedule.Entity.*;
@@ -170,7 +171,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
             }
             if(today.getTime()>=date.getTime()) {
                 LambdaQueryWrapper<HabitRecord> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(HabitRecord::getHabitId, habit.getHabitId()).eq(HabitRecord::getDay, date);
+                wrapper.eq(HabitRecord::getHabitId, habit.getHabitId()).eq(HabitRecord::getDay,date);
                 HabitRecord record = recordMapper.selectOne(wrapper);
                 if (record == null) {
                     record = new HabitRecord();

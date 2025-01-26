@@ -1,6 +1,7 @@
 package SelfSchedule.Controller;
 
 import SelfSchedule.Common.CachingKeys;
+import SelfSchedule.Common.Constants;
 import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
 import SelfSchedule.DbOption.ServiceImpl.IndexService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -40,8 +42,9 @@ public class IndexController extends ControllerBase{
             CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue})
     public CompletableFuture<ActionResult<Map<String, List<IndexDisplayVO>>>> GetData(@PathVariable String userId,
                                                                                       @PathVariable Long labelId,
+                                                                                      @RequestParam Long time,
                                                                                       HttpServletRequest request){
-        return CompletableFuture.completedFuture(successWithData(indexService.getData(userId,labelId,redis)));
+        return CompletableFuture.completedFuture(successWithData(indexService.getData(userId,labelId,new Date(time),redis)));
     }
 
     @GetMapping("/GetLabels/{userId}")
@@ -52,33 +55,53 @@ public class IndexController extends ControllerBase{
 
     @PostMapping("/CreateLabel")
     @ApiOperation(value="创建标签",notes = "创建标签")
-    @ClearRedisCache(keys = {CachingKeys.GetIndexData})
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData,CachingKeys.GetTaskLabels})
     public ActionResult<Pair<Long,String>> CreateLabel(@RequestPart("labelName") String labelName,
                                                        @RequestPart("userId") String userId,@RequestPart("icon")String icon,
-                                                       @RequestPart("isList")Boolean isList,
+                                                       @RequestPart("isList")String isList,
                                                        @RequestPart("file")MultipartFile file,HttpServletRequest request)
     {
-        if(indexService.checkLabelNameExists(labelName))
+        Boolean _isList = Boolean.parseBoolean(isList);
+        if(!_isList&&indexService.checkLabelNameExists(labelName))
             return fail("标签名重复！");
-          return successWithData(indexService.createLabel(labelName,userId,icon,isList,file,fileService));
+          return successWithData(indexService.createLabel(labelName,userId,icon,_isList,file,fileService));
     }
 
     @PostMapping("/UpdateLabel")
     @ApiOperation(value="更新标签",notes = "更新标签")
-    @ClearRedisCache(keys = {CachingKeys.GetIndexData})
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData,CachingKeys.GetTaskLabels})
     public ActionResult<String> UpdateLabel(@RequestPart("labelId")Long labelId,@RequestPart("labelName") String labelName,
-                                            @RequestPart("icon")String icon, @RequestPart("isList")Boolean isList,
+                                            @RequestPart("icon")String icon, @RequestPart("isList")String isList,
                                             @RequestPart("file")MultipartFile file,HttpServletRequest request)
     {
-        if(indexService.checkLabelNameExists(labelName))
+        Boolean _isList = Boolean.parseBoolean(isList);
+        if(!_isList&&indexService.checkLabelNameExists(labelName))
             return fail("标签名重复！");
-        return successWithData(indexService.updateLabel(labelId,labelName,icon,isList,file,fileService));
+        return successWithData(indexService.updateLabel(labelId,labelName,icon,_isList,file,fileService));
     }
 
     @GetMapping("/CheckLabelNameExists")
     @ApiOperation(value="检查标签名是否存在",notes = "标签名为清单时可重复，为标签时不可重复")
     public ActionResult<Boolean> CheckLabelExists(@RequestParam String labelName){
         return successWithData(indexService.checkLabelNameExists(labelName));
+    }
+
+    @PatchMapping("/HideOrShowLabel/{labelId}")
+    @ApiOperation(value="隐藏或显示标签",notes = "显示或隐藏标签/清单")
+    public ActionResult HideOrShowLabel(@PathVariable Long labelId,@RequestParam Boolean display){
+        int res = indexService.hideOrShowLabel(display,labelId);
+        if(res== Constants.AbNormalState)
+            return fail("操作失败！");
+        return ok("已隐藏标签/清单");
+    }
+
+    @DeleteMapping("/RemoveLabel/{labelId}")
+    @ApiOperation(value="移除标签",notes = "移除标签/清单")
+    public ActionResult RemoveLabel(@PathVariable Long labelId){
+        int res = indexService.removeLabel(labelId);
+        if(res== Constants.AbNormalState)
+            return fail("操作失败！");
+        return ok("已移除标签/清单");
     }
 
 }

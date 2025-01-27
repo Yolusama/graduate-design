@@ -7,6 +7,7 @@ import SelfSchedule.DbOption.Service.IndexServiceInterface;
 import SelfSchedule.DbOption.ServiceImpl.IndexService;
 import SelfSchedule.Entity.TaskLabel;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
+import SelfSchedule.Entity.VO.TaskLabelVO;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
@@ -49,7 +50,7 @@ public class IndexController extends ControllerBase{
 
     @GetMapping("/GetLabels/{userId}")
     @ApiOperation(value="获取用户的标签/清单",notes = "用户id为空的是系统自带清单")
-    public CompletableFuture<ActionResult<List<TaskLabel>>> GetLabels(@PathVariable String userId){
+    public CompletableFuture<ActionResult<List<TaskLabelVO>>> GetLabels(@PathVariable String userId){
         return CompletableFuture.completedFuture(successWithData(indexService.getLabels(userId,redis)));
     }
 
@@ -62,32 +63,29 @@ public class IndexController extends ControllerBase{
                                                        @RequestPart("file")MultipartFile file,HttpServletRequest request)
     {
         Boolean _isList = Boolean.parseBoolean(isList);
-        if(!_isList&&indexService.checkLabelNameExists(labelName))
-            return fail("标签名重复！");
-          return successWithData(indexService.createLabel(labelName,userId,icon,_isList,file,fileService));
+        return successWithData(indexService.createLabel(labelName,userId,icon,_isList,file,fileService));
     }
 
     @PostMapping("/UpdateLabel")
     @ApiOperation(value="更新标签",notes = "更新标签")
     @ClearRedisCache(keys = {CachingKeys.GetIndexData,CachingKeys.GetTaskLabels})
-    public ActionResult<String> UpdateLabel(@RequestPart("labelId")Long labelId,@RequestPart("labelName") String labelName,
+    public ActionResult<String> UpdateLabel(@RequestPart("labelId")String labelId,@RequestPart("labelName") String labelName,
                                             @RequestPart("icon")String icon, @RequestPart("isList")String isList,
                                             @RequestPart("file")MultipartFile file,HttpServletRequest request)
     {
         Boolean _isList = Boolean.parseBoolean(isList);
-        if(!_isList&&indexService.checkLabelNameExists(labelName))
-            return fail("标签名重复！");
-        return successWithData(indexService.updateLabel(labelId,labelName,icon,_isList,file,fileService));
+        return successWithData(indexService.updateLabel(Long.parseLong(labelId),labelName,icon,_isList,file,fileService));
     }
 
-    @GetMapping("/CheckLabelNameExists")
+    @GetMapping("/CheckLabelNameExists/{userId}")
     @ApiOperation(value="检查标签名是否存在",notes = "标签名为清单时可重复，为标签时不可重复")
-    public ActionResult<Boolean> CheckLabelExists(@RequestParam String labelName){
-        return successWithData(indexService.checkLabelNameExists(labelName));
+    public ActionResult<Boolean> CheckLabelExists(@PathVariable String userId,@RequestParam String labelName){
+        return successWithData(indexService.checkLabelNameExists(labelName,userId));
     }
 
     @PatchMapping("/HideOrShowLabel/{labelId}")
     @ApiOperation(value="隐藏或显示标签",notes = "显示或隐藏标签/清单")
+    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels})
     public ActionResult HideOrShowLabel(@PathVariable Long labelId,@RequestParam Boolean display){
         int res = indexService.hideOrShowLabel(display,labelId);
         if(res== Constants.AbNormalState)
@@ -97,11 +95,18 @@ public class IndexController extends ControllerBase{
 
     @DeleteMapping("/RemoveLabel/{labelId}")
     @ApiOperation(value="移除标签",notes = "移除标签/清单")
+    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels})
     public ActionResult RemoveLabel(@PathVariable Long labelId){
-        int res = indexService.removeLabel(labelId);
+        int res = indexService.removeLabel(labelId,fileService);
         if(res== Constants.AbNormalState)
             return fail("操作失败！");
         return ok("已移除标签/清单");
+    }
+
+    @PostMapping("/CreateOrGetLabel/{userId}")
+    @ApiOperation(value="创建或获取标签",notes = "标签不存在时创建")
+    public ActionResult<TaskLabelVO> CreateOrGetLabel(@PathVariable String userId,@RequestParam String labelName){
+        return successWithData(indexService.createOrCheckLabel(labelName,userId));
     }
 
 }

@@ -15,10 +15,12 @@ import SelfSchedule.Entity.Task;
 import SelfSchedule.Entity.TaskLabel;
 import SelfSchedule.Entity.VO.HabitVO;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
+import SelfSchedule.Entity.VO.TaskLabelVO;
 import SelfSchedule.Entity.VO.TaskRuleComboVO;
 import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
+import SelfSchedule.Utils.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -107,18 +109,16 @@ public class IndexService implements IndexServiceInterface {
     }
 
     @Override
-    public List<TaskLabel> getLabels(String userId,RedisCache redis) {
-        ArrayDataModel<TaskLabel> model;
+    public List<TaskLabelVO> getLabels(String userId, RedisCache redis) {
+        ArrayDataModel<TaskLabelVO> model;
         String key = String.format("Caching_%s_%s",userId,CachingKeys.GetTaskLabels);
         if(redis.has(key)){
-            model =(ArrayDataModel<TaskLabel>)redis.get(key);
+            model =(ArrayDataModel<TaskLabelVO>)redis.get(key);
             return List.of(model.getData());
         }
 
-        LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
-        wrapper.isNull(TaskLabel::getUserId).or().eq(TaskLabel::getUserId,userId);
-        List<TaskLabel> res = labelMapper.selectList(wrapper);
-        TaskLabel[] data = new TaskLabel[res.size()];
+        List<TaskLabelVO> res = labelMapper.getLabels(userId);
+        TaskLabelVO[] data = new TaskLabelVO[res.size()];
         res.toArray(data);
         model = new ArrayDataModel<>();
         model.setData(data);
@@ -152,7 +152,7 @@ public class IndexService implements IndexServiceInterface {
     public String updateLabel(Long labelId, String labelName, String icon, Boolean isList, MultipartFile file, FileService fileService) {
         LambdaUpdateWrapper<TaskLabel> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(TaskLabel::getName,labelName);
-        if(file.getOriginalFilename().indexOf('.')<0)
+        if(file.getOriginalFilename().indexOf('.')>=0)
         {
             icon = updateIconOptions(isList,icon,file,fileService);
             wrapper.set(TaskLabel::getIcon,icon);
@@ -163,12 +163,12 @@ public class IndexService implements IndexServiceInterface {
     }
 
     /*
-    * 标签名不可重复，清单可以，故需要在键入标签名检测
+    * 用户标签名不可重复，清单可以，故需要在键入标签名检测
      */
     @Override
-    public boolean checkLabelNameExists(String labelName) {
+    public boolean checkLabelNameExists(String labelName,String userId) {
         LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false);
+        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false).eq(TaskLabel::getUserId,userId);
         Long count = labelMapper.selectCount(wrapper);
         return count > 0;
     }
@@ -183,12 +183,35 @@ public class IndexService implements IndexServiceInterface {
 
     @Override
     @Transactional
-    public int removeLabel(Long labelId) {
+    public int removeLabel(Long labelId, FileService fileService) {
+        String icon = labelMapper.getIcon(labelId);
+        if(!icon.equals(Constants.DefaultLabelIcon)&&!icon.equals(Constants.DefaultListIcon))
+            fileService.removeImage(icon);
         return labelMapper.deleteById(labelId);
     }
 
+    @Override
+    public TaskLabelVO createOrCheckLabel(String labelName, String userId) {
+        LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false);
+        TaskLabel label = labelMapper.selectOne(wrapper);
+        if(label == null)
+        {
+           label = new TaskLabel();
+           label.setIcon(Constants.DefaultLabelIcon);
+           label.setCreateTime(Constants.Now());
+           label.setUserId(userId);
+           label.setIsList(false);
+           label.setName(labelName);
+           labelMapper.insert(label);
+        }
+        TaskLabelVO res = ObjectUtil.copy(label,new TaskLabelVO());
+        res.setLabelId(label.getId());
+        res.setLabelName(labelName);
+        return res;
+    }
+
     private String updateIconOptions(boolean isList, String icon, MultipartFile file, FileService fileService){
-        String fileName;
         if(isList){
             if(!icon.equals(Constants.DefaultListIcon))
                 fileService.removeImage(icon);
@@ -197,7 +220,7 @@ public class IndexService implements IndexServiceInterface {
             if(!icon.equals(Constants.DefaultLabelIcon))
                 fileService.removeImage(icon);
         }
-        fileName = fileService.uploadImage(file);
-        return fileName;
+
+        return fileService.uploadImage(file);
     }
 }

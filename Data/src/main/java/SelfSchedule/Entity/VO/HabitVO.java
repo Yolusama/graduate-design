@@ -21,7 +21,6 @@ public class HabitVO extends IndexDisplayVO {
     private Integer mostDays;
     private Integer continuousDays;
     private Date beginDate;
-    private Integer priority;
     private Integer aimDays;
     private Map<String,Integer> days;
     private Integer weekPersistDays;

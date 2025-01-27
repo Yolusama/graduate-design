@@ -15,6 +15,7 @@ public class TaskModel {
     private Date beginTime;
     private Date endTime;
     private String description;
+    private Long labelId;
     private Integer priority;
     private String title;
     private TaskReminderInfoModel[] reminderInfoModels;

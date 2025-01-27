@@ -14,7 +14,7 @@
 				<text class="upload" @click="uploadImage">上传图片</text>
 			</view>
 			<view style="width: 92%;margin-top: 3%;">
-				<uni-easyinput v-model="state.label.name" :placeholder="isList?'清单名':'标签名'" focus @change="check"
+				<uni-easyinput v-model="state.label.labelName" :placeholder="isList?'清单名':'标签名'" @change="check"
 					@input="input"></uni-easyinput>
 			</view>
 		</view>
@@ -54,7 +54,8 @@
 		label: {},
 		selectedFile: null,
 		imgShow: "",
-		canCreate: false
+		canCreate: false,
+		userId:""
 	});
 	const isList = ref(pros.isList);
 	const label = ref(pros.label);
@@ -63,19 +64,21 @@
 	onMounted(() => {
 		if (isLabelUpdate.value == undefined)
 			isLabelUpdate.value = false;
+		const user = uni.getStorageSync("user");
+		state.userId = user.uid;
 		if (label.value != undefined)
 			state.label = label.value;
 		else {
-			const user = uni.getStorageSync("user");
 			state.label = {
-				userId: user.uid,
-				name: "",
+				userId: state.userId,
+				labelName: "",
 				isList: isList.value,
 				icon: isList.value ? DefaultListIcon : DefaultLabelIcon
 			};
 		}
 		state.isLabelUpdate = isLabelUpdate.value;
-		console.log(isLabelUpdate.value);
+		if(isLabelUpdate.value)
+		   state.canCreate = true;
 		state.imgShow = imgSrc(state.label.icon);
 	});
 
@@ -141,7 +144,7 @@
 					});
 					return;
 				}
-				state.label.icon = res.data.item2;
+				state.label.icon = res.data;
 				const label = {};
 				copy(state.label, label);
 				emits("updated", {
@@ -155,7 +158,7 @@
 
 	function check(e) {
 		if (isList.value) return;
-		CheckLabelNameExists(e, response => {
+		CheckLabelNameExists(e,state.userId,response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({

@@ -106,7 +106,7 @@
 	});
 	
 	const habit = ref(pros.habit);
-	const emits = defineEmits(["close","finish","removed","updated"]);
+	const emits = defineEmits(["close","finished","removed","updated"]);
 
 	onMounted(() => {
        if(habit.value!=undefined&&habit.value!=null)
@@ -150,7 +150,7 @@
 			state.selectedHabit.finished = finished;
 			state.selectedHabit.finishTime = model.finishTime;
 			recordFinish(res.data);
-			emits("finish",{item:state.selectedHabit});
+			emits("finished",{item:state.selectedHabit});
 		});
 	}
 	

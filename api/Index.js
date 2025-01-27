@@ -1,5 +1,5 @@
-import { copy } from "../module/Common";
-import { Get, UploadFile } from "../module/Request"
+import { Delete, Get, Patch, Post, UploadFile } from "../module/Request"
+import { FinishOrNot } from "./Task";
 import { auth, formDataAuth } from "./User"
 
 export function GetData(userId,labelId,time,successCallback){
@@ -11,21 +11,31 @@ export function GetLabels(userId,successCallback){
 }
 
 export function CreateLabel(label,file,successCallback){
-	const data = {};
-	data.labelName = label.name;
-	copy(label,data);
 	UploadFile("/Api/Index/CreateLabel",file,formDataAuth,data,successCallback);
 }
 
 export function UpdateLabel(label,file,successCallback){
-	const data = {};
-	data.labelName = label.name;
-	copy(label,data);
 	UploadFile("/Api/Index/UpdateLabel",file,formDataAuth,data,successCallback);
 }
 
-export function CheckLabelNameExists(labelName,successCallback){
-	Get(`/Api/Index/CheckLabelNameExists?labelName=${labelName}`,auth,successCallback);
+export function CheckLabelNameExists(labelName,userId,successCallback){
+	Get(`/Api/Index/CheckLabelNameExists/${userId}?labelName=${labelName}`,auth,successCallback);
+}
+
+export function RemoveLabel(labelId,successCallback){
+	Delete(`/Api/Index/RemoveLabel/${labelId}`,auth,successCallback);
+}
+
+export function HideOrShowLabel(labelId,display,successCallback){
+	Patch(`/Api/Index/HideOrShowLabel/${labelId}?display=${display}`,auth,{},successCallback);
+}
+
+export function FinishTaskOrNot(taskId,state,successCallback){
+	FinishOrNot(taskId,state,successCallback);
+}
+
+export function CreateOrGetLabel(labelName,userId,successCallback){
+	Post(`/Api/Index/CreateOrGetLabel/${userId}?labelName=${labelName}`,auth,{},successCallback);
 }
 
 export const IdOfLableNamed = 4;

@@ -125,7 +125,6 @@
 							<view style="display: flex;align-items: center;">
 								<image src="../static/闪电.png" style="width: 24px;height: 24px;"></image>
 								<text style="margin-left: 3px;">重复</text>
-
 							</view>
 							<view v-if="state.isTaskUpdate&&state.frequency.selection>0" @click="changeRepeatRule"
 								size="mini" style="margin-left: 5px;font-size: 13px;">修改</view>

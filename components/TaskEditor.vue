@@ -10,6 +10,8 @@
 					class="image" />
 				<image src="../static/plane-filled.png" v-if="state.isTaskUpdate||state.canCreateTask" :size="18"
 					class="image" @click="editTask" />
+				<image :src="imgSrc(DefaultLabelIcon)" v-if="state.hasLabelSetter" @click="takeLabel" class="image"></image>
+				<text class="label-text" v-if="state.hasLabelSetter&&label!=undefined">{{label.name}}</text>
 			</view>
 			<uni-easyinput v-model="state.task.title" placeholder="标题" focus style="margin-bottom: 2px;margin-top: 3px;"
 				@input="titleInput"></uni-easyinput>
@@ -178,7 +180,8 @@
 		dateGE,
 		weekDaySign,
 		buildElById,
-		TaskReminderKey
+		TaskReminderKey,
+		DefaultLabelIcon
 	} from '../module/Common';
 	import {
 		CreateTask,
@@ -193,13 +196,18 @@
 	import {
 		user
 	} from '../api/User';
+	import { imgSrc } from '../module/Request';
+import { CreateOrGetLabel } from '../api/Index';
 
 	
 	const pros = defineProps({
 		task:Object,
-		isTaskUpdate:Boolean
+		isTaskUpdate:Boolean,
+		label:Object,
+		labelSet:Boolean
 	});
     const task = ref(pros.task);
+	const label = ref(pros.label);
 	const popup = ref(null);
 	const timePopup = ref(null);
 	const priorityPopup = ref(null);
@@ -216,6 +224,7 @@
 		time: ""
 	});
 	const today = ref(new Date());
+
 
 	const state = reactive({
 		priority: [],
@@ -256,7 +265,8 @@
 		},
 		weekdays: weekdays,
 		canCreateTask: false,
-		isTaskUpdate: pros.isTaskUpdate
+		isTaskUpdate: pros.isTaskUpdate,
+		hasLabelSetter:pros.labelSet
 	});
 
 	onMounted(() => {
@@ -276,6 +286,8 @@
 		if(task.value!=undefined&&task.value!=null)
 		   state.task = task.value;
 		resetBeginEndTime();
+		if(state.hasLabelSetter&&label.value!=undefined)
+		    state.task.labelId = label.value.labelId;
 	});
 	
 	function reloadModelData() {
@@ -455,6 +467,8 @@
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
 		if (!state.isTaskUpdate) {
+			if(label.value!=undefined&&state.hasLabelSetter)
+			   state.task.labelId = label.value.labelId;
 			CreateTask(state.task, response => {
 				const res = response.data;
 				if (!res.succeeded) {
@@ -471,7 +485,7 @@
 					task.style = "";
 					copy(state.task, task);
 					emits("created",task);
-					taskEditor.value.close();
+					popup.value.close();
 				}, 750);
 			});
 		} else {
@@ -488,7 +502,7 @@
 				}
 				loading("", () => {
 					emits("updated",state.task);
-					taskEditor.value.close();
+					popup.value.close();
 				}, 550);
 
 			});
@@ -500,6 +514,34 @@
 		resetBeginEndTime();
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
+	}
+	
+	function takeLabel(){
+		uni.showModal({
+			title:"选择标签",
+			editable:true,
+			placeholderText:"标签名",
+			confirmText:"确定",
+			cancelText:"取消",
+			success:res=>{
+				if(res.cancel)return;
+				if(res.confirm){
+					const user = uni.getStorageSync("user");
+					const labelName = res.content;
+					CreateOrGetLabel(labelName,user.uid,response=>{
+						const res = response.data;
+						if(!res.succeeded){
+							uni.showToast({
+								title:res.message,
+								icon:"none"
+							});
+							return;
+						}
+					    label.value = res.data;
+					});
+				}
+			}
+		});
 	}
 		
 	function open(){
@@ -525,6 +567,22 @@
 	.task-edit {
 		position: relative;
 		height: 35vh;
+	}
+	
+	.task-edit .label-text{
+		height: 20px;
+		line-height: 20px;
+		padding: 2px;
+		max-width: 100px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		text-wrap: nowrap;
+		margin-left: 3px;
+		background-color: rgb(0,235,75);
+		color: white;
+		border-radius: 7px;
+		font-size: 13px;
+		text-align: center;
 	}
 
 	.gray-text {

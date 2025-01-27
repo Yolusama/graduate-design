@@ -28,7 +28,7 @@
 									<uni-swipe-action-item :disabled="habit.finished">
 										<template v-slot:right>
 											<view class="finishBtn" @click.stop="
-											state.selectedHabit=habit;finishHabit({finished:true})" >完成</view>
+											state.selectedHabit=habit;finishHabit({finished:true})">完成</view>
 										</template>
 										<view style="display: flex;justify-content: space-between;"
 											@click="seeDetail(groupName,index)">
@@ -74,11 +74,11 @@
 					</uni-collapse-item>
 				</uni-collapse>
 			</scroll-view>
-			<habit-editor ref="editor" :habit="state.habit" v-if="state.show.editor" :isHabitUpate="state.habit!=null" 
-			@close="editorClose" @created = "habitCreated" >
+			<habit-editor ref="editor" :habit="state.habit" v-if="state.show.editor" :isHabitUpate="state.habit!=null"
+				@close="editorClose" @created="habitCreated">
 			</habit-editor>
-			<habit-detail :habit="state.selectedHabit" ref="detail" @finisht="finsishHabit" v-if="state.show.detail" @updated="habitUpdated"
-			@close="detailClose">
+			<habit-detail :habit="state.selectedHabit" ref="detail" @finished="habitFinished" v-if="state.show.detail"
+				@updated="habitUpdated" @close="detailClose">
 			</habit-detail>
 			<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" horizontal="right" @fabClick="openToEdit" />
 	</view>
@@ -126,22 +126,22 @@
 		iconColor: '#fff'
 	});
 	const state = reactive({
-		habit:null,
-		selectedHabit:null,
-		userId:"",
+		habit: null,
+		selectedHabit: null,
+		userId: "",
 		data: {},
 		optionMostCheck: false,
-		show:{
-			detail:false,
-			editor:false
+		show: {
+			detail: false,
+			editor: false
 		},
-		selectedDay:onlyDate(today.value)
+		selectedDay: onlyDate(today.value)
 	});
 
 	onMounted(() => {
 		uni.getStorage({
-			key:"user",
-			success:res=>{
+			key: "user",
+			success: res => {
 				state.userId = res.data.uid;
 			}
 		})
@@ -183,13 +183,13 @@
 				record.day = new Date(record.day);
 			state.selectedHabit.records = res.data;
 			state.show.detail = true;
-			nextTick(()=>{
+			nextTick(() => {
 				detail.value.open();
 			})
 		});
 	}
 
-	function habitCreated(e){
+	function habitCreated(e) {
 		const item = e.item;
 		const groupName = e.groupName;
 		if (habitOption.value.data.length < habitOption.value.size) {
@@ -211,7 +211,7 @@
 
 	function openToEdit() {
 		state.show.editor = true;
-		nextTick(()=>editor.value.open());
+		nextTick(() => editor.value.open());
 	}
 
 
@@ -265,18 +265,42 @@
 		});
 	}
 
-	function editorClose(){
-		delayToRun(()=>state.show.editor=false,150);
+	function editorClose() {
+		delayToRun(() => state.show.editor = false, 150);
 	}
-	
-	function detailClose(){
-		delayToRun(()=>state.show.detail=false,150);
+
+	function detailClose() {
+		delayToRun(() => state.show.detail = false, 150);
 	}
 
 
-	function finishHabit(e) {
+	function habitFinished(e) {
 		const item = e.item;
 		state.selectedHabit = item;
+	}
+
+	function finishHabit(e) {
+		const finished = e.finished;
+		const model = {
+			habitId: state.selectedHabit.habitId,
+			finishTime: new Date(),
+			finished: finished,
+			day: onlyDate(state.selectedDay)
+		};
+		if (!model.finished && !state.selectedHabit.finished) return;
+		FinishOrNot(model, response => {
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			state.selectedHabit.finished = finished;
+			state.selectedHabit.finishTime = model.finishTime;
+			recordFinish(res.data);
+		});
 	}
 
 	function unfinishHabit(e, habit) {
@@ -325,12 +349,11 @@
 			}
 		}
 	}
-	
-	function dateChange(date){
+
+	function dateChange(date) {
 		state.selectedDay = onlyDate(date);
 		getData();
 	}
-
 </script>
 
 <style scoped>
@@ -422,12 +445,12 @@
 		line-height: 25px;
 	}
 
-	
-	#habit .finishBtn{
+
+	#habit .finishBtn {
 		position: relative;
 		border: none;
 		color: white;
-		background-color: rgb(0,255,0);
+		background-color: rgb(0, 255, 0);
 		font-size: 14px;
 		display: flex;
 		align-items: center;

@@ -419,3 +419,7 @@ export const TaskReminderKey = "task-reminders";
 export const HabitReminderKey = "habit-reminders";
 export const DefaultListIcon = "list.png";
 export const DefaultLabelIcon = "label.png";
+
+export function isBaseDayLabel(labelId){
+	return labelId==1||labelId==2||labelId==3;
+}

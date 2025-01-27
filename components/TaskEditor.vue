@@ -11,7 +11,7 @@
 				<image src="../static/plane-filled.png" v-if="state.isTaskUpdate||state.canCreateTask" :size="18"
 					class="image" @click="editTask" />
 				<image :src="imgSrc(DefaultLabelIcon)" v-if="state.hasLabelSetter" @click="takeLabel" class="image"></image>
-				<text class="label-text" v-if="state.hasLabelSetter&&label!=undefined">{{label.name}}</text>
+				<text class="label-text" v-if="state.hasLabelSetter&&label!=undefined">{{label.labelName}}</text>
 			</view>
 			<uni-easyinput v-model="state.task.title" placeholder="标题" focus style="margin-bottom: 2px;margin-top: 3px;"
 				@input="titleInput"></uni-easyinput>
@@ -181,7 +181,8 @@
 		weekDaySign,
 		buildElById,
 		TaskReminderKey,
-		DefaultLabelIcon
+		DefaultLabelIcon,
+		isBaseDayLabel
 	} from '../module/Common';
 	import {
 		CreateTask,
@@ -284,10 +285,11 @@ import { CreateOrGetLabel } from '../api/Index';
 
 		state.notifyOpt[0] = remindModeValues(1);
 		if(task.value!=undefined&&task.value!=null)
-		   state.task = task.value;
+			state.task = task.value;
 		resetBeginEndTime();
 		if(state.hasLabelSetter&&label.value!=undefined)
-		    state.task.labelId = label.value.labelId;
+		    if(isBaseDayLabel(label.value.labelId))
+			   state.task.labelId = label.value.labelId;
 	});
 	
 	function reloadModelData() {
@@ -484,13 +486,13 @@ import { CreateOrGetLabel } from '../api/Index';
 					const task = {};
 					task.style = "";
 					copy(state.task, task);
-					emits("created",task);
+					emits("created",{item:task,label:label.value});
 					popup.value.close();
 				}, 750);
 			});
 		} else {
-			if (state.task.title.length == 0)
-				state.task.title = state.selectedTask.title;
+			if(state.task.title.length==0)
+			   state.task.title = "无标题";
 			UpdateTask(state.task, response => {
 				const res = response.data;
 				if (!res.succeeded) {
@@ -501,7 +503,7 @@ import { CreateOrGetLabel } from '../api/Index';
 					return;
 				}
 				loading("", () => {
-					emits("updated",state.task);
+					emits("updated",{index:state.task.index,item:state.task});
 					popup.value.close();
 				}, 550);
 
@@ -572,7 +574,8 @@ import { CreateOrGetLabel } from '../api/Index';
 	.task-edit .label-text{
 		height: 20px;
 		line-height: 20px;
-		padding: 2px;
+		padding: 4px;
+		padding-top: 0;
 		max-width: 100px;
 		overflow: hidden;
 		text-overflow: ellipsis;

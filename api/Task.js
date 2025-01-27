@@ -20,7 +20,6 @@ export function CancelTask(task,mode,successCallback){
 	Post(`/Api/Task/CancelTask?mode=${mode}`,auth,task,successCallback);
 }
 
-
 export function AddReminder(reminder,mode,successCallback){
 	Put(`/Api/Task/AddReminder?mode=${mode}`,auth,reminder,successCallback);
 }

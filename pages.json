@@ -44,6 +44,13 @@
 				"background": "transparent", //把页面背景设置透明，默认是白色
 				"animationType": "fade-in"
 			}
+		},
+		{
+			"path" : "pages/hiddenLabel",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"tabBar": {

@@ -637,14 +637,10 @@
 		font-size: 15px;
 	}
 
-	#habit .header {
+	.habit-edit .header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		height: 30px;
-	}
-
-	.habit-edit .header {
 		width: 96%;
 		height: fit-content;
 	}

@@ -11,11 +11,11 @@ export function GetLabels(userId,successCallback){
 }
 
 export function CreateLabel(label,file,successCallback){
-	UploadFile("/Api/Index/CreateLabel",file,formDataAuth,data,successCallback);
+	UploadFile("/Api/Index/CreateLabel",file,formDataAuth,label,successCallback);
 }
 
 export function UpdateLabel(label,file,successCallback){
-	UploadFile("/Api/Index/UpdateLabel",file,formDataAuth,data,successCallback);
+	UploadFile("/Api/Index/UpdateLabel",file,formDataAuth,label,successCallback);
 }
 
 export function CheckLabelNameExists(labelName,userId,successCallback){
@@ -36,6 +36,10 @@ export function FinishTaskOrNot(taskId,state,successCallback){
 
 export function CreateOrGetLabel(labelName,userId,successCallback){
 	Post(`/Api/Index/CreateOrGetLabel/${userId}?labelName=${labelName}`,auth,{},successCallback);
+}
+
+export function GetHiddenLabels(userId,successCallback){
+	Get(`/Api/Index/GetHiddenLabels/${userId}`,auth,successCallback);
 }
 
 export const IdOfLableNamed = 4;

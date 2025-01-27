@@ -6,15 +6,15 @@
 					<image class="avatar" :src="imgSrc(state.user.avatar)"></image>
 					<text class="nickName">{{state.user.nickName}}</text>
 				</view>
-				<scroll-view class="labels">
+				<scroll-view class="labels" scroll-y>
 					<uni-list>
-						<uni-list-item v-for="(list,index) in state.lists" :key="index"
-							:show-arrow="list.id!=IdOfLableNamed">
+						<uni-list-item v-for="(list,index) in state.lists" :key="index" 
+							:show-arrow="list.labelId!=IdOfLableNamed">
 							<template v-slot:body>
-								<view class="label-info" v-if="list.id!=IdOfLableNamed">
+								<view class="label-info" v-if="list.labelId!=IdOfLableNamed" @click="switchContent(list)">
 									<image :src="imgSrc(list.icon)" class="label-icon"></image>
-									<text class="text">{{list.name}}</text>
-									<view style="margin-left: 5%;display: flex;width:80px">
+									<text class="text">{{list.labelName}}</text>
+									<view style="margin-left: 5%;display: flex;width:90px">
 										<uni-icons type="compose" v-if="!list.notCustom"
 											@click.stop="openLabelEditor(list,true,index);">
 										</uni-icons>
@@ -23,10 +23,10 @@
 											@click.stop="removeLabel(index,true)"></uni-icons>
 									</view>
 								</view>
-								<view style="height: 100%;width:100%" v-if="list.id==IdOfLableNamed">
+								<view style="height: 100%;width:100%" v-if="list.labelId==IdOfLableNamed">
 									<view class="label-info" style="position: relative;">
 										<image :src="imgSrc(list.icon)" class="label-icon"></image>
-										<text class="text">{{list.name}}</text>
+										<text class="text">{{list.labelName}}</text>
 										<view @click.stop="state.labelsExpand=!state.labelsExpand" class="right"
 											:style="state.labelsExpand?state.labelsExpandStyle:''"
 											v-if="state.labels.length>0">
@@ -34,11 +34,11 @@
 											</uni-icons>
 										</view>
 									</view>
-									<scroll-view style="height: 30vh;" v-if="state.labelsExpand">
-										<view class="label-info" v-for="(label,index1) in state.labels" :key="index1"
-											style="margin-left: 4%;">
-											<image :src="imgSrc(label.icon)" class="label-icon"></image>
-											<text class="text" syule="width:80px;">{{label.name}}</text>
+									<scroll-view style="height: 30vh;" v-if="state.labelsExpand" scroll-y>
+										<view class="label-info" v-for="(label,index1) in state.labels" :key="index1" 
+										style="margin-left: 4%;margin-top: 2%;"@click="switchContent(label)">
+											<image :src="imgSrc(label.icon)" class="label-icon" style="width: 16px;height: 16px;;"></image>
+											<text class="text" style="width:75px;">{{label.labelName}}</text>
 											<view style="margin-left: 5%;display: flex;width:80px">
 												<uni-icons type="compose"
 													@click.stop="openLabelEditor(label,false,index1);"></uni-icons>
@@ -63,17 +63,17 @@
 						<uni-icons type="plusempty" color="rgb(0,75,235)"></uni-icons><text
 							style="margin-left: 2px;">标签</text>
 					</view>
-					<text style="font-size: 13px;color: rgb(0,75,235);">查看隐藏</text>
+					<text style="font-size: 13px;color: rgb(0,75,235);" @click="seeHiddenLabels">查看隐藏</text>
 				</view>
 				<label-editor :label="state.label" :isLabelUpdate="state.label!=null" v-if="state.show.label"
 					:isList="state.isList" @created="labelCreated" @updated="labelUpdated" @close="labelEditorClose"
 					ref="indexLabelEditor"></label-editor>
 			</view>
 		</uni-popup>
-		<scroll-view class="index-content" direction="vertical" v-if="isBaseDayLabel(state.currentLabel.id)">
+		<scroll-view class="index-content" direction="vertical">
 			<view class="header">
 				<uni-icons type="bars" color="rgb(0,125,245)" :size="20" @click="labelDrawer.open()"></uni-icons>
-				<text class="text">{{state.currentLabel.name}}</text>
+				<text class="text">{{state.currentLabel.labelName}}</text>
 			</view>
 			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0">
 				<uni-collapse-item>
@@ -83,7 +83,7 @@
 							<text style="font-size: 13px;color:gray">{{state.data['habit'].length}}</text>
 						</view>
 					</template>
-					<scroll-view style="max-height: 36vh;">
+					<scroll-view style="max-height: 36vh;"  scroll-y>
 						<view v-for="(habit,index) in state.data['habit']" class="habit"
 							:key="index">
 							<uni-swipe-action>
@@ -92,7 +92,7 @@
 										<view class="finishBtn" @click.stop="finishHabit(index)" >完成</view>
 									</template>
 									<view style="display: flex;justify-content: space-between;"
-										@click="seeHabitDetail(habit)">
+										@click="seeHabitDetail(index)">
 										<view class="info">
 											<image :src="imgSrc(habit.thumb)"
 												style="width: 40px;height: 40px;border-radius:50%;"></image>
@@ -133,7 +133,7 @@
 					</scroll-view>
 				</uni-collapse-item>
 			</uni-collapse>
-			<uni-collapse>
+			<uni-collapse v-if="isBaseDayLabel(state.currentLabel.labelId)">
 				<uni-collapse-item>
 					<template v-slot:title>
 						<view class="item-title">
@@ -141,7 +141,7 @@
 							<text style="font-size: 13px;color:gray">{{state.data['task'].length}}</text>
 						</view>
 					</template>
-					<scroll-view style="max-height: 30vh;">
+					<scroll-view style="max-height: 30vh;" scroll-y>
 						<uni-swipe-action v-for="(task,index) in state.data['task']" :key="index">
 							<uni-swipe-action-item>
 								<template v-slot:left>
@@ -159,7 +159,7 @@
 											<checkbox :checked="task.state==1" style="transform: scale(70%);">
 											</checkbox>
 										</checkbox-group>
-										<view class="task-content" @click="seeTaskDetail(index)">
+										<view class="task-content">
 											<view class="title">
 												<text>{{task.title}}</text>
 												<text style="font-size: 13px;color: gray;">{{task.description}}</text>
@@ -174,17 +174,17 @@
 				</uni-collapse-item>
 			</uni-collapse>
 		</scroll-view>
-		<scroll-view direction="vertical" v-if="!isBaseDayLabel(state.currentLabel.id)">
+		<scroll-view  scroll-y v-if="!isBaseDayLabel(state.currentLabel.labelId)" style="height:94vh">
 			<uni-swipe-action v-for="(task,index) in state.data['task']" :key="index">
 				<uni-swipe-action-item>
 					<template v-slot:left>
 						<view style="display: flex;align-items: center;">
 							<button size="mini" style="background-color: rgb(0,255,0);color: white;"
 								v-if="task.state==TaskState.unfinished"
-								@click="finishTaskOrNot(index)">完成</button>
+								@click.stop="finishTaskOrNot(index)">完成</button>
 							<button size="mini" style="background-color: red;color: #fff;"
 								v-if="task.state==TaskState.finished"
-								@click="finishTaskOrNot(index)">取消完成</button>
+								@click.stop="finishTaskOrNot(index)">取消完成</button>
 						</view>
 					</template>
 					<view style="display: flex;justify-content: center;padding-right: 1%;">
@@ -193,7 +193,7 @@
 								<checkbox :checked="task.state==1" style="transform: scale(70%);">
 								</checkbox>
 							</checkbox-group>
-							<view class="task-content" @click="seeTaskDetail">
+							<view class="task-content">
 								<view class="title">
 									<text>{{task.title}}</text>
 									<text style="font-size: 13px;color: gray;">{{task.description}}</text>
@@ -237,7 +237,8 @@
 		timeWithoutSeconds,
 		TaskState,
 		dateEquals,
-		getDateStr
+		getDateStr,
+		loading
 	} from '../module/Common';
 	import {
 		user
@@ -245,7 +246,8 @@
 	import {
 		imgSrc
 	} from '../module/Request';
-import { FinishOrNot } from '../api/Habit';
+import { FinishOrNot, GetHabitRecords, GetHabitReminders } from '../api/Habit';
+import { GetTaskReminders } from '../api/Task';
 
 	const pattern = ref({
 		color: '#7A7E83',
@@ -279,7 +281,7 @@ import { FinishOrNot } from '../api/Habit';
 	});
 
 	const indexTaskEditor = ref(null);
-	const indexDetail = ref(null);
+	const indexHabitDetail = ref(null);
 	const indexLabelEditor = ref(null);
 	const labelDrawer = ref(null);
 	const currentLabel = ref("current-label");
@@ -295,18 +297,29 @@ import { FinishOrNot } from '../api/Habit';
 		var label = uni.getStorageSync(currentLabel.value);
 		if (label == null || label == '')
 			label = {
-				id: 1,
-				name: "今天"
+				labelId: 1,
+				labelName: "今天"
 			};
 		state.currentLabel = label;
-		getData(label.id);
+		getData(label.labelId);
 
 		getLabels();
 	});
 
 	function openTaskEditor(task) {
 		state.task = task;
-		openToEdit();
+		GetTaskReminders(task.instanceId,response=>{
+			const res = response.data;
+			if(!res.succeeded){
+				uni.showToast({
+					title:res.message,
+					icon:"none"
+				});
+				return;
+			}
+			task.reminderInfoModels = res.data;
+			openToEdit();
+		});
 	}
 
 	function openToEdit() {
@@ -331,7 +344,7 @@ import { FinishOrNot } from '../api/Habit';
 	function labelCreated(e) {
 		const label = e.item;
 		if (label.isList)
-			state.lists.splice(IdOfLableNamed, 0, label);
+			state.lists.push(label);
 		else
 			state.labels.push(label);
 	}
@@ -347,7 +360,11 @@ import { FinishOrNot } from '../api/Habit';
 
 	function taskCreated(e) {
 		const item = e.item;
-		state.data['task'].push(item);
+		const index = state.data['task'].findIndex(l=>l.labelId==item.lableId);
+		if(index<0)
+		   state.labels.push(e.label);
+		if(item.labelId==state.currentLabel.labelId)
+		   state.data['task'].push(item);
 	}
 
 	function taskUpdated(e) {
@@ -357,10 +374,35 @@ import { FinishOrNot } from '../api/Habit';
 		state.data['task'][index] = item;
 	}
 
-	function seeHabitDetail(habit) {
-		state.habit = habit;
-		state.show.habit = true;
-		nextTick(() => indexDetail.value.open());
+	function seeHabitDetail(index) {
+		const habit = state.data["habit"][index];
+		GetHabitReminders(habit.habitId,response=>{
+			const res = response.data;
+			if(!res.succeeded){
+				uni.showToast({
+					title:res.message,
+					icon:"none"
+				});
+				return;
+			}
+			habit.reminderModels = res.data;
+			GetHabitRecords(habit.habitId,response1=>{
+				const res1 = response1.data;
+				if(!res1.succeeded){
+					uni.showToast({
+						title:res1.message,
+						icon:"none"
+					});
+					return;
+				}
+				habit.records = res1.data;
+				habit.index = index;
+				state.habit = habit;
+				state.show.habit = true;
+				nextTick(() => indexHabitDetail.value.open());
+			});
+		});
+		
 	}
 
 	function taskEditorClose() {
@@ -409,10 +451,17 @@ import { FinishOrNot } from '../api/Habit';
 
 		});
 	}
+	
+	function habitUpdated(e){
+		const index = e.index;
+		const item = e.item;
+		
+		state.data["habit"][index] = item;
+	}
 
 	function hideOrShowLabel(index, isList, display) {
 		const label = isList ? state.lists[index] : state.labels[index];
-		HideOrShowLabel(label.id, display, response => {
+		HideOrShowLabel(label.labelId, display, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -424,7 +473,12 @@ import { FinishOrNot } from '../api/Habit';
 			if (isList)
 				state.lists.splice(index, 1);
 			else
-				state.labels.splice(index, 1);
+				{
+					state.labels.splice(index, 1);
+					if(state.labels.length==0)
+					   state.labelsExpand = false;
+				}
+				
 		});
 	}
 
@@ -470,14 +524,15 @@ import { FinishOrNot } from '../api/Habit';
 			time.setDate(time.getDate() + 1);
 		else if (state.currentLabel.id == 3)
 			time.setDate(time.getDate() - 1);
-		else if(!isBaseDayLabel(state.currentLabel.id)) 
-		   return `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text><text style="color:rgb(0,75,235)">${getDateStr(endTime)}</text>`
+			
 		if (dateEquals(beginTime, endTime))
 			res = `<text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text><text style="color:red">${timeWithoutSeconds(endTime)}</text>`;
 		else if (dateEquals(beginTime, time) && !dateEquals(endTime, time))
 			res = `<text>开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
 		else if (!dateEquals(beginTime, time) && dateEquals(endTime, time))
 			res = `<text>结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
+		else if(onlyDate(endTime).getTime()<time.getTime())	
+		    res = `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text><text style="color:red">${getDateStr(endTime)}</text>`;
 		else
 			res = "<text>全天</text>"
 		return res;
@@ -564,6 +619,19 @@ import { FinishOrNot } from '../api/Habit';
 		habit.mostDays = data.mostDays;
 		habit.continuousDays = data.continuousDays;
 	}
+	
+	function switchContent(label){
+		if(label.lableId == IdOfLableNamed)return;
+		state.currentLabel = label;
+		uni.setStorageSync(currentLabel.value,label);
+		loading("",()=>{labelDrawer.value.close();getData(label.labelId);},500);
+	}
+	
+	function seeHiddenLabels(){
+		uni.navigateTo({
+			url:"/pages/hiddenLabel"
+		});
+	}
 </script>
 
 <style>
@@ -578,7 +646,7 @@ import { FinishOrNot } from '../api/Habit';
 	#task-labels {
 		position: relative;
 		height: 94vh;
-		width: 70vw;
+		width: 60vw;
 		padding: 1%;
 		display: flex;
 		align-items: center;
@@ -634,7 +702,7 @@ import { FinishOrNot } from '../api/Habit';
 		overflow: hidden;
 		text-overflow: ellipsis;
 		text-wrap: nowrap;
-		width: 100px;
+		width: 80px;
 	}
 
 	#task-labels .label-info .right {
@@ -650,6 +718,7 @@ import { FinishOrNot } from '../api/Habit';
 
 	#task-labels .labels {
 		width: 94%;
+		height: 84vh;
 	}
 
 	#task-labels .add-list {

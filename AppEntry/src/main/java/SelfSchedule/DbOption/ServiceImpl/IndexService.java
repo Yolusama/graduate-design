@@ -60,10 +60,18 @@ public class IndexService implements IndexServiceInterface {
 
     @Override
     public Map<String, List<IndexDisplayVO>> getData(String userId, Long labelId, Date time, RedisCache redis) {
-
         final String key = String.format("Caching_%s_%s",userId, CachingKeys.GetIndexData);
-        if(redis.has(key))
-            return (Map<String, List<IndexDisplayVO>>) redis.get(key);
+        final String key_label = String.format("Caching_%s_%s",userId,CachingKeys.GetIndexCurrentLabelId);
+        if(redis.has(key_label)&&redis.get(key_label).equals(labelId))
+        {
+            if(redis.has(key))
+                return (Map<String, List<IndexDisplayVO>>) redis.get(key);
+        }
+        else
+        {
+            redis.remove(key);
+            redis.remove(key_label);
+        }
         Map<String, List<IndexDisplayVO>> res = new HashMap<>();
         String key1 = Task.class.getSimpleName().toLowerCase();
         String key2 = Habit.class.getSimpleName().toLowerCase();
@@ -104,6 +112,7 @@ public class IndexService implements IndexServiceInterface {
         }
 
         redis.set(key,res,Constants.CachingExpire);
+        redis.set(key_label,res,Constants.CachingExpire);
 
         return res;
     }
@@ -208,6 +217,24 @@ public class IndexService implements IndexServiceInterface {
         TaskLabelVO res = ObjectUtil.copy(label,new TaskLabelVO());
         res.setLabelId(label.getId());
         res.setLabelName(labelName);
+        return res;
+    }
+
+    @Override
+    public List<TaskLabelVO> getHiddenLabels(String userId, RedisCache redis) {
+        String key = String.format("Caching_%s_%s",userId,CachingKeys.GetHiddenLabels);
+        ArrayDataModel<TaskLabelVO> model;
+        if(redis.has(key))
+        {
+            model = (ArrayDataModel<TaskLabelVO>) redis.get(key);
+            return List.of(model.getData());
+        }
+        List<TaskLabelVO> res = labelMapper.getHiddenLabels(userId);
+        TaskLabelVO[] data = new TaskLabelVO[res.size()];
+        res.toArray(data);
+        model = new ArrayDataModel<>();
+        model.setData(data);
+        redis.set(key,model,Constants.CachingExpire);
         return res;
     }
 

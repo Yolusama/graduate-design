@@ -20,4 +20,5 @@ public interface IndexServiceInterface {
     int hideOrShowLabel(Boolean display,Long labelId);
     int removeLabel(Long labelId,FileService fileService);
     TaskLabelVO createOrCheckLabel(String labelName, String userId);
+    List<TaskLabelVO> getHiddenLabels(String userId,RedisCache redis);
 }

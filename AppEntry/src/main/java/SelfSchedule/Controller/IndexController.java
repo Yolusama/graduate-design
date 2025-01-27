@@ -85,8 +85,8 @@ public class IndexController extends ControllerBase{
 
     @PatchMapping("/HideOrShowLabel/{labelId}")
     @ApiOperation(value="隐藏或显示标签",notes = "显示或隐藏标签/清单")
-    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels})
-    public ActionResult HideOrShowLabel(@PathVariable Long labelId,@RequestParam Boolean display){
+    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels,CachingKeys.GetHiddenLabels})
+    public ActionResult HideOrShowLabel(@PathVariable Long labelId,@RequestParam Boolean display,HttpServletRequest request){
         int res = indexService.hideOrShowLabel(display,labelId);
         if(res== Constants.AbNormalState)
             return fail("操作失败！");
@@ -95,8 +95,8 @@ public class IndexController extends ControllerBase{
 
     @DeleteMapping("/RemoveLabel/{labelId}")
     @ApiOperation(value="移除标签",notes = "移除标签/清单")
-    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels})
-    public ActionResult RemoveLabel(@PathVariable Long labelId){
+    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels,CachingKeys.GetHiddenLabels})
+    public ActionResult RemoveLabel(@PathVariable Long labelId,HttpServletRequest request){
         int res = indexService.removeLabel(labelId,fileService);
         if(res== Constants.AbNormalState)
             return fail("操作失败！");
@@ -105,8 +105,16 @@ public class IndexController extends ControllerBase{
 
     @PostMapping("/CreateOrGetLabel/{userId}")
     @ApiOperation(value="创建或获取标签",notes = "标签不存在时创建")
-    public ActionResult<TaskLabelVO> CreateOrGetLabel(@PathVariable String userId,@RequestParam String labelName){
+    @ClearRedisCache(keys={CachingKeys.GetHiddenLabels,CachingKeys.GetTaskLabels})
+    public ActionResult<TaskLabelVO> CreateOrGetLabel(@PathVariable String userId,@RequestParam String labelName,
+                                                      HttpServletRequest request){
         return successWithData(indexService.createOrCheckLabel(labelName,userId));
+    }
+
+    @GetMapping("/GetHiddenLabels/{userId}")
+    @ApiOperation(value="获取隐藏的标签",notes = "获取隐藏的标签")
+    public CompletableFuture<ActionResult<List<TaskLabelVO>>> GetHiddenLabels(@PathVariable String userId){
+        return CompletableFuture.completedFuture(successWithData(indexService.getHiddenLabels(userId,redis)));
     }
 
 }

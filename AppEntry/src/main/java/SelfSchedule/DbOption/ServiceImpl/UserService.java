@@ -9,17 +9,21 @@ import SelfSchedule.Entity.HabitGroup;
 import SelfSchedule.Entity.User;
 import SelfSchedule.Entity.VO.UserLoginVO;
 import SelfSchedule.Functional.RandomGenerator;
+import SelfSchedule.Model.UserPwdModel;
 import SelfSchedule.Service.EmailService;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.JwtService;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.Utils.ObjectUtil;
 import SelfSchedule.Utils.StringEncryptUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
 import java.util.ArrayList;
@@ -40,8 +44,8 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
     public String getCheckCode(String email, Integer length, EmailService emailService, RedisCache redis)
             throws MessagingException {
         String code = RandomGenerator.generateNumber(length);
-        String key = String.format("%s_checkCode",email);
-        String key1 = String.format("%s_checkCode_Get",email);
+        String key = String.format("%s_CheckCode",email);
+        String key1 = String.format("%s_CheckCode_Get",email);
         if(redis.has(key1))
             return null;
         emailService.sendTo(email,Constants.CheckCodeTitle,String.format
@@ -54,7 +58,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
     @Override
     @Transactional
     public int register(String email,String password,String checkCode,RedisCache redis) {
-        String key = String.format("%s_checkCode",email);
+        String key = String.format("%s_CheckCode",email);
         if(!redis.has(key)||!checkCode.equals(redis.get(key)))
             return Constants.EOF;
         User user = mapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getEmail,email));
@@ -81,6 +85,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
     }
 
     @Override
+    @Transactional
     public UserLoginVO login(String email, String password, JwtService jwtService, RedisCache redis)
             throws IllegalAccessException {
         var wrapper = new LambdaQueryWrapper<User>().eq(User::getEmail,email);
@@ -117,7 +122,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             res.setLoginStatus(UserLoginStatus.NOT_EXISTS);
             return res;
         }
-        String checkCodeKey = String.format("%s_checkCode",email);
+        String checkCodeKey = String.format("%s_CheckCode",email);
         if(!redis.has(checkCodeKey))
         {
             res.setLoginStatus(UserLoginStatus.FAIL);
@@ -145,4 +150,39 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
            return null;
         return redis.get(key).equals(token);
     }
+
+    @Override
+    @Transactional
+    public int changeNickname(String userId, String nickName) {
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(User::getNickName,nickName).eq(User::getId,userId);
+        return mapper.update(wrapper);
+    }
+
+    @Override
+    @Transactional
+    public Boolean changePassword(UserPwdModel model, RedisCache redis) {
+        String key = String.format("%s_CheckCode",model.getEmail());
+        if(!redis.has(key))
+            return null;
+        if(!redis.get(key).equals(model.getCheckCode()))
+            return false;
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(User::getPassword,StringEncryptUtil.getString(model.getNewPassword()))
+                .eq(User::getId,model.getUserId());
+        mapper.update(wrapper);
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public int changeAvatar(String avatar, String userId, MultipartFile file, FileService fileService) {
+        if(!avatar.equals(Constants.DefaultAvatar))
+            fileService.removeImage(avatar);
+        String newAvatar = fileService.uploadImage(file);
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(User::getAvatar,newAvatar).eq(User::getId,userId);
+        return mapper.update(wrapper);
+    }
+
 }

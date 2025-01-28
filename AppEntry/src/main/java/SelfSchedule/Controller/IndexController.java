@@ -5,7 +5,6 @@ import SelfSchedule.Common.Constants;
 import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
 import SelfSchedule.DbOption.ServiceImpl.IndexService;
-import SelfSchedule.Entity.TaskLabel;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
 import SelfSchedule.Entity.VO.TaskLabelVO;
 import SelfSchedule.Result.ActionResult;
@@ -115,6 +114,23 @@ public class IndexController extends ControllerBase{
     @ApiOperation(value="获取隐藏的标签",notes = "获取隐藏的标签")
     public CompletableFuture<ActionResult<List<TaskLabelVO>>> GetHiddenLabels(@PathVariable String userId){
         return CompletableFuture.completedFuture(successWithData(indexService.getHiddenLabels(userId,redis)));
+    }
+
+    @PostMapping("/CheckYesterdayTask/{userId}")
+    @ApiOperation(value="检索用户昨天未完成的任务并标记为搁置",notes = "检索用户昨天未完成的任务并标记为搁置")
+    public ActionResult CheckYesterdayTask(@PathVariable String userId,@RequestParam Long yesterday){
+        indexService.checkYesterdayTask(new Date(yesterday),userId,redis);
+        return ok();
+    }
+
+    @PostMapping("/Logout/{userId}")
+    @ApiOperation(value="退出登录/注销账号",notes = "cancelAccount为真时注销账号")
+    public ActionResult Logout(@PathVariable String userId,@RequestParam String email, @RequestParam Boolean cancelAccount){
+        indexService.logout(cancelAccount,userId,email,redis);
+        if(cancelAccount)
+            return ok("已注销账号！");
+        else
+            return ok("已退出登录！");
     }
 
 }

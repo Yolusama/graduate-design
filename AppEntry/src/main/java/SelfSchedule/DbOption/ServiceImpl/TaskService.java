@@ -106,7 +106,6 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     @Override
     public List<TaskReminderVO> getTaskReminders(Long taskId) {
         return reminderMapper.getTaskReminders(taskId);
-
     }
 
     /*形式删除，取消任务，更新任务状态至3（取消状态）
@@ -182,7 +181,10 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 }
                 Task instance = new Task();
                 ObjectUtil.copy(task, instance);
-                instance.setState(TaskState.UNFINISHED.value());
+                if(DateUtil.over(time,DateUtil.onlyDate(Constants.Now())))
+                    instance.setState(TaskState.UNFINISHED.value());
+                else
+                    instance.setState(TaskState.ABANDONED.value());
                 flag = false;
                 Date beginTime = task.getBeginTime();
                 Date endTime = task.getEndTime();
@@ -690,6 +692,15 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             }
         }
         return true;
+    }
+
+    @Override
+    public void removeAllAbout(String userId) {
+        List<Long> taskIds = mapper.getUserTaskIds(userId);
+        instanceMapper.delete(new LambdaQueryWrapper<TaskInstance>().in(TaskInstance::getTaskId,taskIds));
+        reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,taskIds));
+        ruleMapper.delete(new LambdaQueryWrapper<TaskRepeatRule>().in(TaskRepeatRule::getTaskId,taskIds));
+        mapper.delete(new LambdaQueryWrapper<Task>().eq(Task::getUserId,userId));
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

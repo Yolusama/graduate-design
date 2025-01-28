@@ -6,6 +6,7 @@ import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Mapper.HabitMapper;
 import SelfSchedule.DbOption.Mapper.TaskLabelMapper;
 import SelfSchedule.DbOption.Mapper.TaskMapper;
+import SelfSchedule.DbOption.Mapper.UserMapper;
 import SelfSchedule.DbOption.Service.IHabitService;
 import SelfSchedule.DbOption.Service.ITaskService;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
@@ -20,6 +21,7 @@ import SelfSchedule.Entity.VO.TaskRuleComboVO;
 import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
+import SelfSchedule.Utils.DateUtil;
 import SelfSchedule.Utils.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -36,12 +39,14 @@ public class IndexService implements IndexServiceInterface {
     private final ITaskService taskService;
     private final IHabitService habitService;
     private final TaskLabelMapper labelMapper;
+    private final UserMapper userMapper;
 
     @Autowired
-    public IndexService(TaskService taskService,HabitService habitService,TaskLabelMapper labelMapper){
+    public IndexService(TaskService taskService,HabitService habitService,TaskLabelMapper labelMapper,UserMapper userMapper){
        this.taskService = taskService;
        this.habitService = habitService;
        this.labelMapper = labelMapper;
+       this.userMapper = userMapper;
     }
 
     private TaskMapper taskMapper(){
@@ -94,10 +99,6 @@ public class IndexService implements IndexServiceInterface {
                 }
             }
             else{
-                if(labelId.equals(TaskLabel.Yesterday))
-                    time.setDate(time.getDate()-1);
-                else if(labelId.equals(TaskLabel.Tomorrow))
-                    time.setDate(time.getDate()+1);
                 List<TaskRuleComboVO> tasks = taskService.getTasks(current, size, userId, time,null , redis).getData();
                 setTasks(res, key1, tasks);
                 List<HabitVO> habits = habitService.getHabits(current,size,userId,time,redis).getData();
@@ -221,6 +222,24 @@ public class IndexService implements IndexServiceInterface {
     }
 
     @Override
+    @Transactional
+    public void checkYesterdayTask(Date yesterday, String userId, RedisCache redis) {
+        String key = String.format("Caching_%s_%s",userId,CachingKeys.YesterdayTaskChecked);
+        if(redis.has(key))
+            return;
+        Pair<Date,Date> bound = DateUtil.bound(yesterday);
+        LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(Task::getState,TaskState.ABANDONED.value()).
+                eq(Task::getUserId,userId).and(q->q.ge(Task::getEndTime,bound.getItem1()).lt(Task::getEndTime,bound.getItem2()))
+                .eq(Task::getState,TaskState.UNFINISHED.value());
+        taskMapper().update(wrapper);
+        Date rightBound = bound.getItem2();
+        rightBound.setDate(rightBound.getDate()+1);
+        long expire = bound.getItem2().getTime() - Constants.Now().getTime();
+        redis.set(key,Constants.NormalState,Duration.ofMillis(expire));
+    }
+
+    @Override
     public List<TaskLabelVO> getHiddenLabels(String userId, RedisCache redis) {
         String key = String.format("Caching_%s_%s",userId,CachingKeys.GetHiddenLabels);
         ArrayDataModel<TaskLabelVO> model;
@@ -236,6 +255,22 @@ public class IndexService implements IndexServiceInterface {
         model.setData(data);
         redis.set(key,model,Constants.CachingExpire);
         return res;
+    }
+
+    @Override
+    @Transactional
+    public void logout(boolean cancelAccount, String userId, String email, RedisCache redis) {
+        String key = String.format("%s_token",userId);
+        redis.remove(key);
+        String checkCodeKey = String.format("%s_CheckCode",email);
+        if(redis.has(checkCodeKey))
+            redis.remove(checkCodeKey);
+        if(cancelAccount){
+            userMapper.deleteById(userId);
+            labelMapper.delete(new LambdaQueryWrapper<TaskLabel>().eq(TaskLabel::getUserId,userId));
+            taskService.removeAllAbout(userId);
+            habitService.removeAllAbout(userId);
+        }
     }
 
     private String updateIconOptions(boolean isList, String icon, MultipartFile file, FileService fileService){

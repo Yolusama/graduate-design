@@ -240,12 +240,21 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
                 .set(Habit::getGroupId,model.getGroupId()).eq(Habit::getId,model.getHabitId());
         LambdaUpdateWrapper<HabitOption> wrapper1 = new LambdaUpdateWrapper<>();
         wrapper1.set(HabitOption::getAimDays,model.getAimDays()).eq(HabitOption::getHabitId,model.getHabitId());
-        LambdaUpdateWrapper<HabitFrequency> wrapper2 = new LambdaUpdateWrapper<>();
-        String value = model.getDays()==null? null:ObjectUtil.asJsonStr(model.getDays());
-        wrapper2.set(HabitFrequency::getDays,value).set(HabitFrequency::getWeekPersistDays,model.getWeekPersistDays())
-                .set(HabitFrequency::getPeriod,model.getPeriod()).eq(HabitFrequency::getHabitId,model.getHabitId());
-        LambdaQueryWrapper<HabitReminder> wrapper3 = new LambdaQueryWrapper<>();
-        wrapper3.eq(HabitReminder::getHabitId,model.getHabitId());
+        HabitFrequency frequency = frequencyMapper.selectOne(new LambdaQueryWrapper<HabitFrequency>().
+                eq(HabitFrequency::getHabitId,model.getHabitId()));
+        boolean frequencyUpdated = false;
+        if(model.getDays()!=null&&!frequency.getDays().equals(model.getDays())){
+            frequency.setDays(model.getDays());
+            frequencyUpdated = true;
+        }
+        if(model.getWeekPersistDays()!=null&&!frequency.getWeekPersistDays().equals(model.getWeekPersistDays())){
+            frequency.setWeekPersistDays(model.getWeekPersistDays());
+            frequencyUpdated = true;
+        }
+        if(model.getPeriod()!=null&&!frequency.getPeriod().equals(model.getPeriod())){
+            frequency.setPeriod(model.getPeriod());
+            frequencyUpdated = true;
+        }
         List<HabitReminderModel> reminderModels= model.getReminderModels();
         List<Long> toDeleteReminderIds = new ArrayList<>();
         List<Integer> toDeleteIndexes = new ArrayList<>();
@@ -264,11 +273,11 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
             }
             else{
                 if(!reminderModel.getToDelete()){
-                    LambdaUpdateWrapper<HabitReminder> wrapper4 = new LambdaUpdateWrapper<>();
-                    wrapper4.set(HabitReminder::getTime,reminderModel.getTime())
+                    LambdaUpdateWrapper<HabitReminder> wrapper2 = new LambdaUpdateWrapper<>();
+                    wrapper2.set(HabitReminder::getTime,reminderModel.getTime())
                             .set(HabitReminder::getUpdateTime,Constants.Now())
                             .eq(HabitReminder::getId,reminderModel.getReminderId());
-                    reminderMapper.update(wrapper4);
+                    reminderMapper.update(wrapper2);
                 }
                 else{
                     toDeleteIndexes.add(i);
@@ -279,13 +288,19 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         for(int index:toDeleteIndexes)
             reminderModels.remove(index);
         if(toDeleteReminderIds.size()>Constants.None) {
-            LambdaQueryWrapper<HabitReminder> wrapper5 = new LambdaQueryWrapper<>();
-            wrapper5.in(HabitReminder::getId, toDeleteReminderIds);
-            reminderMapper.delete(wrapper5);
+            LambdaQueryWrapper<HabitReminder> wrapper3 = new LambdaQueryWrapper<>();
+            wrapper3.in(HabitReminder::getId, toDeleteReminderIds);
+            reminderMapper.delete(wrapper3);
         }
         mapper.update(wrapper);
         optionMapper.update(wrapper1);
-        frequencyMapper.update(wrapper2);
+        if(frequencyUpdated)
+        {
+            frequencyMapper.updateById(frequency);
+            LambdaQueryWrapper<HabitRecord> wrapper4 = new LambdaQueryWrapper<>();
+            wrapper4.eq(HabitRecord::getHabitId,frequency.getHabitId()).gt(HabitRecord::getDay,model.getRecordDay());
+            recordMapper.delete(wrapper4);
+        }
         return model;
     }
 
@@ -430,5 +445,16 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         model.setData(data);
         redis.set(key,model,Constants.CachingExpire);
         return res;
+    }
+
+    @Override
+    public void removeAllAbout(String userId) {
+        List<String> habitIds = mapper.getUserHabitIds(userId);
+        optionMapper.delete(new LambdaQueryWrapper<HabitOption>().in(HabitOption::getHabitId,habitIds));
+        reminderMapper.delete(new LambdaQueryWrapper<HabitReminder>().in(HabitReminder::getHabitId,habitIds));
+        recordMapper.delete(new LambdaQueryWrapper<HabitRecord>().in(HabitRecord::getHabitId,habitIds));
+        frequencyMapper.delete(new LambdaQueryWrapper<HabitFrequency>().in(HabitFrequency::getHabitId,habitIds));
+        groupMapper.delete(new LambdaQueryWrapper<HabitGroup>().eq(HabitGroup::getUserId,userId));
+        mapper.delete(new LambdaQueryWrapper<Habit>().eq(Habit::getUserId,userId));
     }
 }

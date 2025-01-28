@@ -19,7 +19,7 @@ public interface TaskMapper extends BaseMapper<Task> {
     List<TaskRuleComboVO> getTasks(Page<TaskRuleComboVO>page, @Param("userId")String UserId,@Param("time")Date time,
                                    @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound,
                                    @Param("labelId")Long labelId);
-    List<TaskRuleComboVO> getTasksWithState(Page<TaskRuleComboVO>page,Integer state);
+    List<TaskRuleComboVO> getTasksWithState(Page<TaskRuleComboVO>page,@Param("state") Integer state);
     TaskRuleComboVO getTask(@Param("userId")String userId,@Param("taskId")Long taskId,@Param("time")Date time,
                             @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound);
 
@@ -31,6 +31,8 @@ public interface TaskMapper extends BaseMapper<Task> {
     Boolean isRepeatable(@Param("taskId")Long taskId);
     @Select("select beginTime from Task where id=#{taskId}")
     Date getTaskBeginTime(@Param("taskId")Long taskId);
+    @Select("select id from Task where userId=#{userId}")
+    List<Long> getUserTaskIds(@Param("userId")String userId);
 
 
 }

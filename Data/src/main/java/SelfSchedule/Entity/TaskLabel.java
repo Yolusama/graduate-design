@@ -56,9 +56,9 @@ public class TaskLabel {
     public static final Long Today = 1L;
     public static final Long Tomorrow = 2L;
     public static final Long Yesterday = 3L;
-    public static final Long Finished = 4L;
-    public static final Long Abandoned = 5L;
-    public static final Long RecycleBin = 6L;
+    public static final Long Finished = 5L;
+    public static final Long Abandoned = 6L;
+    public static final Long RecycleBin = 7L;
 
     public static Boolean isBaseLabel(Long id){
         final Long[] baseIds = {Today,Tomorrow,Yesterday,Finished,Abandoned,RecycleBin};

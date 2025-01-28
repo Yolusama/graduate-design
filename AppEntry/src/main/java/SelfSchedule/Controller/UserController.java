@@ -6,9 +6,11 @@ import SelfSchedule.DbOption.ServiceImpl.UserService;
 import SelfSchedule.Entity.Enum.UserLoginStatus;
 import SelfSchedule.Entity.VO.UserLoginVO;
 import SelfSchedule.Model.UserLoginRegModel;
+import SelfSchedule.Model.UserPwdModel;
 import SelfSchedule.Model.UserTokenModel;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.EmailService;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.JwtService;
 import SelfSchedule.Service.RedisCache;
 import io.swagger.annotations.Api;
@@ -17,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
 
@@ -26,15 +29,18 @@ import javax.mail.MessagingException;
 public class UserController extends ControllerBase{
     private final IUserService userService;
     private final EmailService emailService;
+    private final FileService fileService;
     private final JwtService jwtService;
 
     @Autowired
-    public UserController(UserService userService,RedisCache redis,EmailService emailService,JwtService jwtService)
+    public UserController(UserService userService,RedisCache redis,EmailService emailService,JwtService jwtService,
+                          FileService fileService)
     {
         this.userService = userService;
         this.redis = redis;
         this.emailService = emailService;
         this.jwtService = jwtService;
+        this.fileService = fileService;
     }
 
     @GetMapping("/GetCheckCode/{length}")
@@ -95,6 +101,36 @@ public class UserController extends ControllerBase{
         if(res == null)
             return fail("身份验证信息已过期！");
         return successWithData(res);
+    }
+
+    @PatchMapping("/ChangeNickName/{userId}")
+    @ApiOperation(value="用户修改昵称",notes = "用户修改昵称")
+    public ActionResult ChangeNickName(@PathVariable String userId,@RequestParam String nickName){
+        int res = userService.changeNickname(userId,nickName);
+        if(res==Constants.AbNormalState)
+            return fail("更新失败！");
+        return ok("已更换昵称！");
+    }
+
+    @PostMapping("/ChangeAvatar")
+    @ApiOperation(value="用户修改头像",notes = "用户修改头像")
+    public ActionResult ChangeAvatar(@RequestPart("userId")String userId,@RequestPart("avatar")String avatar,
+                                     @RequestPart("file")MultipartFile file){
+       int res = userService.changeAvatar(avatar,userId,file,fileService);
+        if(res==Constants.AbNormalState)
+            return fail("更新失败！");
+        return ok("已更换头像！");
+    }
+
+    @PutMapping("/ChangePassword")
+    @ApiOperation(value="用户修改密码",notes = "用户修改密码")
+    public ActionResult ChangePassword(@RequestBody UserPwdModel model){
+        Boolean res = userService.changePassword(model,redis);
+        if(res==null)
+            return fail("验证码已过期！");
+        if(!res)
+            return fail("验证码错误！");
+        return ok("已更改密码！");
     }
 
 }

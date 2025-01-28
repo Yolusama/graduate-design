@@ -21,4 +21,6 @@ public interface IndexServiceInterface {
     int removeLabel(Long labelId,FileService fileService);
     TaskLabelVO createOrCheckLabel(String labelName, String userId);
     List<TaskLabelVO> getHiddenLabels(String userId,RedisCache redis);
+    void checkYesterdayTask(Date yesterday,String userId,RedisCache redis);
+    void logout(boolean cancelAccount,String userId,String email, RedisCache redis);
 }

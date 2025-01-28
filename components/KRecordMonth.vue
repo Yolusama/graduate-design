@@ -119,9 +119,8 @@
 	const frequency = ref(pros.frequency);
 
 	onMounted(() => {
-		const today = onlyDate(new Date());
 		if (beginDate.value == undefined)
-			beginDate.value = today;
+			beginDate.value = today.value;
 		loadMonthDays();
 		state.daysFromBeginDateToNow = ((today.getTime() - beginDate.value.getTime()) / ADayMillseconds) + 1;
 	});

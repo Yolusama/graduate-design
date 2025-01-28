@@ -11,7 +11,10 @@
 				<image src="../static/plane-filled.png" v-if="state.isTaskUpdate||state.canCreateTask" :size="18"
 					class="image" @click="editTask" />
 				<image :src="imgSrc(DefaultLabelIcon)" v-if="state.hasLabelSetter" @click="takeLabel" class="image"></image>
-				<text class="label-text" v-if="state.hasLabelSetter&&label!=undefined">{{label.labelName}}</text>
+				<text class="label-text" v-if="state.hasLabelSetter&&label!=undefined&&!isBaseLabel(label.labelId)" 
+				:style="label!=undefined&&label.isList?'background-color:cyan':''">
+				{{label.labelName}}
+				</text>
 			</view>
 			<uni-easyinput v-model="state.task.title" placeholder="标题" focus style="margin-bottom: 2px;margin-top: 3px;"
 				@input="titleInput"></uni-easyinput>
@@ -182,7 +185,8 @@
 		buildElById,
 		TaskReminderKey,
 		DefaultLabelIcon,
-		isBaseDayLabel
+		isBaseDayLabel,
+		isBaseLabel
 	} from '../module/Common';
 	import {
 		CreateTask,

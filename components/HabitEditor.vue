@@ -481,7 +481,8 @@
 	}
 
 	function popupClose(e) {
-		if (e.show) return;
+		if (e.show)return;
+		emits("close");
 		reloadHabitModel();
 	}
 	

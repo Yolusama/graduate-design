@@ -42,4 +42,8 @@ export function GetHiddenLabels(userId,successCallback){
 	Get(`/Api/Index/GetHiddenLabels/${userId}`,auth,successCallback);
 }
 
+export function CheckYesterdayTask(userId,yesterday,successCallback){
+	Post(`/Api/Index/CheckYesterdayTask/${userId}?yesterday=${yesterday.getTime()}`,auth,{},successCallback);
+}
+
 export const IdOfLableNamed = 4;

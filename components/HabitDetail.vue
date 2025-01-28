@@ -102,15 +102,19 @@
 	});
 	
 	const pros = defineProps({
-		habit:Object
+		habit:Object,
+		date:Date
 	});
 	
 	const habit = ref(pros.habit);
+	const date = ref(pros.date);
 	const emits = defineEmits(["close","finished","removed","updated"]);
 
 	onMounted(() => {
        if(habit.value!=undefined&&habit.value!=null)
 	      state.selectedHabit = habit.value;
+		if(date.value!=undefined)
+		  state.selectedDay = onlyDate(date.value);
 	});
 	
 	function toEdit(){

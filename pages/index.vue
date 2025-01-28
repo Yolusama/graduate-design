@@ -37,7 +37,7 @@
 									<scroll-view style="height: 30vh;" v-if="state.labelsExpand" scroll-y>
 										<view class="label-info" v-for="(label,index1) in state.labels" :key="index1" 
 										style="margin-left: 4%;margin-top: 2%;"@click="switchContent(label)">
-											<image :src="imgSrc(label.icon)" class="label-icon" style="width: 16px;height: 16px;;"></image>
+											<image :src="imgSrc(label.icon)" class="label-icon" style="width: 16px;height: 16px;"></image>
 											<text class="text" style="width:75px;">{{label.labelName}}</text>
 											<view style="margin-left: 5%;display: flex;width:80px">
 												<uni-icons type="compose"
@@ -75,7 +75,7 @@
 				<uni-icons type="bars" color="rgb(0,125,245)" :size="20" @click="labelDrawer.open()"></uni-icons>
 				<text class="text">{{state.currentLabel.labelName}}</text>
 			</view>
-			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0">
+			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0" style="margin-bottom: 4vh;">
 				<uni-collapse-item>
 					<template v-slot:title>
 						<view class="item-title">
@@ -83,7 +83,7 @@
 							<text style="font-size: 13px;color:gray">{{state.data['habit'].length}}</text>
 						</view>
 					</template>
-					<scroll-view style="max-height: 36vh;"  scroll-y>
+					<scroll-view style="max-height: 40vh;"  scroll-y>
 						<view v-for="(habit,index) in state.data['habit']" class="habit"
 							:key="index">
 							<uni-swipe-action>
@@ -145,18 +145,20 @@
 						<uni-swipe-action v-for="(task,index) in state.data['task']" :key="index">
 							<uni-swipe-action-item>
 								<template v-slot:left>
-									<view style="display: flex;align-items: center;">
+									<view style="display: flex;align-items: center;position: relative;">
 										<button size="mini" style="background-color: rgb(0,255,0);color: white;"
-											v-if="task.state==TaskState.unfinished"
+											v-if="task.state!=TaskState.finished"
 											@click="finishTaskOrNot(index)">完成</button>
 										<button size="mini" style="background-color: red;color: #fff;"
 											v-if="task.state==TaskState.finished" @click="finishTaskOrNot(index)">取消完成</button>
 									</view>
 								</template>
-								<view style="display: flex;justify-content: center;padding-right: 1%;">
+								<view 
+								style="display: flex;justify-content: center;padding-right: 1%;position: relative;z-index: 0;margin-top: 1%;">
+									<view class="mask" v-if="task.state==TaskState.abondoned"></view>
 									<view @click="openTaskEditor(task)" class="task">
 										<checkbox-group @change="finishTaskOrNot(index)">
-											<checkbox :checked="task.state==1" style="transform: scale(70%);">
+											<checkbox :checked="task.state==TaskState.finished" style="transform: scale(70%);">
 											</checkbox>
 										</checkbox-group>
 										<view class="task-content">
@@ -180,7 +182,7 @@
 					<template v-slot:left>
 						<view style="display: flex;align-items: center;">
 							<button size="mini" style="background-color: rgb(0,255,0);color: white;"
-								v-if="task.state==TaskState.unfinished"
+								v-if="task.state!=TaskState.finished"
 								@click.stop="finishTaskOrNot(index)">完成</button>
 							<button size="mini" style="background-color: red;color: #fff;"
 								v-if="task.state==TaskState.finished"
@@ -190,7 +192,7 @@
 					<view style="display: flex;justify-content: center;padding-right: 1%;">
 						<view @click="openTaskEditor(task)" class="task">
 							<checkbox-group @change="finishTaskOrNot(index)">
-								<checkbox :checked="task.state==1" style="transform: scale(70%);">
+								<checkbox :checked="task.state==TaskState.finished" style="transform: scale(70%);">
 								</checkbox>
 							</checkbox-group>
 							<view class="task-content">
@@ -222,6 +224,7 @@
 		ref
 	} from 'vue';
 	import {
+		CheckYesterdayTask,
 		FinishTaskOrNot,
 		GetData,
 		GetLabels,
@@ -255,7 +258,8 @@ import { GetTaskReminders } from '../api/Task';
 		buttonColor: '#007AFF',
 		iconColor: '#fff'
 	});
-
+     
+	const today = ref(onlyDate(new Date()));
 	const state = reactive({
 		data: {},
 		user: {
@@ -304,7 +308,23 @@ import { GetTaskReminders } from '../api/Task';
 		getData(label.labelId);
 
 		getLabels();
+		checkYesterdayTask();
 	});
+	
+	function checkYesterdayTask(){
+		const today = new Date();
+		const yesterday = onlyDate(new Date(today.setDate(today.getDate()-1)));
+		CheckYesterdayTask(state.user.id,yesterday,response=>{
+			const res = response.data;
+			if(!res.succeeded){
+				uni.showToast({
+					title:res.message,
+					icon:"none"
+				});
+				return;
+			}
+		});
+	}
 
 	function openTaskEditor(task) {
 		state.task = task;
@@ -421,7 +441,7 @@ import { GetTaskReminders } from '../api/Task';
 	}
 
 	function getData(lableId) {
-		const time = onlyDate(new Date());
+		const time = new Date(today.value);
 		if (lableId == 2)
 			time.setDate(time.getDate() + 1);
 		else if (lableId == 3)
@@ -484,7 +504,7 @@ import { GetTaskReminders } from '../api/Task';
 
 	function removeLabel(index, isList) {
 		const label = isList ? state.lists[index] : state.labels[index];
-		RemoveLabel(label.id, response => {
+		RemoveLabel(label.labelId, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -525,14 +545,21 @@ import { GetTaskReminders } from '../api/Task';
 		else if (state.currentLabel.id == 3)
 			time.setDate(time.getDate() - 1);
 			
-		if (dateEquals(beginTime, endTime))
+		if (dateEquals(beginTime, endTime)&&dateEquals(beginTime,time))
 			res = `<text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text><text style="color:red">${timeWithoutSeconds(endTime)}</text>`;
 		else if (dateEquals(beginTime, time) && !dateEquals(endTime, time))
 			res = `<text>开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
 		else if (!dateEquals(beginTime, time) && dateEquals(endTime, time))
 			res = `<text>结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
 		else if(onlyDate(endTime).getTime()<time.getTime())	
-		    res = `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text><text style="color:red">${getDateStr(endTime)}</text>`;
+		    {
+				if(!dateEquals(beginTime,endTime))
+				  res = `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text>
+				     <text style="color:red">${getDateStr(endTime)}</text>`;
+			    else 
+				  res = `<text style="font-size:15px">${getDateStr(endTime)}</text>`
+			
+			}
 		else
 			res = "<text>全天</text>"
 		return res;
@@ -642,6 +669,7 @@ import { GetTaskReminders } from '../api/Task';
 		padding: 2%;
 		padding-top: 2vh;
 	}
+	
 
 	#task-labels {
 		position: relative;
@@ -741,6 +769,14 @@ import { GetTaskReminders } from '../api/Task';
 		align-items: center;
 		justify-content: space-between;
 		height: 40px;
+	}
+	
+	#index .mask {
+		height: 100%;
+		width: 100%;
+		position: absolute;
+		z-index: -1;
+		background-color: rgba(0, 0, 0, 0.25);
 	}
 	
 	#index .item-title .text{

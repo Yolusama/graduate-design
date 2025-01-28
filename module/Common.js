@@ -423,3 +423,7 @@ export const DefaultLabelIcon = "label.png";
 export function isBaseDayLabel(labelId){
 	return labelId==1||labelId==2||labelId==3;
 }
+
+export function isBaseLabel(labelId){
+	return [1,2,3,5,6,7].findIndex(l=>l==labelId)>=0;
+}

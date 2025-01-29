@@ -11,7 +11,7 @@
  Target Server Version : 80032
  File Encoding         : 65001
 
- Date: 28/01/2025 16:25:35
+ Date: 29/01/2025 22:21:26
 */
 
 SET NAMES utf8mb4;
@@ -149,7 +149,7 @@ CREATE TABLE `habitrecord`  (
   `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_time`(`finishTime`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitrecord
@@ -172,6 +172,10 @@ INSERT INTO `habitrecord` VALUES (16, NULL, 'H4024690107768', 0, '2025-01-28', '
 INSERT INTO `habitrecord` VALUES (17, NULL, 'H568694593215', 0, '2025-01-28', NULL);
 INSERT INTO `habitrecord` VALUES (18, NULL, 'H5791865054', 0, '2025-01-28', NULL);
 INSERT INTO `habitrecord` VALUES (19, NULL, 'H612712257344', 0, '2025-01-28', NULL);
+INSERT INTO `habitrecord` VALUES (20, NULL, 'H4024690107768', 0, '2025-01-29', NULL);
+INSERT INTO `habitrecord` VALUES (21, NULL, 'H568694593215', 0, '2025-01-29', NULL);
+INSERT INTO `habitrecord` VALUES (22, NULL, 'H5791865054', 0, '2025-01-29', NULL);
+INSERT INTO `habitrecord` VALUES (23, NULL, 'H612712257344', 0, '2025-01-29', NULL);
 
 -- ----------------------------
 -- Table structure for habitreminder
@@ -328,7 +332,7 @@ CREATE TABLE `user`  (
   `id` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户id，主键',
   `email` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户电子邮箱',
   `password` varchar(125) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户登录密码',
-  `nickName` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户昵称',
+  `nickname` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户昵称',
   `avatar` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户头像',
   `role` tinyint UNSIGNED NULL DEFAULT 1 COMMENT '1.管理员，2.普通用户，3.VIP用户\r\n',
   `createTime` datetime NULL DEFAULT NULL COMMENT '用户创建时间',
@@ -342,6 +346,25 @@ CREATE TABLE `user`  (
 -- Records of user
 -- ----------------------------
 INSERT INTO `user` VALUES ('U28533327585573', '1816440933@qq.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '用户U28533327585573', 'default.png', 1, '2024-12-16 16:44:12', '2025-01-17 21:07:10');
-INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '用户U47811742828165', 'default.png', 1, '2024-11-24 21:59:28', '2025-01-24 15:55:17');
+INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414', 'yyolu', 'default.png', 1, '2024-11-24 21:59:28', '2025-01-29 21:20:38');
+
+-- ----------------------------
+-- Table structure for versionstatus
+-- ----------------------------
+DROP TABLE IF EXISTS `versionstatus`;
+CREATE TABLE `versionstatus`  (
+  `id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '版本id',
+  `type` tinyint(1) NULL DEFAULT NULL COMMENT '版本类型，1.正式版，2.α测试版，3.β测试版，4.标准测试版',
+  `number` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版号',
+  `publishDate` date NULL DEFAULT NULL COMMENT '发布时间',
+  `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版本描述信息',
+  `authorAbout` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作者描述信息',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `index_type`(`type`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of versionstatus
+-- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;

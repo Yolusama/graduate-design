@@ -11,6 +11,8 @@ public class RandomGenerator {
     private static final Integer UserIdRandomBound = 5;
     private static final char UserIdPrefix = 'U';
     private static final char HabitIdPrefix = 'H';
+    private static final char VersionIdSep = '-';
+    private static final Integer VersionIdLength = 16;
     private static final Integer TaskIdRandomBound = 5;
 
     public static String generateNumber(int count)
@@ -52,6 +54,19 @@ public class RandomGenerator {
         int bound = random.nextInt(TaskIdRandomBound) + Bound;
         for(int i = 0;i < bound;i++)
             builder.append(random.nextInt(Bound));
+        return builder.toString();
+    }
+
+    public static String generateVersionId(){
+        StringBuilder builder = new StringBuilder();
+        Random random = new Random(System.currentTimeMillis());
+        for(int i=1;i<=VersionIdLength;i++)
+        {
+            int rIndex = random.nextInt(Table.length());
+            builder.append(Table.charAt(rIndex));
+            if(i%4==0&&i!=VersionIdLength)
+                builder.append(VersionIdSep);
+        }
         return builder.toString();
     }
 }

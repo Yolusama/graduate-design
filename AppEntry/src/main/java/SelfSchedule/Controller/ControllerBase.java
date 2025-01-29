@@ -55,4 +55,12 @@ public abstract class ControllerBase
                 .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length))
                 .body(data);
     }
+
+    public ActionResult makeResult(String message,HttpStatus status){
+        return new ActionResult(message,status.value());
+    }
+
+    public<T> ActionResult<T> makeResult(String message,HttpStatus status,T data){
+        return new ActionResult<>(message,status.value(),data);
+    }
 }

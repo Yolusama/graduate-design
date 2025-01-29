@@ -18,7 +18,7 @@
 				<uni-list>
 					<uni-list-item v-for="(item,index) in data" :key="index">
 						<template v-slot:body>
-							<label class="radio" v-if="!checkMode">
+							<label class="radio" v-if="!checkMode" @click="itemClick">
 								<text>{{item.text}}</text>
 								<radio :value="item.value" style="transform: scale(0.7);" :checked="item.value==modelValue"></radio>
 							</label>
@@ -44,7 +44,7 @@
 		onMounted
 	} from 'vue';
 
-	const emit = defineEmits();
+	const emit = defineEmits(["change","itemClick"]);
 	const pros = defineProps({
 		data: Array,
 		modelValue:Number,
@@ -66,6 +66,10 @@
 			item.isDef = detail.value == data.value.length;
 		}
 		emit("onChange",item);
+	}
+	
+	function itemClick(){
+		emit("itemClick");
 	}
 
 	onMounted(function(){

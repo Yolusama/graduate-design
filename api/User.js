@@ -1,4 +1,4 @@
-import { Get,Post,Put } from "../module/Request";
+import { Get,Patch,Post,Put } from "../module/Request";
 
 export function Login(email,password,successCallback,failCallback)
 {
@@ -42,4 +42,4 @@ export const auth = {
 export const formDataAuth = {
 	"ContentType":"multipart/form-data",
 	"token": user.token
-};
+}

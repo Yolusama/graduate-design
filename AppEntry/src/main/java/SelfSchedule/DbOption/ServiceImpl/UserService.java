@@ -68,7 +68,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         user.setEmail(email);
         user.setAvatar(Constants.DefaultAvatar);
         user.setId(RandomGenerator.generateUserId());
-        user.setNickName(String.format("用户%s",user.getId()));
+        user.setNickname(String.format("用户%s",user.getId()));
         user.setPassword(StringEncryptUtil.getString(password));
         user.setCreateTime(Constants.Now());
         List<HabitGroup> groups = new ArrayList<>();
@@ -87,7 +87,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
     @Override
     @Transactional
     public UserLoginVO login(String email, String password, JwtService jwtService, RedisCache redis)
-            throws IllegalAccessException {
+    {
         var wrapper = new LambdaQueryWrapper<User>().eq(User::getEmail,email);
         User user = mapper.selectOne(wrapper);
         UserLoginVO res = new UserLoginVO();
@@ -113,7 +113,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
     }
 
     @Override
-    public UserLoginVO checkCodeLogin(String email, String checkCode, JwtService jwtService, RedisCache redis) throws IllegalAccessException {
+    public UserLoginVO checkCodeLogin(String email, String checkCode, JwtService jwtService, RedisCache redis){
         var wrapper = new LambdaQueryWrapper<User>().eq(User::getEmail,email);
         User user = mapper.selectOne(wrapper);
         UserLoginVO res = new UserLoginVO();
@@ -144,18 +144,27 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
     }
 
     @Override
+    @Transactional
     public Boolean verifyToken(String userId, String token, RedisCache redis) {
         String key = String.format("%s_token",userId);
         if(!redis.has(key))
            return null;
-        return redis.get(key).equals(token);
+        boolean res = redis.get(key).equals(token);
+        if(res){
+           LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+           wrapper.set(User::getLastLoginTime,Constants.Now()).eq(User::getId,userId);
+           mapper.update(wrapper);
+        }
+        else
+            redis.remove(key);
+        return res;
     }
 
     @Override
     @Transactional
-    public int changeNickname(String userId, String nickName) {
+    public int changeNickname(String userId, String nickname) {
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(User::getNickName,nickName).eq(User::getId,userId);
+        wrapper.set(User::getNickname,nickname).eq(User::getId,userId);
         return mapper.update(wrapper);
     }
 
@@ -163,26 +172,43 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
     @Transactional
     public Boolean changePassword(UserPwdModel model, RedisCache redis) {
         String key = String.format("%s_CheckCode",model.getEmail());
-        if(!redis.has(key))
+        if(!redis.has(key)||!redis.get(key).equals(model.getCheckCode()))
             return null;
-        if(!redis.get(key).equals(model.getCheckCode()))
+        User user = mapper.selectById(model.getUserId());
+        String newPwdEncrypted = StringEncryptUtil.getString(model.getNewPassword());
+        if(user.getPassword().equals(newPwdEncrypted))
             return false;
-        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(User::getPassword,StringEncryptUtil.getString(model.getNewPassword()))
-                .eq(User::getId,model.getUserId());
-        mapper.update(wrapper);
+        user.setPassword(newPwdEncrypted);
+        mapper.updateById(user);
+        redis.remove(key);
         return true;
     }
 
     @Override
     @Transactional
-    public int changeAvatar(String avatar, String userId, MultipartFile file, FileService fileService) {
+    public String changeAvatar(String avatar, String userId, MultipartFile file, FileService fileService) {
         if(!avatar.equals(Constants.DefaultAvatar))
             fileService.removeImage(avatar);
         String newAvatar = fileService.uploadImage(file);
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(User::getAvatar,newAvatar).eq(User::getId,userId);
-        return mapper.update(wrapper);
+        mapper.update(wrapper);
+        return newAvatar;
     }
 
+    @Override
+    @Transactional
+    public Boolean changeEmail(String email, String newEmail, String checkCode, RedisCache redis) {
+        Long count = mapper.selectCount(new LambdaQueryWrapper<User>().eq(User::getEmail,newEmail));
+        if(count!=0)
+            return null;
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        String key = String.format("%s_CheckCode",newEmail);
+        if(!redis.has(key)||!redis.get(key).equals(checkCode))
+            return false;
+        wrapper.set(User::getEmail,newEmail).eq(User::getEmail,email);
+        mapper.update(wrapper);
+        redis.remove(key);
+        return true;
+    }
 }

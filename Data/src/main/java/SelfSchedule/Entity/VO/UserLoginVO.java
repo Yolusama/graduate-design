@@ -9,7 +9,7 @@ import lombok.Setter;
 public class UserLoginVO {
     private String id;
     private String email;
-    private String nickName;
+    private String nickname;
     private String avatar;
     private Integer role;
     private UserLoginStatus loginStatus;

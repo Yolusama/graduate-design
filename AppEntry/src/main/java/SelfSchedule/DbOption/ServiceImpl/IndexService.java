@@ -266,10 +266,10 @@ public class IndexService implements IndexServiceInterface {
         if(redis.has(checkCodeKey))
             redis.remove(checkCodeKey);
         if(cancelAccount){
-            userMapper.deleteById(userId);
             labelMapper.delete(new LambdaQueryWrapper<TaskLabel>().eq(TaskLabel::getUserId,userId));
             taskService.removeAllAbout(userId);
             habitService.removeAllAbout(userId);
+            userMapper.deleteById(userId);
         }
     }
 

@@ -11,7 +11,7 @@
  Target Server Version : 80032
  File Encoding         : 65001
 
- Date: 25/01/2025 10:17:57
+ Date: 28/01/2025 16:25:35
 */
 
 SET NAMES utf8mb4;
@@ -42,7 +42,7 @@ CREATE TABLE `habit`  (
 -- ----------------------------
 INSERT INTO `habit` VALUES ('H10895488584113', 'U28533327585573', 'q', '3158ff1b-a19c-4f55-90d7-950ddc9b94e5.jpg', '2025-01-17 21:54:40', '2025-01-17', 7, 'q', '2025-01-17 22:13:24', 0);
 INSERT INTO `habit` VALUES ('H36176125942', 'U47811742828165', '起飞式锻炼', 'exercise.png', '2025-01-09 10:34:55', '2025-01-01', 6, '起飞，欸飞~', NULL, 0);
-INSERT INTO `habit` VALUES ('H4024690107768', 'U47811742828165', '12', 'habit.png', '2025-01-24 16:16:49', '2025-01-24', 1, '', '2025-01-24 16:38:00', 0);
+INSERT INTO `habit` VALUES ('H4024690107768', 'U47811742828165', '123', 'habit.png', '2025-01-24 16:16:49', '2025-01-27', 1, '12', '2025-01-28 09:19:07', 0);
 INSERT INTO `habit` VALUES ('H568694593215', 'U47811742828165', '快乐cheems', 'fe259405-f999-4237-b2d6-b82caa2b2d56.jpg', '2025-01-17 16:22:55', '2025-01-17', 3, '快乐cheems，happy every day！', '2025-01-17 16:52:21', 0);
 INSERT INTO `habit` VALUES ('H5791865054', 'U47811742828165', '阅读', 'reading.png', '2025-01-09 10:54:47', '2025-01-01', 2, '阅读使人受益', '2025-01-11 15:12:18', 0);
 INSERT INTO `habit` VALUES ('H612712257344', 'U47811742828165', '12', 'habit.png', '2025-01-09 10:26:48', '2025-01-01', 2, '飞', NULL, 0);
@@ -58,10 +58,10 @@ CREATE TABLE `habitfrequency`  (
   `days` json NULL COMMENT '频率每周的日子，周一，周二等执行',
   `weekPersistDays` int NULL DEFAULT NULL COMMENT '每周多少天，最大值7',
   `period` int NULL DEFAULT NULL COMMENT '每隔多少天',
-  `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitfrequency
@@ -121,7 +121,7 @@ CREATE TABLE `habitoption`  (
   `mostDays` int NULL DEFAULT NULL COMMENT '最多坚持天数',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitoption
@@ -134,7 +134,7 @@ INSERT INTO `habitoption` VALUES (27, 'H773687026891', -1, NULL, 0, 0, 0);
 INSERT INTO `habitoption` VALUES (28, 'H568694593215', -1, NULL, 0, 0, 0);
 INSERT INTO `habitoption` VALUES (29, 'H10895488584113', -1, NULL, 0, 0, 1);
 INSERT INTO `habitoption` VALUES (30, 'H81035800324', -1, NULL, 0, 0, 1);
-INSERT INTO `habitoption` VALUES (31, 'H4024690107768', -1, NULL, 0, 0, 0);
+INSERT INTO `habitoption` VALUES (31, 'H4024690107768', -1, NULL, 0, 0, 1);
 
 -- ----------------------------
 -- Table structure for habitrecord
@@ -149,35 +149,29 @@ CREATE TABLE `habitrecord`  (
   `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_time`(`finishTime`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 129 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitrecord
 -- ----------------------------
-INSERT INTO `habitrecord` VALUES (1, NULL, 'H568694593215', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (2, NULL, 'H5791865054', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (3, NULL, 'H612712257344', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (4, NULL, 'H4024690107768', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (5, NULL, 'H4024690107768', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (6, NULL, 'H568694593215', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (7, NULL, 'H5791865054', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (8, NULL, 'H612712257344', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (9, NULL, 'H4024690107768', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (10, NULL, 'H568694593215', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (11, NULL, 'H5791865054', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (12, NULL, 'H612712257344', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (13, NULL, 'H4024690107768', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (14, NULL, 'H568694593215', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (15, NULL, 'H5791865054', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (16, NULL, 'H612712257344', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (17, NULL, 'H4024690107768', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (18, NULL, 'H568694593215', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (19, NULL, 'H5791865054', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (20, NULL, 'H612712257344', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (21, NULL, 'H4024690107768', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (22, NULL, 'H568694593215', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (23, NULL, 'H5791865054', 0, '2025-01-24', NULL);
-INSERT INTO `habitrecord` VALUES (24, NULL, 'H612712257344', 0, '2025-01-24', NULL);
+INSERT INTO `habitrecord` VALUES (1, NULL, 'H4024690107768', 0, '2025-01-25', NULL);
+INSERT INTO `habitrecord` VALUES (2, NULL, 'H568694593215', 0, '2025-01-25', NULL);
+INSERT INTO `habitrecord` VALUES (3, NULL, 'H5791865054', 0, '2025-01-25', NULL);
+INSERT INTO `habitrecord` VALUES (4, NULL, 'H612712257344', 0, '2025-01-25', NULL);
+INSERT INTO `habitrecord` VALUES (5, NULL, 'H36176125942', 0, '2025-01-25', NULL);
+INSERT INTO `habitrecord` VALUES (6, NULL, 'H4024690107768', 0, '2025-01-26', NULL);
+INSERT INTO `habitrecord` VALUES (7, NULL, 'H568694593215', 0, '2025-01-26', NULL);
+INSERT INTO `habitrecord` VALUES (8, NULL, 'H5791865054', 0, '2025-01-26', NULL);
+INSERT INTO `habitrecord` VALUES (9, NULL, 'H612712257344', 0, '2025-01-26', NULL);
+INSERT INTO `habitrecord` VALUES (10, NULL, 'H4024690107768', 0, '2025-01-27', '2025-01-27 10:55:11');
+INSERT INTO `habitrecord` VALUES (11, NULL, 'H568694593215', 0, '2025-01-27', NULL);
+INSERT INTO `habitrecord` VALUES (12, NULL, 'H5791865054', 0, '2025-01-27', NULL);
+INSERT INTO `habitrecord` VALUES (13, NULL, 'H612712257344', 0, '2025-01-27', NULL);
+INSERT INTO `habitrecord` VALUES (15, NULL, 'H36176125942', 0, '2025-01-28', NULL);
+INSERT INTO `habitrecord` VALUES (16, NULL, 'H4024690107768', 0, '2025-01-28', '2025-01-28 09:27:02');
+INSERT INTO `habitrecord` VALUES (17, NULL, 'H568694593215', 0, '2025-01-28', NULL);
+INSERT INTO `habitrecord` VALUES (18, NULL, 'H5791865054', 0, '2025-01-28', NULL);
+INSERT INTO `habitrecord` VALUES (19, NULL, 'H612712257344', 0, '2025-01-28', NULL);
 
 -- ----------------------------
 -- Table structure for habitreminder
@@ -217,12 +211,17 @@ CREATE TABLE `task`  (
   INDEX `index_begin_time`(`beginTime`) USING BTREE,
   INDEX `index_end_time`(`endTime`) USING BTREE,
   INDEX `index_label_id`(`labelId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of task
 -- ----------------------------
 INSERT INTO `task` VALUES (1, 'U47811742828165', '2025-01-23 16:51:00', '2025-01-23 16:32:00', '2025-01-25 17:32:00', '1', 4, '1', 2, 0, NULL, NULL);
+INSERT INTO `task` VALUES (2, 'U47811742828165', '2025-01-26 21:57:44', '2025-01-27 21:57:00', '2025-01-27 22:57:00', '1', 4, '1', 4, 0, '2025-01-28 10:18:09', NULL);
+INSERT INTO `task` VALUES (3, 'U47811742828165', '2025-01-26 22:02:10', '2025-01-27 22:02:00', '2025-01-27 23:02:00', '2', 4, '2', 4, 0, '2025-01-28 10:18:09', NULL);
+INSERT INTO `task` VALUES (4, 'U47811742828165', '2025-01-27 15:30:44', '2025-01-27 15:30:00', '2025-01-27 16:30:00', '23', 4, '23', 4, 0, '2025-01-28 10:18:09', 54);
+INSERT INTO `task` VALUES (5, 'U47811742828165', '2025-01-27 15:40:43', '2025-01-27 15:40:00', '2025-01-27 16:40:00', '45', 4, '32', 4, 0, '2025-01-28 10:18:09', 54);
+INSERT INTO `task` VALUES (6, 'U47811742828165', '2025-01-27 15:59:38', '2025-01-27 16:32:00', '2025-01-27 17:32:00', 'q2', 4, '无标题', 4, 0, '2025-01-28 10:18:09', 54);
 
 -- ----------------------------
 -- Table structure for taskinstance
@@ -235,12 +234,17 @@ CREATE TABLE `taskinstance`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_task_id`(`taskId`) USING BTREE,
   INDEX `index_instance_id`(`instanceId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of taskinstance
 -- ----------------------------
 INSERT INTO `taskinstance` VALUES (1, '1', 1);
+INSERT INTO `taskinstance` VALUES (2, '2', 2);
+INSERT INTO `taskinstance` VALUES (3, '3', 3);
+INSERT INTO `taskinstance` VALUES (4, '4', 4);
+INSERT INTO `taskinstance` VALUES (5, '5', 5);
+INSERT INTO `taskinstance` VALUES (6, '6', 6);
 
 -- ----------------------------
 -- Table structure for tasklabel
@@ -250,9 +254,9 @@ CREATE TABLE `tasklabel`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务标签表id，自增',
   `userId` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '任务表关联的用户id',
   `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '标签名',
-  `showMode` tinyint(1) NULL DEFAULT 1 COMMENT '显示模式，1.显示，2.有内容时显示，3.隐藏',
+  `display` tinyint(1) NULL DEFAULT 1 COMMENT '显示模式，1.显示，0.隐藏',
   `createTime` datetime NULL DEFAULT NULL COMMENT '创建时间',
-  `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `notCustom` tinyint(1) NULL DEFAULT 0 COMMENT ' 是否属于用户自定义，1.否，0是',
   `isList` tinyint(1) NULL DEFAULT 0 COMMENT '是否属于清单，1.是，0.否',
   `icon` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '清单图标',
@@ -260,18 +264,22 @@ CREATE TABLE `tasklabel`  (
   INDEX `index_userId`(`userId`) USING BTREE,
   INDEX `index_isList`(`isList`) USING BTREE,
   INDEX `index_notCustom`(`notCustom`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 58 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of tasklabel
 -- ----------------------------
 INSERT INTO `tasklabel` VALUES (1, NULL, '今天', 1, NULL, NULL, 1, 1, 'today.png');
-INSERT INTO `tasklabel` VALUES (2, NULL, '明天', 2, NULL, NULL, 1, 1, 'tomorrow.png');
+INSERT INTO `tasklabel` VALUES (2, NULL, '明天', 1, NULL, NULL, 1, 1, 'tomorrow.png');
 INSERT INTO `tasklabel` VALUES (3, NULL, '昨天', 1, NULL, NULL, 1, 1, 'yesterday.png');
 INSERT INTO `tasklabel` VALUES (4, NULL, '标签', 1, NULL, NULL, 1, 1, 'labels.png');
 INSERT INTO `tasklabel` VALUES (5, NULL, '已完成', 1, NULL, NULL, 1, 1, 'finish.png');
 INSERT INTO `tasklabel` VALUES (6, NULL, '已搁置', 1, NULL, NULL, 1, 1, 'delay.png');
-INSERT INTO `tasklabel` VALUES (7, NULL, '垃圾桶', 3, NULL, NULL, 1, 1, 'bin.png');
+INSERT INTO `tasklabel` VALUES (7, NULL, '垃圾桶', 1, NULL, NULL, 1, 1, 'bin.png');
+INSERT INTO `tasklabel` VALUES (54, 'U47811742828165', 'q', 1, '2025-01-27 15:30:32', '2025-01-27 22:06:52', 0, 0, 'label.png');
+INSERT INTO `tasklabel` VALUES (55, 'U47811742828165', '1', 0, '2025-01-27 20:38:38', '2025-01-27 22:06:12', 0, 1, 'list.png');
+INSERT INTO `tasklabel` VALUES (56, 'U47811742828165', '23', 1, '2025-01-27 20:38:52', '2025-01-27 22:06:35', 0, 1, 'list.png');
+INSERT INTO `tasklabel` VALUES (57, 'U47811742828165', '23', 0, '2025-01-27 20:51:37', '2025-01-27 22:04:52', 0, 0, 'label.png');
 
 -- ----------------------------
 -- Table structure for taskreminder

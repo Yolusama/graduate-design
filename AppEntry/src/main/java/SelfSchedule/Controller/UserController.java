@@ -103,10 +103,10 @@ public class UserController extends ControllerBase{
         return successWithData(res);
     }
 
-    @PatchMapping("/ChangeNickName/{userId}")
+    @PatchMapping("/ChangeNickname/{userId}")
     @ApiOperation(value="用户修改昵称",notes = "用户修改昵称")
-    public ActionResult ChangeNickName(@PathVariable String userId,@RequestParam String nickName){
-        int res = userService.changeNickname(userId,nickName);
+    public ActionResult ChangeNickname(@PathVariable String userId,@RequestParam String nickname){
+        int res = userService.changeNickname(userId,nickname);
         if(res==Constants.AbNormalState)
             return fail("更新失败！");
         return ok("已更换昵称！");
@@ -114,12 +114,9 @@ public class UserController extends ControllerBase{
 
     @PostMapping("/ChangeAvatar")
     @ApiOperation(value="用户修改头像",notes = "用户修改头像")
-    public ActionResult ChangeAvatar(@RequestPart("userId")String userId,@RequestPart("avatar")String avatar,
+    public ActionResult<String> ChangeAvatar(@RequestPart("userId")String userId,@RequestPart("avatar")String avatar,
                                      @RequestPart("file")MultipartFile file){
-       int res = userService.changeAvatar(avatar,userId,file,fileService);
-        if(res==Constants.AbNormalState)
-            return fail("更新失败！");
-        return ok("已更换头像！");
+        return successWithData("已更换头像！",userService.changeAvatar(avatar,userId,file,fileService));
     }
 
     @PutMapping("/ChangePassword")
@@ -127,10 +124,20 @@ public class UserController extends ControllerBase{
     public ActionResult ChangePassword(@RequestBody UserPwdModel model){
         Boolean res = userService.changePassword(model,redis);
         if(res==null)
-            return fail("验证码已过期！");
+            return fail("验证码错误或已过期！");
         if(!res)
-            return fail("验证码错误！");
+            return fail("现密码不能和原密码一样！");
         return ok("已更改密码！");
     }
 
+    @PutMapping("/ChangeEmail/{checkCode}")
+    @ApiOperation(value="用户修改电子邮箱",notes = "用户修改电子邮箱")
+    public ActionResult ChangeEmail(@PathVariable String checkCode,@RequestParam String email,@RequestParam String newEmail){
+        Boolean res = userService.changeEmail(email,newEmail,checkCode,redis);
+        if(res==null)
+            return fail("邮箱已被注册过！");
+        if(!res)
+            return fail("验证码错误或者已过期！");
+        return ok("已更改电子邮箱！");
+    }
 }

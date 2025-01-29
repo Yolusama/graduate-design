@@ -2,9 +2,9 @@
 	<view id="index">
 		<uni-popup type="left" ref="labelDrawer" background-color="#fff" style="z-index:1000">
 			<view id="task-labels">
-				<view class="header">
+				<view class="header" @click="goToSelfInfo">
 					<image class="avatar" :src="imgSrc(state.user.avatar)"></image>
-					<text class="nickName">{{state.user.nickName}}</text>
+					<text class="nickName">{{state.user.nickname}}</text>
 				</view>
 				<scroll-view class="labels" scroll-y>
 					<uni-list>
@@ -294,7 +294,7 @@ import { GetTaskReminders } from '../api/Task';
 		const user = uni.getStorageSync("user");
 		state.user.id = user.uid;
 		state.user.avatar = user.avatar;
-		state.user.nickName = user.nickName;
+		state.user.nickname = user.nickname;
 
 		state.labelsExpandStyle = "-webkit-transform: rotateZ(90deg);";
 
@@ -657,6 +657,12 @@ import { GetTaskReminders } from '../api/Task';
 	function seeHiddenLabels(){
 		uni.navigateTo({
 			url:"/pages/hiddenLabel"
+		});
+	}
+	
+	function goToSelfInfo(){
+		uni.navigateTo({
+			url:"/pages/userInfo"
 		});
 	}
 </script>

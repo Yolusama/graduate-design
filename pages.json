@@ -56,14 +56,14 @@
 			"path" : "pages/userInfo",
 			"style" : 
 			{
-				"navigationBarTitleText" : ""
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path" : "pages/setting",
 			"style" : 
 			{
-				"navigationBarTitleText" : ""
+				"navigationStyle": "custom"
 			}
 		}
 	],
@@ -98,7 +98,7 @@
 		"selectedIconPath": "static/favorite-filling.png"
 	  },
 	  {
-	    "pagePath":"pages/index", //页面路径
+	    "pagePath":"pages/setting", //页面路径
 	    "text":"设置"   ,                //tab字体显示
 	  	"iconPath": "static/settings.png",
 		"selectedIconPath": "static/settings-fill.png"

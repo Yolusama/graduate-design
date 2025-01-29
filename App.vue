@@ -116,6 +116,8 @@
 	});
 
 	function watchReminders(key) {
+		const user = uni.getStorageSync("user");
+		if(user==""||user==null)return;
 		const reminders = uni.getStorageSync(key);
 		const isTaskReminder = key == notifyOpt.value.key_TR;
 		const isHabitReminder = key == notifyOpt.value.key_HR;

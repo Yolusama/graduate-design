@@ -2,7 +2,7 @@ import { Patch, Post, Put, UploadFile } from "../module/Request";
 import { auth,formDataAuth } from "./User";
 
 export function ChangeNickname(nickname,userId,successCallback){
-	Patch(`/Api/User/ChangeUserNickname/${userId}?nickName=${nickname}`,auth,{},successCallback);
+	Patch(`/Api/User/ChangeNickname/${userId}?nickname=${nickname}`,auth,{},successCallback);
 }
 
 export function ChangeAvatar(avatar,file,userId,successCallback){
@@ -17,7 +17,7 @@ export function ChangePassword(model,successCallback){
 	Put("/Api/User/ChangePassword",auth,model,successCallback);
 }
 
-export function ChangeEmail(email,newEmail.checkCode,successCallback){
+export function ChangeEmail(email,newEmail,checkCode,successCallback){
 	Put(`/Api/User/ChangeEmail/${checkCode}?email=${email}&newEmail=${newEmail}`,auth,{},successCallback);
 }
 

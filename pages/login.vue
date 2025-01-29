@@ -91,6 +91,7 @@
 		}
 
 	});
+	
 	onMounted(() => {
 
 	});
@@ -100,7 +101,6 @@
 	});
 
 	function login() {
-
 		if (!state.useCheckCode)
 			Login(state.email, state.password, afterLogin);
 		else
@@ -121,7 +121,7 @@
 			toStore.uid = data.id;
 			toStore.token = data.token;
 			toStore.avatar = data.avatar;
-			toStore.nickName = data.nickName;
+			toStore.nickname = data.nickname;
 			toStore.email = data.email;
 			toStore.role = data.role;
 			auth.token = data.token;

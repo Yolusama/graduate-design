@@ -13,7 +13,8 @@
 				<!--#endif-->
 			</k-calendar>
 			<scroll-view class="content" :scroll-y="true">
-				<uni-collapse class="habit" v-for="(data,groupName) in state.data" :key="groupName">
+				<uni-collapse class="habit" v-for="(data,groupName) in state.data" :key="groupName" accordion="true"
+				v-model="state.model[groupName]">
 					<uni-collapse-item title-border="none" :show-animation="false">
 						<template v-slot:title>
 							<view style="display:flex;align-items: center;justify-content: space-between;">
@@ -135,7 +136,8 @@
 			detail: false,
 			editor: false
 		},
-		selectedDay: onlyDate(today.value)
+		selectedDay: onlyDate(today.value),
+		model:{}
 	});
 
 	onMounted(() => {
@@ -235,36 +237,7 @@
 			dataReogrized();
 		});
 	}
-
-	function getGroups() {
-		GetHabitGroups(state.habit.userId, response => {
-			const res = response.data;
-			if (!res.succeeded) {
-				uni.showToast({
-					title: res.message,
-					icon: "none"
-				});
-				return;
-			}
-			state.groups = res.data;
-			state.habit.groupId = state.groups[0].id;
-		});
-	}
-
-	function getDefaultThumbs() {
-		GetDefaultThumbs(response => {
-			const res = response.data;
-			if (!res.succeeded) {
-				uni.showToast({
-					title: res.message,
-					icon: "none"
-				});
-				return;
-			}
-			defaultThumbs.value = res.data;
-		});
-	}
-
+	
 	function editorClose() {
 		delayToRun(() => state.show.editor = false, 150);
 	}
@@ -331,7 +304,7 @@
 	}
 
 	function removed(e) {
-		habitOption.value.data.splice(e.index, 1);
+		habitOption.value.data[e.groupName].splice(e.index, 1);
 	}
 
 	function dataReogrized() {
@@ -341,13 +314,14 @@
 			datum.beginDate = new Date(datum.beginDate);
 			datum.finishTime = new Date(datum.finishTime);
 			const groupName = datum.groupName;
-
 			if (state.data[groupName] != undefined)
 				state.data[groupName].push(datum);
 			else {
 				state.data[groupName] = [datum];
 			}
 		}
+		for(let pro in state.data)
+		   state.model[pro] = "0";
 	}
 
 	function dateChange(date) {

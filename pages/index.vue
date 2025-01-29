@@ -75,7 +75,8 @@
 				<uni-icons type="bars" color="rgb(0,125,245)" :size="20" @click="labelDrawer.open()"></uni-icons>
 				<text class="text">{{state.currentLabel.labelName}}</text>
 			</view>
-			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0" style="margin-bottom: 4vh;">
+			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0" style="margin-bottom: 4vh;"
+			v-model="state.model.habit" :accordion="true">
 				<uni-collapse-item>
 					<template v-slot:title>
 						<view class="item-title">
@@ -133,7 +134,8 @@
 					</scroll-view>
 				</uni-collapse-item>
 			</uni-collapse>
-			<uni-collapse v-if="isBaseDayLabel(state.currentLabel.labelId)">
+			<uni-collapse v-if="isBaseDayLabel(state.currentLabel.labelId)&&state.data['task'].length>0" v-model="state.model.task"
+			 :accordion="true">
 				<uni-collapse-item>
 					<template v-slot:title>
 						<view class="item-title">
@@ -281,7 +283,11 @@ import { GetTaskReminders } from '../api/Task';
 		labelsExpand: false,
 		labelsExpandStyle: "",
 		currentLabel: {},
-		optionMostCheck:false
+		optionMostCheck:false,
+	    model:{
+			task:"0",
+			habit:"0"
+		}
 	});
 
 	const indexTaskEditor = ref(null);

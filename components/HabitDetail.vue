@@ -188,7 +188,7 @@
 							});
 							return;
 						}
-						emits("removed",{index:state.selectedHabit.index});
+						emits("removed",{index:state.selectedHabit.index,groupName:state.selectedHabit.groupName});
 					});
 				}
 			}

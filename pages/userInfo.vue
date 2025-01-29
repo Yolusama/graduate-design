@@ -26,8 +26,7 @@
 				@itemClick="changeAvatar"></k-radio-group>
 		</uni-popup>
 		<!--#endif-->
-		<uni-popup ref="emailPopup" background-color="#fff" type="left" @change="emailPopupClose"
-			style="z-index: 101;">
+		<uni-popup ref="emailPopup" background-color="#fff" type="left" @change="emailPopupClose" style="z-index: 101;">
 			<view class="change">
 				<view class="header">
 					<uni-icons type="closeempty" @click="emailPopup.close()" :size="20">
@@ -120,7 +119,7 @@
 						</template>
 					</uni-list-item>
 				</uni-list>
-				<button @click="logout" class="logout" size="mini">注销账号</button>
+				<button @click="logout(true)" class="logout" size="mini">注销账号</button>
 			</view>
 		</uni-popup>
 	</view>
@@ -151,7 +150,9 @@
 		GetCheckCode
 	} from '../api/User';
 
+	//#ifndef H5
 	const picturePopup = ref(null);
+	//#endif
 	const emailPopup = ref(null);
 	const pwdPopup = ref(null);
 	const infoListedPopup = ref(null);
@@ -162,10 +163,12 @@
 			nickname: false
 		},
 		imageGetMode: 0,
+		//#ifndef H5
 		picture: {
 			data: [new ValueText(0, "使用相机"), new ValueText(1, "使用本地图片")],
 			mode: 0
 		},
+		//#endif
 		newEmail: "",
 		pwd: {
 			newPassword: "",
@@ -307,20 +310,7 @@
 				duration: expire - 250
 			});
 			delayToRun(() => {
-				Logout(false, state.user.userId, state.user.email, response1 => {
-					const res1 = response1.data;
-					if (!res1.succeeded) {
-						uni.showToast({
-							title: res1.message,
-							icon: "none"
-						});
-						return;
-					}
-					uni.clearStorage();
-					uni.reLaunch({
-						url: "/pages/login"
-					});
-				});
+				logout(false);
 			}, expire)
 		});
 	}
@@ -403,40 +393,58 @@
 
 	function toChangeNickname() {
 		uni.showModal({
-				title: "修改昵称",
-				cancelColor: "red",
-				confirmText: "确定",
-				cancelText: "取消",
-				editable: true,
-				success: res => {
-					if (res.cancel) return;
-					if (res.content == state.user.nickname) return;
-					ChangeNickname(res.content, state.user.userId, response => {
-							const res1 = response.data;
-							if (!res1.succeeded) {
-								uni.showToast({
-									title: res1.message,
-									icon: "none"
-								});
-								return;
-							}
-							const user = uni.getStorageSync("user");
-							state.user.nickname = res.content;
-							user.nickname = state.user.nickname;
-							uni.setStorage({
-								key: "user",
-								data: user,
-							});
+			title: "修改昵称",
+			cancelColor: "red",
+			confirmText: "确定",
+			cancelText: "取消",
+			editable: true,
+			success: res => {
+				if (res.cancel) return;
+				if (res.content == state.user.nickname) return;
+				ChangeNickname(res.content, state.user.userId, response => {
+					const res1 = response.data;
+					if (!res1.succeeded) {
+						uni.showToast({
+							title: res1.message,
+							icon: "none"
 						});
+						return;
 					}
-			});
-		}
+					const user = uni.getStorageSync("user");
+					state.user.nickname = res.content;
+					user.nickname = state.user.nickname;
+					uni.setStorage({
+						key: "user",
+						data: user,
+					});
+				});
+			}
+		});
+	}
 
-		function goBack() {
-			uni.navigateBack({
-				delta: 1
+
+	function logout(cancelAccount) {
+		Logout(cancelAccount, state.user.userId, state.user.email, response => {
+			const res1 = response.data;
+			if (!res1.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			uni.clearStorage();
+			uni.reLaunch({
+				url: "/pages/login"
 			});
-		}
+		});
+	}
+
+	function goBack() {
+		uni.navigateBack({
+			delta: 1
+		});
+	}
 </script>
 
 <style scoped>

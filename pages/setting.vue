@@ -1,26 +1,39 @@
 <template>
 	<view id="setting" v-if="state.user!=null">
-		<view @click="goToSelfInfo">
-			<image :src="imgSrc(state.user.avatar)"></image>
-			<text>{{state.user.nickName}}</text>
-		</view>
-		<uni-list>
-			<uni-list-item show-arrow @click="showAbout">
-				<tempate v-slot:body>
-					<view>
-						<uni-icons type="flag-fill"></uni-icons>
-						<text>关于</text>
+		<uni-list style="width: 92%;" @click="goToSelfInfo">
+			<uni-list-item show-arrow >
+				<template v-slot:body>
+					<view class="item">
+						<image :src="imgSrc(state.user.avatar)" class="avatar"></image>
+						<text class="item-text">{{state.user.nickname}}</text>
 					</view>
-				</tempate>
+				</template>
+			</uni-list-item>
+			<uni-list-item show-arrow >
+				<template v-slot:body>
+					<view class="item">
+						<image src="../static/doubt.png" class="avatar"></image>
+						<text class="item-text">帮助</text>
+					</view>
+				</template>
+			</uni-list-item>
+			<uni-list-item show-arrow @click="showAbout">
+				<template v-slot:body>
+					<view class="item">
+						<uni-icons type="flag-filled" :size="32"></uni-icons>
+						<text class="item-text">关于</text>
+					</view>
+				</template>
 			</uni-list-item>
 		</uni-list>
-		<button @click="logout" style="color: red;">退出登录</button>
+		<button @click="logout" class="logout">退出登录</button>
 	</view>
 </template>
 
 <script setup>
 import { reactive,onMounted } from 'vue';
 import { imgSrc } from '../module/Request';
+import { Logout } from '../api/UserInfo';
 	const state = reactive({
 		user:null
 	});
@@ -33,8 +46,71 @@ import { imgSrc } from '../module/Request';
 			}
 		});
 	});
+	
+	function logout() {
+		Logout(false, state.user.userId, state.user.email, response => {
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			uni.clearStorage();
+			uni.reLaunch({
+				url: "/pages/login"
+			});
+		});
+	}
+	
+	function goToSelfInfo(){
+		uni.navigateTo({
+			url:"/pages/userInfo"
+		});
+	}
 </script>
 
-<style>
-
+<style scoped>
+	#setting{
+		position: relative;
+		width: 100%;
+		padding-top: 3%;
+		/*#ifndef H5*/
+		padding-top: 3vh;
+		/*#endif*/
+		display: flex;
+		flex-flow: column nowrap;
+		align-items: center;
+		height: 96vh;
+		background-color: aliceblue;
+	}
+	
+	#setting .avatar{
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+	}
+	
+	#setting .item{
+		display: flex;
+		height: 40px;
+		width: 100%;
+		font-size: 15px;
+		align-items: center;
+	}
+	
+	.item .item-text{
+		font-size: 15px;
+		margin-left: 4%;
+		color: gray;
+	}
+	
+	#setting .logout{
+		width: 72%;
+		background-color: #fff;
+		font-size: 16px;
+		color: rgb(0, 75, 235);
+		margin-top: 3%;
+	}
 </style>

@@ -79,7 +79,7 @@
 				@close="editorClose" @created="habitCreated">
 			</habit-editor>
 			<habit-detail :habit="state.selectedHabit" ref="detail" @finished="habitFinished" v-if="state.show.detail"
-				@updated="habitUpdated" @close="detailClose">
+				@updated="habitUpdated" @close="detailClose" @removed="habitRemoved">
 			</habit-detail>
 			<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" horizontal="right" @fabClick="openToEdit" />
 	</view>
@@ -94,17 +94,12 @@
 	} from "vue";
 	import {
 		PageOption,
-		copy,
-		loading,
 		onlyDate,
 		timeWithoutSeconds,
 		dateEquals,
 		HabitReminderKey,
 		delayToRun
 	} from "../module/Common";
-	import {
-		user
-	} from "../api/User";
 	import {
 		GetHabits,
 		FinishOrNot,
@@ -303,7 +298,7 @@
 		state.selectedHabit.continuousDays = data.continuousDays;
 	}
 
-	function removed(e) {
+	function habitRemoved(e) {
 		habitOption.value.data[e.groupName].splice(e.index, 1);
 	}
 

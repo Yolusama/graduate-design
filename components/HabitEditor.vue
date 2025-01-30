@@ -187,12 +187,10 @@
 	import {
 		ref,
 		reactive,
-		onMounted,
-		nextTick
+		onMounted
 	} from "vue";
 	import {
 		HabitReminder,
-		PageOption,
 		ValueText,
 		copy,
 		getDateStr,
@@ -200,23 +198,15 @@
 		onlyDate,
 		persistDays,
 		timeWithoutSeconds,
-		weekdays,
-		getDateTimeStr,
-		CalendarDisplayWay,
-		dateEquals,
-		invalidEvent,
-		HabitReminderKey
+		weekdays
 	} from "../module/Common";
 	import {
 		user
 	} from "../api/User";
 	import {
-		CreateGroup,
 		CreateHabit,
 		GetDefaultThumbs,
 		GetHabitGroups,
-		GetHabitRecords,
-		GetHabits,
 		UpdateHabit,
 		UploadThumb
 	} from "../api/Habit";

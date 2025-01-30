@@ -15,6 +15,8 @@
 				:style="label!=undefined&&label.isList?'background-color:cyan':''">
 				{{label.labelName}}
 				</text>
+				<uni-icons type="close" color="red" :size="18" v-if="state.isTaskUpdate" style="margin-left: 2%;"
+				@click="removeTask"></uni-icons>
 			</view>
 			<uni-easyinput v-model="state.task.title" placeholder="标题" focus style="margin-bottom: 2px;margin-top: 3px;"
 				@input="titleInput"></uni-easyinput>
@@ -160,8 +162,7 @@
 	import {
 		onMounted,
 		ref,
-		reactive,
-		nextTick
+		reactive
 	} from 'vue';
 	import {
 		ValueText,
@@ -177,25 +178,14 @@
 		ReminderInfo,
 		copy,
 		loading,
-		getDateTimeStr,
-		dateEquals,
-		TaskState,
-		dateGE,
-		weekDaySign,
-		buildElById,
-		TaskReminderKey,
 		DefaultLabelIcon,
 		isBaseDayLabel,
 		isBaseLabel
 	} from '../module/Common';
 	import {
-		CreateTask,
-		GetTaskReminders,
-		FinishOrNot
+		CreateTask, RemoveTask,
 	} from "../api/Task"
 	import {
-		ChangePriority,
-		GetTasks,
 		UpdateTask
 	} from '../api/FourQuadrants';
 	import {
@@ -219,7 +209,7 @@ import { CreateOrGetLabel } from '../api/Index';
 	const defRulePopup = ref(null);
 	const customPopup = ref(null);
 	
-	const emits = defineEmits(["close","created","updated"]);
+	const emits = defineEmits(["close","created","updated","removed"]);
 	const startTime = ref({
 		date: "",
 		time: ""
@@ -248,7 +238,7 @@ import { CreateOrGetLabel } from '../api/Index';
 			deadline: null,
 			repeatable: false
 		},
-		selectedDay: new Date(),
+		selectedDay: new Date(today.value),
 		notifyOpt: [
 			[],
 			["分", "时", "天", "周", "月"]
@@ -289,7 +279,7 @@ import { CreateOrGetLabel } from '../api/Index';
 
 		state.notifyOpt[0] = remindModeValues(1);
 		if(task.value!=undefined&&task.value!=null)
-			state.task = task.value;
+			copy(task.value,state.task);
 		resetBeginEndTime();
 		if(state.hasLabelSetter&&label.value!=undefined)
 		    if(isBaseDayLabel(label.value.labelId))
@@ -464,11 +454,6 @@ import { CreateOrGetLabel } from '../api/Index';
 		}
 	}
 
-	function resetDataOption() {
-		for (let pro in state.dataOption)
-			state.dataOption[pro] = false;
-	}
-
 	function editTask() {
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
@@ -490,7 +475,8 @@ import { CreateOrGetLabel } from '../api/Index';
 					const task = {};
 					task.style = "";
 					copy(state.task, task);
-					emits("created",{item:task,label:label.value});
+					const arg = state.hasLabelSetter?{item:task,label:label.value}:{item:task};
+					emits("created",arg);
 					popup.value.close();
 				}, 750);
 			});
@@ -514,12 +500,33 @@ import { CreateOrGetLabel } from '../api/Index';
 			});
 		}
 	}
+	
+	function removeTask(){
+		RemoveTask(state.task,1,response=>{
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			loading("",()=>{
+				emits("removed",{index:state.task.index,priority:state.task.priority});
+				popup.value.close();
+			});
+		});
+	}
 
 	function selectDay(date) {
 		state.selectedDay = date;
 		resetBeginEndTime();
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
+	}
+	
+	function openEditMode(){
+		editModePopup.value.open();
 	}
 	
 	function takeLabel(){

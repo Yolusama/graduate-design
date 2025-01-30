@@ -48,6 +48,10 @@ export	function FreshReminderTiming(taskId,taskBeginTime,successCallback){
 	Post(`/Api/Task/FreshReminderTiming/${taskId}?taskBeginTime=${taskBeginTime.getTime()}`,auth,{},successCallback);
 }
 
+export function RemoveTask(task,mode,successCallback){
+	Put(`/Api/Task/RemoveTask?mode=${mode}`,auth,task,successCallback);
+}
+
 export function FinishTask(taskId){
 	FinishOrNot(taskId,TaskState.finished,response=>{
 		if(!response.data.succeeded){

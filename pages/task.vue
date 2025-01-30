@@ -3,7 +3,7 @@
 		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange"></k-calendar>
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
 			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
-				<view class="mask" v-if="!dateGE(task.beginTime,today)&&!dateGE(task.endTime,today)"></view>
+				<view class="mask" v-if="task.state==TaskState.abondoned"></view>
 				<uni-swipe-action style="width: 100%;">
 					<uni-swipe-action-item>
 						<template v-slot:left>
@@ -268,9 +268,14 @@
 					<text>编辑</text>
 				</view>
 				<view class="detail-func" @click="state.isTaskCancel=true;openEditUI();">
+					<uni-icons type="close" :size="30"></uni-icons>
+					<text>取消</text>
+				</view>
+				<view class="detail-func" @click="state.isTaskRemove=true;openEditUI();">
 					<uni-icons type="trash" :size="30"></uni-icons>
 					<text>删除</text>
 				</view>
+				
 			</view>
 		</scroll-view>
 	</uni-popup>
@@ -284,7 +289,7 @@
 		</k-radio-group>
 	</uni-popup>
 	<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="editModePopup">
-		<k-radio-group :data="state.modeContent" v-model="state.mode" @onChange="openEditOrCancelTask">
+		<k-radio-group :data="state.modeContent" v-model="state.mode" @onChange="openEditOrRemoveTaskOrCancelTask">
 		</k-radio-group>
 	</uni-popup>
 
@@ -331,7 +336,8 @@
 		UpdateTask,
 		ChangeRepeatRule,
 		FinishOrNot,
-		FreshReminderTiming
+		FreshReminderTiming,
+		RemoveTask
 	} from "../api/Task.js"
 	import {
 		user
@@ -410,7 +416,8 @@
 		mode: 0,
 		modeContent: [],
 		isTaskUpdate: false,
-		isTaskCancel: false
+		isTaskCancel: false,
+		isTaskRemove:false
 	});
 
 	onMounted(function() {
@@ -854,7 +861,7 @@
 		}
 	}
 
-	function openEditOrCancelTask() {
+	function openEditOrRemoveTaskOrCancelTask() {
 		if (state.isTaskCancel) {
 			CancelTask(state.selectedTask, state.mode, response => {
 				const res = response.data;
@@ -865,6 +872,23 @@
 					});
 				} else {
 					state.isTaskCancel = false;
+					taskPageOpt.value.data.splice(state.selectedTask.index, 1);
+					editModePopup.value.close();
+					detailPopup.value.close();
+				}
+			});
+			return;
+		}
+		if (state.isTaskRemove) {
+			RemoveTask(state.selectedTask, state.mode, response => {
+				const res = response.data;
+				if (!res.succeeded) {
+					uni.showToast({
+						title: res.message,
+						icon: "none"
+					});
+				} else {
+					state.isTaskRemove = false;
 					taskPageOpt.value.data.splice(state.selectedTask.index, 1);
 					editModePopup.value.close();
 					detailPopup.value.close();

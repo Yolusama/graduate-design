@@ -33,8 +33,7 @@
 	import {
 		DefaultLabelIcon,
 		DefaultListIcon,
-		copy,
-		loading
+		copy
 	} from '../module/Common';
 	import {
 		CheckLabelNameExists,

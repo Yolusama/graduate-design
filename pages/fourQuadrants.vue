@@ -39,158 +39,8 @@
 				</view>
 			</view>
 		</view>
-		<uni-popup ref="taskEditor" type="bottom" background-color="#fff" @change="beforeEditorClose">
-			<view class="task-edit">
-				<view class="head">
-					<text :class="'quadrant-'+state.task.priority" @click="priorityPopup.open()">
-						{{state.priority[state.task.priority-1].text}}
-					</text>
-					<image src="../static/日历.png" @click="timePopup.open()" class="image"></image>
-					<image src="../static/plane.png" v-if="!state.canCreateTask&&!state.isTaskUpdate" :size="18"
-						class="image" />
-					<image src="../static/plane-filled.png" v-if="state.isTaskUpdate||state.canCreateTask" :size="18"
-						class="image" @click="editTask" />
-				</view>
-				<uni-easyinput v-model="state.task.title" placeholder="标题" focus
-					style="margin-bottom: 2px;margin-top: 3px;" @input="titleInput"></uni-easyinput>
-				<uni-easyinput v-model="state.task.description" placeholder="描述" type="textarea"
-					:rows="3"></uni-easyinput>
-			</view>
-		</uni-popup>
-		<uni-popup ref="priorityPopup" background-color="#fff" border-radius="10px 10px 10px 10px">
-			<uni-list :border="true" style="width: 60vw;">
-				<uni-list-item v-for="(item,index) in state.priority" :key="index">
-					<template v-slot:body>
-						<view :class="'quadrant-'+(index+1)" @click="takePriority(item)"
-							style="width: 100%;text-align: center">
-							{{item.text}}
-						</view>
-					</template>
-				</uni-list-item>
-			</uni-list>
-		</uni-popup>
-		<uni-popup ref="timePopup" background-color="#fff" type="bottom">
-			<view style="display: flex;width:96%;margin-bottom: 1%;">
-				<uni-icons type="closeempty" @click="timePopup.close()" :size="20"></uni-icons>
-			</view>
-			<k-calendar :showWay="CalendarDisplayWay.month" :unchangable="true" @onChange="selectDay"></k-calendar>
-			<uni-list class="time" :border="true">
-				<uni-list-item show-arrow>
-					<template v-slot:body>
-						<view class="time-item">
-							<image src="../static/闹钟.png" class="image"></image>
-							<view class="select-datetime">
-								开始：
-								<picker mode="date" @change="pick('begin-date',$event)" :value="startTime.date">
-									{{startTime.date}}
-								</picker>
-								&nbsp;
-								<picker mode="time" @change="pick('begin-time',$event)" :value="startTime.time">
-									{{startTime.time}}
-								</picker>
-							</view>
-							<view class="select-datetime">
-								结束：
-								<picker mode="date" @change="pick('end-date',$event)" :value="endTime.date">
-									{{endTime.date}}
-								</picker>
-								&nbsp;
-								<picker mode="time" @change="pick('end-time',$event)" :value="endTime.time">
-									{{endTime.time}}
-								</picker>
-							</view>
-						</view>
-					</template>
-				</uni-list-item>
-				<uni-list-item show-arrow>
-					<template v-slot:body>
-						<view class="time-item">
-							<view class="info">
-								<uni-icons type="notification" :size="18" color="rgb(0,75,235)"></uni-icons>
-								<text>提醒</text>
-							</view>
-							<picker :range="state.notifyOpt" mode="multiSelector" @change="addReminderInfoModel"
-								@columnchange="changeNotifyMode">
-								<text class="gray-text">设置提醒</text>
-							</picker>
-						</view>
-					</template>
-				</uni-list-item>
-				<uni-list-item v-show="state.task.reminderInfoModels.length>0">
-					<template v-slot:body>
-						<scroll-view :scroll-x="true">
-							<view class="reminders">
-								<view class="reminder" v-for="(reminder,index) in state.task.reminderInfoModels"
-									:key="index">
-									<uni-icons :size="10" type="closeempty" class="close"
-										@click="removeReminderInfoModel(index)"></uni-icons>
-									<text class="reminder-text">{{ReminderInfo.getModeValueText(reminder)}}</text>
-								</view>
-							</view>
-						</scroll-view>
-					</template>
-				</uni-list-item>
-				<uni-list-item show-arrow>
-					<template v-slot:body>
-						<view class="time-item">
-							<view class="info">
-								<image class="image" src="../static/time.png"></image>
-								<text>设置重复规则</text>
-							</view>
-							<text
-								@click="defRulePopup.open();state.frequency.selected=[state.task.period-1,state.task.periodUnit-1];"
-								class="gray-text">
-								{{getRuleText(state.task)}}</text>
-						</view>
-					</template>
-				</uni-list-item>
-			</uni-list>
-		</uni-popup>
-		<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="defRulePopup">
-			<k-radio-group :data="state.frequency.data" :containDef="true" @onChange="takeBaseRule">
-			</k-radio-group>
-		</uni-popup>
-		<uni-popup type="bottom" background-color="#fff" border-radius="10px 10px 10px 10px" ref="customPopup"
-			:safe-area="false">
-			<scroll-view class="custom" :scroll-y="true">
-				<view style="display: flex;width:96%;margin-bottom: 1%;">
-					<uni-icons type="closeempty" @click="customPopup.close()" :size="20"></uni-icons>
-				</view>
-				<view class="head">
-					<image class="image" src="../static/闪电.png"></image>
-					<picker mode="multiSelector" :value="state.frequency.selected" @change="takeDef" :range="
-				[state.frequency.multiData[0],state.frequency.multiData[1]]">
-						{{getRuleText(state.task)}}
-					</picker>
-				</view>
-				<uni-data-checkbox style="margin-bottom: 5px;" v-if="state.task.periodUnit==2" multiple
-					@change="takeCustom" v-model="state.rule.selected" :localdata="state.weekdays" mode="tag">
-				</uni-data-checkbox>
-				<view style="width: 100%;display: flex;justify-content: center;">
-					<k-radio-group :data="state.rule.data" v-model="state.rule.selection" @onChange="resetSomeData"
-						style="margin-top: 2%;margin-bottom: 2%;">
-					</k-radio-group>
-				</view>
-				<view v-if="state.rule.selection == 1" class="picker">
-					<picker mode="date" :value="state.task.deadline" @change="takeDeadline">
-						<text class="gray-text"> 截止到&nbsp;
-							{{state.task.deadline==null?'':getDateStr(state.task.deadline)}}</text>
-					</picker>
-				</view>
-				<view v-if="state.rule.selection == 2" class="picker">
-					<text>重复</text>
-					<picker-view @change="takeCount" :value="[state.task.count]" style="width: 20px;height: 100%;">
-						<picker-view-column>
-							<view v-for="(number,index) in state.frequency.multiData[2]" :key="index"
-								class="picker-inner">
-								{{number}}
-							</view>
-						</picker-view-column>
-					</picker-view>
-					<text>次</text>
-				</view>
-			</scroll-view>
-		</uni-popup>
+		<task-editor ref="quadrantTaskEditor" :task="state.selectedTask" @click="beforeEditorClose" 
+		v-if="state.show" @created="taskCreated" @updated="taskUpdated" @removed="taskRemoved"></task-editor>
 		<uni-fab :pattern="pattern" :content="menuContent" horizontal="right" vertical="bottom" :pop-menu="false"
 			@fabClick="openToEdit" />
 	</view>
@@ -204,40 +54,20 @@
 		nextTick
 	} from 'vue';
 	import {
-		ValueText,
-		priority,
-		CalendarDisplayWay,
-		getDateStr,
-		timeWithoutSeconds,
-		remindModeValues,
-		getRuleText,
-		frequency,
-		customDef,
-		weekdays,
-		ReminderInfo,
-		copy,
-		loading,
-		getDateTimeStr,
-		dateEquals,
 		TaskState,
-		dateGE,
 		weekDaySign,
 		buildElById,
-		TaskReminderKey
+		TaskReminderKey,
+		delayToRun
 	} from '../module/Common';
 	import {
-		CreateTask,
 		GetTaskReminders,
 		FinishOrNot
 	} from "../api/Task"
 	import {
 		ChangePriority,
-		GetTasks,
-		UpdateTask
+		GetTasks
 	} from '../api/FourQuadrants';
-	import {
-		user
-	} from '../api/User';
 
 	const pattern = ref({
 		color: '#7A7E83',
@@ -246,88 +76,28 @@
 		iconColor: '#fff'
 	});
 
-	const taskEditor = ref(null);
-	const timePopup = ref(null);
-	const priorityPopup = ref(null);
-	const defRulePopup = ref(null);
-	const customPopup = ref(null);
+    const quadrantTaskEditor = ref(null);
 	const quadrant1 = ref(null);
 	const quadrant2 = ref(null)
 	const quadrant3 = ref(null)
 	const quadrant4 = ref(null)
 
-	const quadrant = ref("quadrant");
-	const startTime = ref({
-		date: "",
-		time: ""
-	});
-	const endTime = ref({
-		date: "",
-		time: ""
-	});
 	const today = ref(new Date());
 
 	const state = reactive({
-		priority: [],
-		task: {
-			title: "",
-			description: "",
-			priority: 4,
-			beginTime: "",
-			endTime: "",
-			userId: user == '' ? uni.getStorageSync("user").uid : user.uid,
-			reminderInfoModels: [],
-			period: null,
-			periodUnit: null,
-			custom: null,
-			count: null,
-			deadline: null,
-			repeatable: false
-		},
 		selectedDay: new Date(),
-		notifyOpt: [
-			[],
-			["分", "时", "天", "周", "月"]
-		],
-		frequency: {
-			data: frequency,
-			selection: 0,
-			multiData: [
-				[],
-				["天", "周", "月", "年"],
-				[]
-			],
-			selected: []
-		},
-		rule: {
-			data: customDef,
-			selection: 0,
-			selected: []
-		},
-		weekdays: weekdays,
-		canCreateTask: false,
 		selectedTask: null,
 		isTaskUpdate: false,
 		data: {},
-		dataOption:{}
+		dataOption:{},
+		show:false,
+		userId:""
 	});
+	const quadrant = ref("quadrant");
 
 	onMounted(() => {
-		for (let i = 0; i < 4; i++)
-			state.priority.push(new ValueText(i+1, ""));
-		state.priority[0].text = "Ⅰ " + priority[0].text;
-		state.priority[1].text = "Ⅱ " + priority[1].text;
-		state.priority[2].text = "Ⅲ " + priority[2].text;
-		state.priority[3].text = "Ⅳ " + priority[3].text;
-
-		for (let i = 1; i <= 99; i++)
-			state.frequency.multiData[0].push(i);
-		for (let i = 1; i <= 1000; i++)
-			state.frequency.multiData[2].push(i);
-
-		state.notifyOpt[0] = remindModeValues(1);
-		resetBeginEndTime();
-
+		const user = uni.getStorageSync("user");
+		state.userId = user.uid;
 		getData();
 		//#ifndef H5
 		nextTick(()=>{
@@ -340,7 +110,7 @@
 	});
 
 	function getData() {
-		GetTasks(state.task.userId, today.value, response => {
+		GetTasks(state.userId, today.value, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -365,112 +135,8 @@
 		});
 	}
 
-	function reloadModelData() {
-		state.task = {
-			title: "",
-			description: "",
-			priority: 4,
-			beginTime: "",
-			endTime: "",
-			userId: user == '' ? uni.getStorageSync("user").uid : user.uid,
-			reminderInfoModels: [],
-			period: null,
-			periodUnit: null,
-			custom: null,
-			count: null,
-			deadline: null,
-			repeatable: false
-		};
-		state.frequency.selected = [];
-		state.frequency.selection = 0;
-		state.rule.selected = [];
-		state.rule.selection = 0;
-		state.selectedTask = null;
-		state.isTaskUpdate = false;
-		state.canCreateTask = false;
-	}
-
-	function beforeEditorClose(e) {
-		if (e.show) return;
-		reloadModelData();
-	}
-
-	function addReminderInfoModel(e) {
-		const values = e.detail.value;
-		const reminder = ReminderInfo.getInstance(values[1] + 1, values[0] + 1, new Date(startTime.value.date + " " +
-			startTime.value.time));
-		if (reminder.mode == 1)
-			reminder.value = values[0];
-		const data = state.task.reminderInfoModels;
-		if (data.length == 0)
-			data.push(reminder);
-		else {
-			var i;
-			for (i = 0; i < data.length; i++) {
-				if (reminder.timing.getTime() < data[i].timing.getTime() && data.findIndex(r => r.timing.getTime() ==
-						reminder
-						.timing.getTime()) < 0) {
-					data.splice(i, 0, reminder);
-					break;
-				}
-			}
-			if (i == data.length && data.findIndex(r => r.timing.getTime() == reminder
-					.timing.getTime()) < 0)
-				data.push(reminder);
-		}
-	}
-
-	function removeReminderInfoModel(index) {
-		state.task.reminderInfoModels.splice(index, 1);
-	}
-
-	function titleInput(current) {
-		if(state.isTaskUpdate)return;
-		state.canCreateTask = current.length > 0;
-	}
-
-	function resetBeginEndTime() {
-		startTime.value.date = getDateStr(state.selectedDay);
-		startTime.value.time = timeWithoutSeconds(state.selectedDay);
-		const date = new Date(state.selectedDay);
-		date.setHours(date.getHours() + 1);
-		endTime.value.date = getDateStr(date);
-		endTime.value.time = timeWithoutSeconds(date);
-
-		state.task.beginTime = new Date(startTime.value.date + " " + startTime.value.time);
-		state.task.endTime = new Date(endTime.value.date + " " + endTime.value.time);
-	}
-
-	function pick(sign, event) {
-		const value = event.detail.value;
-		switch (sign) {
-			case "begin-date":
-				startTime.value.date = value.replace(/-/g, "/");
-				break
-			case "begin-time":
-				startTime.value.time = value;
-				break;
-			case "end-date":
-				endTime.value.date = value.replace(/-/g, "/");
-				break
-			case "end-time":
-				endTime.value.time = value;
-				break;
-		}
-		const begin = new Date(startTime.value.date + " " + startTime.value.time);
-		const end = new Date(endTime.value.date + " " + endTime.value.time);
-		if (end.getTime() <= begin.getTime()) {
-			begin.setHours(begin.getHours() + 1);
-			endTime.value.date = getDateStr(begin);
-			endTime.value.time = timeWithoutSeconds(begin);
-		}
-	}
-
-	function changeNotifyMode(e) {
-		const detail = e.detail;
-		if (detail.column == 1) {
-			state.notifyOpt[0] = remindModeValues(detail.value + 1);
-		}
+	function beforeEditorClose() {
+		delayToRun(()=>state.show=false,750);
 	}
 
 	function toUpdate(index,quadrantName) {
@@ -490,159 +156,66 @@
 			for (let reminder of res.data)
 				reminder.timing = new Date(reminder.timing);
 			state.selectedTask.reminderInfoModels = res.data;
-			copy(state.selectedTask, state.task);
-			startTime.value.date = getDateStr(state.task.beginTime);
-			startTime.value.time = timeWithoutSeconds(state.task.beginTime);
-			endTime.value.date = getDateStr(state.task.endTime);
-			endTime.value.time = timeWithoutSeconds(state.task.endTime);
-			taskEditor.value.open();
+			state.show = true;
+			nextTick(()=>{
+			   quadrantTaskEditor.value.open();
+			});		
 		});
 	}
 
-
 	function openToEdit() {
-		taskEditor.value.open();
-	}
-
-	function takePriority(item) {
-		state.task.priority = item.value;
-		priorityPopup.value.close();
-	}
-
-	function takeBaseRule(e) {
-		const value = e.value;
-
-		if (value < state.frequency.data.length) {
-			if (value == 0) {
-				state.task.period = null;
-				state.task.repeatable = false;
-				defRulePopup.value.close();
-				return;
-			}
-			state.task.repeatable = true;
-			state.task.period = 1;
-			state.task.periodUnit = value;
-		} else {
-			state.task.repeatable = true;
-			customPopup.value.open();
-			state.frequency.selection = 0;
-			state.task.period = null;
-			state.task.periodUnit = null;
-		}
-		defRulePopup.value.close();
-	}
-
-	function takeCount(e) {
-		const values = e.detail.value;
-		state.task.count = values[0] + 1;
-	}
-
-	function takeDeadline(e) {
-		const value = e.detail.value;
-		state.task.deadline = new Date(value);
-	}
-
-	function takeDef(e) {
-		const values = e.detail.value;
-		state.task.period = values[0] + 1;
-		state.task.periodUnit = values[1] + 1;
-	}
-
-	function resetSomeData() {
-		if (state.rule.selection == 0) {
-			state.task.count = null;
-			state.task.deadline = null;
-		} else if (state.rule.selection == 1) {
-			state.task.count = null;
-		} else if (state.rule.selection == 2) {
-			state.task.deadline = null;
-		}
+		state.show = true;
+		nextTick(()=>{
+		  quadrantTaskEditor.value.open();
+		});
+		
 	}
 	
 	function resetDataOption(){
 		for(let pro in state.dataOption)
 		   state.dataOption[pro] = false;
 	}
-
-	function editTask() {
-		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
-		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
-		if (!state.isTaskUpdate) {
-			CreateTask(state.task, response => {
-				const res = response.data;
-				if (!res.succeeded) {
-					uni.showToast({
-						title: res.message,
-						icon: "none"
-					});
-					return;
-				}
-				loading("创建中...", () => {
-					state.task.taskId = res.data;
-					state.task.instanceId = res.data;
-					const task = {};
-					task.style="";
-					copy(state.task, task);
-					state.data[`${quadrant.value}-${state.task.priority}`].push(task);
-					taskEditor.value.close();
-				}, 750);
-			});
-		} else {
-			if(state.task.title.length==0)
-			   state.task.title = state.selectedTask.title;
-			UpdateTask(state.task, response => {
-				const res = response.data;
-				if (!res.succeeded) {
-					uni.showToast({
-						title: res.message,
-						icon: "none"
-					});
-					return;
-				}
-				loading("", () => {
-					const quadrantFrom = `${quadrant.value}-${state.selectedTask.priority}`;
-					const quadrantTo =  `${quadrant.value}-${state.task.priority}`;
-					copy(state.task, state.selectedTask);
-					if(quadrantFrom!=quadrantTo){
-						state.data[quadrantFrom].splice(state.selectedTask.index,1);
-						const data = state.data[quadrantTo];
-						if(data.length==0)
-						   data.push(state.selectedTask);
-						else{
-							var i;
-							for(i=0;i<data.length;i++){
-								if(data[i].createTime<=state.selectedTask.createTime)
-								{
-									data.splice(i,0,state.selectedTask);
-									break;
-								}
-							}
-							if(i==data.length)
-							   data.push(state.selectedTask);
-							uni.removeStorageSync(TaskReminderKey);   
-						} 
+	
+	function taskCreated(e){
+		const task = e.item;
+		const quadrantTo = `${quadrant.value}-${task.priority}`;
+		state.data[quadrantTo].push(task);
+	}
+	
+	function taskUpdated(e){
+		const index = e.index;
+		const task = e.item;
+		
+		const quadrantFrom = `${quadrant.value}-${state.selectedTask.priority}`;
+		const quadrantTo =  `${quadrant.value}-${task.priority}`;
+		if(quadrantFrom!=quadrantTo){
+			state.data[quadrantFrom].splice(index,1);
+			const data = state.data[quadrantTo];
+			if(data.length==0)
+			   data.push(task);
+			else{
+				var i;
+				for(i=0;i<data.length;i++){
+					if(data[i].createTime<=task.createTime)
+					{
+						data.splice(i,0,task);
+						break;
 					}
-					taskEditor.value.close();
-				}, 550);
-
-			});
+				}
+				if(i==data.length)
+				   data.push(task);
+				uni.removeStorageSync(TaskReminderKey);   
+			} 
 		}
 	}
+	
+	function taskRemoved(e){
+		const index = e.index;
+		const priority = e.priority;
+		
+		state.data[`${quadrant.value}-${priority}`].splice(index,1);
+	}
 
-	function selectDay(date) {
-		state.selectedDay = date;
-		resetBeginEndTime();
-		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
-		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
-	}
-	
-	function getTimeStr(date){
-		if(dateEquals(date,today.value))
-		  return timeWithoutSeconds(date);
-		else
-		  return getDateTimeStr(date,date.getFullYear());
-	}
-	
 	function finishOrNot(task){
 		var state = 0;
 		if(task.state==TaskState.unfinished)

@@ -64,28 +64,11 @@
 		nextTick
 	} from "vue";
 	import {
-		ValueText,
-		copy,
-		getDateStr,
-		loading,
 		onlyDate,
-		persistDays,
-		timeWithoutSeconds,
-		weekdays,
-		getDateTimeStr,
-		CalendarDisplayWay,
-		dateEquals,
-		invalidEvent,
-		HabitReminderKey,
 		delayToRun
 	} from "../module/Common";
 	import {
-		user
-	} from "../api/User";
-	import {
 		FinishOrNot,
-		GetDefaultThumbs,
-		GetHabitRecords,
 		RemoveHabit,
 	} from "../api/Habit";
 	import {
@@ -165,7 +148,6 @@
 	}
 	
 	function habitUpdated(e){
-		const index = e.index;
 		const data = e.item;
 		state.selectedHabit = data;
 		emits("updated",e);

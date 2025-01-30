@@ -46,4 +46,13 @@ export function CheckYesterdayTask(userId,yesterday,successCallback){
 	Post(`/Api/Index/CheckYesterdayTask/${userId}?yesterday=${yesterday.getTime()}`,auth,{},successCallback);
 }
 
+export function RemoveOrRecoverTask(taskId,isRemove,successCallback){
+	Patch(`/Api/Index/RemoveOrRecoverTask/${taskId}?isRemove=${isRemove}`,auth,{},successCallback);
+}
+
+export function RemoveOrRecoverHabit(habitId,isRemove,successCallback){
+	Patch(`/Api/Index/RemoveOrRecoverHabit/${habitId}?isRemove=${isRemove}`,auth,{},successCallback);
+}
+
 export const IdOfLableNamed = 4;
+export const IdOfBin = 8;

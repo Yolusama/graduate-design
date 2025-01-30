@@ -2,9 +2,7 @@
 	import {
 		onMounted,
 		onBeforeUnmount,
-		ref,
-		nextTick,
-		getCurrentInstance
+		ref
 	} from 'vue';
 	import {
 		Get
@@ -16,20 +14,15 @@
 	import {
 		HabitReminderKey,
 		TaskReminderKey,
-		delayToRun,
 		getDateStr,
 		notifyHabit,
 		notifyHabitWithModal,
 		notifyTask,
 		notifyTaskWithModal,
-		onlyDate
 	} from './module/Common';
 	import {
 		GetCurrentHabitReminders
 	} from './api/Habit';
-	import {
-		imgSrc
-	} from './module/Request';
 
 	const timeOpt = ref({
 		timer: 0,
@@ -47,7 +40,6 @@
 	//#ifdef APP-PLUS
 	const isBackGround = ref(false);
 	//#endif
-	const instance = getCurrentInstance();
 
 	onMounted(() => {
 		const user = uni.getStorageSync("user");

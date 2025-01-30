@@ -210,10 +210,11 @@
 			</uni-swipe-action>
 		</scroll-view>
 		<task-editor ref="indexTaskEditor" :task="state.task" :isTaskUpdate="state.task!=null" v-if="state.show.task"
-			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :label="state.currentLabel" :labelSet="true">
+			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :label="state.currentLabel" :labelSet="true"
+			@removed="taskRemoved">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
-			@close="habitDetailClose"></habit-detail>
+			@close="habitDetailClose" @removed="habitRemoved"></habit-detail>
 		<uni-fab :pattern="pattern" horizontal="right" vertical="bottom" :pop-menu="false" @fabClick="openToEdit" />
 	</view>
 </template>
@@ -235,7 +236,6 @@
 		RemoveLabel
 	} from '../api/Index';
 	import {
-		copy,
 		delayToRun,
 		onlyDate,
 		isBaseDayLabel,
@@ -245,9 +245,6 @@
 		getDateStr,
 		loading
 	} from '../module/Common';
-	import {
-		user
-	} from '../api/User';
 	import {
 		imgSrc
 	} from '../module/Request';
@@ -386,18 +383,22 @@ import { GetTaskReminders } from '../api/Task';
 
 	function taskCreated(e) {
 		const item = e.item;
-		const index = state.data['task'].findIndex(l=>l.labelId==item.lableId);
+		const index = state.data["task"].findIndex(l=>l.labelId==item.lableId);
 		if(index<0)
 		   state.labels.push(e.label);
 		if(item.labelId==state.currentLabel.labelId)
-		   state.data['task'].push(item);
+		   state.data["task"].push(item);
 	}
 
 	function taskUpdated(e) {
 		const index = e.index;
 		const item = e.item;
 
-		state.data['task'][index] = item;
+		state.data["task"][index] = item;
+	}
+	
+	function taskRemoved(e){
+		state.data["task"].splice(e.index,1);
 	}
 
 	function seeHabitDetail(index) {
@@ -483,6 +484,10 @@ import { GetTaskReminders } from '../api/Task';
 		const item = e.item;
 		
 		state.data["habit"][index] = item;
+	}
+	
+	function habitRemoved(e){
+		state.data["habit"].splice(e.index,1);
 	}
 
 	function hideOrShowLabel(index, isList, display) {

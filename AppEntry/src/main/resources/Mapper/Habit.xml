@@ -9,6 +9,6 @@
             from Habit h join HabitOption o on h.id = o.habitId
                 join HabitGroup g on g.id = h.groupId
               left join HabitFrequency f on h.id = f.habitId
-               where h.deleteFlag = 0 and h.userId = #{userId}
+               where h.deleteFlag = #{recycled} and h.userId = #{userId}
     </select>
 </mapper>

@@ -85,15 +85,27 @@ public class IndexService implements IndexServiceInterface {
 
         final int current = 1, size = 1000;
         if(TaskLabel.isBaseLabel(labelId)) {
-            if(labelId.equals(TaskLabel.Finished)||labelId.equals(TaskLabel.Abandoned)||labelId.equals(TaskLabel.RecycleBin)) {
-                int state;
-                if (labelId.equals(TaskLabel.Finished))
-                    state = TaskState.FINISHED.value();
-                else if (labelId.equals(TaskLabel.Abandoned))
-                    state = TaskState.ABANDONED.value();
-                else state = TaskState.CANCELLED.value();
-
-                var tasks = taskMapper().getTasksWithState(Page.of(current,size),state);
+            if(labelId.equals(TaskLabel.Finished)||labelId.equals(TaskLabel.Abandoned)||
+                    labelId.equals(TaskLabel.RecycleBin)||labelId.equals(TaskLabel.Cancelled)) {
+                List<TaskRuleComboVO> tasks ;
+                if(labelId.equals(TaskLabel.RecycleBin))
+                {
+                    tasks = taskMapper().getRecycledTasks(Page.of(current,size),userId);
+                    List<HabitVO> habits = habitService.getHabits(current,size,userId,time,true, redis).getData();
+                    for(var habit:habits){
+                        res.get(key2).add(habit);
+                    }
+                }
+                else{
+                    int state;
+                    if (labelId.equals(TaskLabel.Finished))
+                        state = TaskState.FINISHED.value();
+                    else if (labelId.equals(TaskLabel.Abandoned))
+                        state = TaskState.ABANDONED.value();
+                    else
+                        state = TaskState.CANCELLED.value();
+                    tasks = taskMapper().getTasksWithState(Page.of(current,size),state,userId);
+                }
                 for (var task : tasks) {
                     res.get(key1).add(task);
                 }
@@ -101,7 +113,7 @@ public class IndexService implements IndexServiceInterface {
             else{
                 List<TaskRuleComboVO> tasks = taskService.getTasks(current, size, userId, time,null , redis).getData();
                 setTasks(res, key1, tasks);
-                List<HabitVO> habits = habitService.getHabits(current,size,userId,time,redis).getData();
+                List<HabitVO> habits = habitService.getHabits(current,size,userId,time,false, redis).getData();
                 for(var habit:habits){
                     res.get(key2).add(habit);
                 }
@@ -271,6 +283,18 @@ public class IndexService implements IndexServiceInterface {
             habitService.removeAllAbout(userId);
             userMapper.deleteById(userId);
         }
+    }
+
+    @Override
+    @Transactional
+    public int removeOrRecoverHabit(String habitId, Boolean isRemove) {
+        return isRemove ? habitService.remove(habitId):habitService.recover(habitId);
+    }
+
+    @Override
+    @Transactional
+    public int removeOrRecoverTask(Long taskId, Boolean isRemove) {
+        return isRemove ? taskService.remove(taskId) : taskService.recover(taskId);
     }
 
     private String updateIconOptions(boolean isList, String icon, MultipartFile file, FileService fileService){

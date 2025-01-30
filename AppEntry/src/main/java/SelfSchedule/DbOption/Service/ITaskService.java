@@ -19,8 +19,9 @@ public interface ITaskService extends IService<Task> {
    Map<String,List<TaskRuleComboVO>> getTasks(String userId,Date time,RedisCache redis);
    List<TaskReminderVO> getTaskReminders(Long taskId);
    int cancelTask(TaskModel model,Integer mode);
+   int removeTask(TaskModel model,Integer mode);
    int updateTask(TaskModel model,Integer mode);
-   int updateTask(TaskModel model);
+   void updateTask(TaskModel model);
    Long addReminder(TaskReminderModel model,Integer mode);
    int removeReminder(TaskReminderModel model,Integer mode);
    int changeRepeatRule(TaskRepeatRuleModel model,Integer mode);
@@ -29,4 +30,6 @@ public interface ITaskService extends IService<Task> {
    List<TaskReminderInfoVO> getCurrentTaskReminders(String userId, Date currentTime);
    boolean freshReminderTiming(Long taskId,Date taskBeginTime);
    void removeAllAbout(String userId);
+   int remove(Long taskId);
+   int recover(Long taskId);
 }

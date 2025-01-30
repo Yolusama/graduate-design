@@ -11,7 +11,7 @@
  Target Server Version : 80032
  File Encoding         : 65001
 
- Date: 29/01/2025 22:21:26
+ Date: 30/01/2025 22:34:32
 */
 
 SET NAMES utf8mb4;
@@ -61,7 +61,7 @@ CREATE TABLE `habitfrequency`  (
   `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitfrequency
@@ -87,7 +87,7 @@ CREATE TABLE `habitgroup`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `index_habitId_code`(`userId`, `code`) USING BTREE,
   INDEX `index_user_id`(`userId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitgroup
@@ -121,7 +121,7 @@ CREATE TABLE `habitoption`  (
   `mostDays` int NULL DEFAULT NULL COMMENT '最多坚持天数',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitoption
@@ -149,7 +149,7 @@ CREATE TABLE `habitrecord`  (
   `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_time`(`finishTime`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitrecord
@@ -188,7 +188,7 @@ CREATE TABLE `habitreminder`  (
   `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitreminder
@@ -215,7 +215,7 @@ CREATE TABLE `task`  (
   INDEX `index_begin_time`(`beginTime`) USING BTREE,
   INDEX `index_end_time`(`endTime`) USING BTREE,
   INDEX `index_label_id`(`labelId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of task
@@ -235,20 +235,22 @@ CREATE TABLE `taskinstance`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务实例表id',
   `instanceId` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '重复任务下的对应任务id，非重复任务，值与任务id相同',
   `taskId` bigint NULL DEFAULT NULL COMMENT '任务id',
+  `flag` tinyint(1) UNSIGNED ZEROFILL NULL DEFAULT 0 COMMENT '删除标识',
+  `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_task_id`(`taskId`) USING BTREE,
   INDEX `index_instance_id`(`instanceId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of taskinstance
 -- ----------------------------
-INSERT INTO `taskinstance` VALUES (1, '1', 1);
-INSERT INTO `taskinstance` VALUES (2, '2', 2);
-INSERT INTO `taskinstance` VALUES (3, '3', 3);
-INSERT INTO `taskinstance` VALUES (4, '4', 4);
-INSERT INTO `taskinstance` VALUES (5, '5', 5);
-INSERT INTO `taskinstance` VALUES (6, '6', 6);
+INSERT INTO `taskinstance` VALUES (1, '1', 1, 0, NULL);
+INSERT INTO `taskinstance` VALUES (2, '2', 2, 0, NULL);
+INSERT INTO `taskinstance` VALUES (3, '3', 3, 0, NULL);
+INSERT INTO `taskinstance` VALUES (4, '4', 4, 0, NULL);
+INSERT INTO `taskinstance` VALUES (5, '5', 5, 0, NULL);
+INSERT INTO `taskinstance` VALUES (6, '6', 6, 0, NULL);
 
 -- ----------------------------
 -- Table structure for tasklabel
@@ -279,7 +281,8 @@ INSERT INTO `tasklabel` VALUES (3, NULL, '昨天', 1, NULL, NULL, 1, 1, 'yesterd
 INSERT INTO `tasklabel` VALUES (4, NULL, '标签', 1, NULL, NULL, 1, 1, 'labels.png');
 INSERT INTO `tasklabel` VALUES (5, NULL, '已完成', 1, NULL, NULL, 1, 1, 'finish.png');
 INSERT INTO `tasklabel` VALUES (6, NULL, '已搁置', 1, NULL, NULL, 1, 1, 'delay.png');
-INSERT INTO `tasklabel` VALUES (7, NULL, '垃圾桶', 1, NULL, NULL, 1, 1, 'bin.png');
+INSERT INTO `tasklabel` VALUES (7, NULL, '已取消', 1, '2025-01-30 16:51:45', NULL, 0, 0, 'cancel.png');
+INSERT INTO `tasklabel` VALUES (8, NULL, '垃圾桶', 1, NULL, '2025-01-30 16:51:30', 1, 1, 'bin.png');
 INSERT INTO `tasklabel` VALUES (54, 'U47811742828165', 'q', 1, '2025-01-27 15:30:32', '2025-01-27 22:06:52', 0, 0, 'label.png');
 INSERT INTO `tasklabel` VALUES (55, 'U47811742828165', '1', 0, '2025-01-27 20:38:38', '2025-01-27 22:06:12', 0, 1, 'list.png');
 INSERT INTO `tasklabel` VALUES (56, 'U47811742828165', '23', 1, '2025-01-27 20:38:52', '2025-01-27 22:06:35', 0, 1, 'list.png');
@@ -297,7 +300,7 @@ CREATE TABLE `taskreminder`  (
   `value` int NULL DEFAULT NULL COMMENT '提醒模式下的数值',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_task_id`(`taskId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 42 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of taskreminder
@@ -318,7 +321,7 @@ CREATE TABLE `taskrepeatrule`  (
   `count` int NULL DEFAULT NULL COMMENT '执行次数',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_task_id`(`taskId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of taskrepeatrule
@@ -337,6 +340,7 @@ CREATE TABLE `user`  (
   `role` tinyint UNSIGNED NULL DEFAULT 1 COMMENT '1.管理员，2.普通用户，3.VIP用户\r\n',
   `createTime` datetime NULL DEFAULT NULL COMMENT '用户创建时间',
   `lastLoginTime` datetime NULL DEFAULT NULL COMMENT '用户上次登录时间',
+  `status` tinyint(1) NULL DEFAULT 1 COMMENT '用户状态，1.正常，0.异常',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `email`(`email`) USING BTREE,
   INDEX `index_vip`(`role`) USING BTREE
@@ -345,20 +349,22 @@ CREATE TABLE `user`  (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('U28533327585573', '1816440933@qq.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '用户U28533327585573', 'default.png', 1, '2024-12-16 16:44:12', '2025-01-17 21:07:10');
-INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414', 'yyolu', 'default.png', 1, '2024-11-24 21:59:28', '2025-01-29 21:20:38');
+INSERT INTO `user` VALUES ('U28533327585573', '1816440933@qq.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '用户U28533327585573', 'default.png', 1, '2024-12-16 16:44:12', '2025-01-17 21:07:10', 1);
+INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414', 'yyolu', 'default.png', 1, '2024-11-24 21:59:28', '2025-01-29 21:20:38', 1);
 
 -- ----------------------------
 -- Table structure for versionstatus
 -- ----------------------------
 DROP TABLE IF EXISTS `versionstatus`;
 CREATE TABLE `versionstatus`  (
-  `id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '版本id',
+  `id` varchar(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '版本id',
   `type` tinyint(1) NULL DEFAULT NULL COMMENT '版本类型，1.正式版，2.α测试版，3.β测试版，4.标准测试版',
-  `number` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版号',
-  `publishDate` date NULL DEFAULT NULL COMMENT '发布时间',
+  `number` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版号',
+  `code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '版本代号',
+  `publishDate` date NULL DEFAULT NULL COMMENT '发布日期',
   `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版本描述信息',
   `authorAbout` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作者描述信息',
+  `createTime` datetime NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_type`(`type`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;

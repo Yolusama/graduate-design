@@ -9,6 +9,13 @@ import lombok.Data;
 @TableName("VersionStatus")
 @Data
 public class VersionStatus {
+    public VersionStatus(){
+
+    }
+
+    public VersionStatus(String id) {
+        this.id = id;
+    }
 
     /**
     * 版本id
@@ -16,15 +23,11 @@ public class VersionStatus {
     @TableId
     private String id;
     /**
-    * 版本类型，1.正式版，2.α测试版，3.β测试版，4.标准测试版
-    */
-    private Integer type;
-    /**
     * 版号
     */
     private String number;
     /**
-    * 发布时间
+    * 发布日期
     */
     private Date publishDate;
     /**
@@ -35,4 +38,12 @@ public class VersionStatus {
      * 作者相关内容
      */
     private String authorAbout;
+    /**
+     * 版本代号
+     */
+    private String code;
+    /**
+     * 创建设计
+     */
+    private Date createTime;
 }

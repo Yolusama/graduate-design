@@ -11,7 +11,7 @@
                       t.userId=#{userId}  and ((
                       ((t.beginTime&gt;=#{leftBound} and t.beginTime&lt;#{rightBound}) or
                       (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound})) or (t.beginTime&lt;=#{time} and t.endTime&gt;#{time})
-                      and t.repeatable=0) or t.repeatable=1)
+                      and t.repeatable=0) or t.repeatable=1) and i.flag = 0
                       <if test="labelId!=null">
                           and  t.labelId = #{labelId}
                       </if>
@@ -20,7 +20,7 @@
 
     <select id="getTask" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
         select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
-              t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
+              t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId,i.flag as deleteFlag from Task t
                                    join TaskInstance i on i.instanceId = t.id
                                 left join TaskRepeatRule r on t.id = r.taskId
                    where t.userId=#{userId} and (
@@ -28,11 +28,20 @@
                        (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound}) or (t.beginTime&lt;=#{time} and t.endTime&gt;#{time})
                        ) and (t.id in (select instanceId from TaskInstance where taskId=#{taskId}))
     </select>
+
     <select id="getTasksWithState" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
         select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
                t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
                                  join TaskInstance i on i.instanceId = t.id
-                            left join TaskRepeatRule r on t.id = r.taskId
-                where t.state = #{state}
+                            left join TaskRepeatRule r on t.id = r.taskId and i.flag = 0
+                where t.state = #{state} and userId=#{userId}
+    </select>
+
+    <select id="getRecycledTasks" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
+        select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
+               t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
+                          join TaskInstance i on i.instanceId = t.id and i.instanceId = i.taskId
+                     left join TaskRepeatRule r on t.id = r.taskId and i.flag = 0
+        where i.flag = 1 and userId=#{userId}
     </select>
 </mapper>

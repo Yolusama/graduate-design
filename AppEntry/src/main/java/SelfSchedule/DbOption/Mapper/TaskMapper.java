@@ -19,9 +19,11 @@ public interface TaskMapper extends BaseMapper<Task> {
     List<TaskRuleComboVO> getTasks(Page<TaskRuleComboVO>page, @Param("userId")String UserId,@Param("time")Date time,
                                    @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound,
                                    @Param("labelId")Long labelId);
-    List<TaskRuleComboVO> getTasksWithState(Page<TaskRuleComboVO>page,@Param("state") Integer state);
+    List<TaskRuleComboVO> getTasksWithState(Page<TaskRuleComboVO>page,@Param("state") Integer state,
+                                            @Param("userId")String userId);
     TaskRuleComboVO getTask(@Param("userId")String userId,@Param("taskId")Long taskId,@Param("time")Date time,
                             @Param("leftBound")Date leftBound,@Param("rightBound")Date rightBound);
+    List<TaskRuleComboVO> getRecycledTasks(Page<TaskRuleComboVO> page,@Param("userId")String userId);
 
     @Update("update Task set state=#{state} where id=#{taskId}")
     Integer changeState(@Param("state")Integer state,@Param("taskId")Long taskId);

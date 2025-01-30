@@ -15,7 +15,7 @@ import java.util.List;
 
 public interface IHabitService extends IService<Habit> {
     String createHabit(HabitModel model);
-    PagedData<HabitVO> getHabits(Integer current, Integer pageSize, String userId, Date time, RedisCache redis);
+    PagedData<HabitVO> getHabits(Integer current, Integer pageSize, String userId, Date time,boolean recycled, RedisCache redis);
     List<HabitGroup> getHabitGroups(String userId,RedisCache redis);
     Long createHabitGroup(String userId,String habitName);
     HabitModel updateHabit(HabitModel model);
@@ -28,4 +28,6 @@ public interface IHabitService extends IService<Habit> {
     List<HabitRecordVO> getHabitRecords(String habitId);
     List<HabitReminderInfoVO> getCurrentReminders(String userId, Date currentTime,RedisCache redis);
     void removeAllAbout(String userId);
+    int recover(String habitId);
+    int remove(String habitId);
 }

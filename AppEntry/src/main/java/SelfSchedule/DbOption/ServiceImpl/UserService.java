@@ -7,7 +7,9 @@ import SelfSchedule.DbOption.Service.IUserService;
 import SelfSchedule.Entity.Enum.UserLoginStatus;
 import SelfSchedule.Entity.HabitGroup;
 import SelfSchedule.Entity.User;
+import SelfSchedule.Entity.VO.PagedData;
 import SelfSchedule.Entity.VO.UserLoginVO;
+import SelfSchedule.Entity.VO.UserVO;
 import SelfSchedule.Functional.RandomGenerator;
 import SelfSchedule.Model.UserPwdModel;
 import SelfSchedule.Service.EmailService;
@@ -19,6 +21,7 @@ import SelfSchedule.Utils.StringEncryptUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -210,5 +213,21 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         mapper.update(wrapper);
         redis.remove(key);
         return true;
+    }
+
+    @Override
+    public PagedData<UserVO> getUsers(Integer page, Integer pageSize, Boolean status, Integer role, String queryKey) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        if(role!=null)
+            wrapper.eq(User::getRole,role);
+        if(status!=null)
+            wrapper.eq(User::getStatus,status);
+        if(queryKey!=null)
+            wrapper.and(q->q.like(User::getNickname,queryKey).or().eq(User::getEmail,queryKey).or().eq(User::getId,queryKey));
+        Page<User> pageOption = mapper.selectPage(Page.of(page,pageSize),wrapper);
+        List<UserVO> data = new ArrayList<>();
+        for(User user:pageOption.getRecords())
+            data.add(ObjectUtil.copy(user,new UserVO()));
+        return new PagedData<>(data,pageOption.getTotal());
     }
 }

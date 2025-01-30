@@ -15,7 +15,7 @@ import java.util.List;
 
 @Mapper
 public interface HabitMapper extends BaseMapper<Habit> {
-    List<HabitVO> getHabits(Page<HabitVO> page, @Param("userId")String userId);
+    List<HabitVO> getHabits(Page<HabitVO> page, @Param("userId")String userId,@Param("recycled")Boolean recycled);
     @Update("update Habit set ${ew.sqlSet} ${ew.customSqlSegment}")
     Integer update(@Param(Constants.WRAPPER)Wrapper<Habit> wrapper);
     @Select("select id from Habit where userId=#{userId}")

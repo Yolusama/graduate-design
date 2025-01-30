@@ -48,7 +48,7 @@ public class HabitController extends ControllerBase{
     public CompletableFuture<ActionResult<PagedData<HabitVO>>> GetHabits(@PathVariable String userId,@RequestParam Integer page,
                                                                          @RequestParam Integer pageSize,@RequestParam Long time){
         return CompletableFuture.completedFuture(
-                successWithData(habitService.getHabits(page,pageSize,userId,new Date(time),redis))
+                successWithData(habitService.getHabits(page,pageSize,userId,new Date(time),false, redis))
         );
     }
 

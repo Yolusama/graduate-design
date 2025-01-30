@@ -47,11 +47,12 @@ public class Task{
      */
     private String title;
     /**
-     * 完成状态，1.完成，2.未完成，3.已取消，4.已搁置
+     * 完成状态，1.完成，2.未完成，3.已取消，4.已放弃
      */
     private Integer state;
     /**
      *是否属于可重复任务
+     *
      */
     @TableField(jdbcType = JdbcType.TINYINT)
     private Boolean repeatable;
@@ -63,7 +64,6 @@ public class Task{
     *用户自定义标签时带有的标签id
     */
     private Long labelId;
-
 
     @Override
     public boolean equals(Object o) {

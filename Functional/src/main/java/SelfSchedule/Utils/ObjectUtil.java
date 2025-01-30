@@ -49,4 +49,8 @@ public class ObjectUtil {
         builder.append('}');
         return builder.toString();
     }
+
+    public static boolean isRequestParamStrNull(String param){
+        return param==null||param.equals("")||param.equals("null");
+    }
 }

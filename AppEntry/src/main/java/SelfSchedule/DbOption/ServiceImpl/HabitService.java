@@ -2,7 +2,6 @@ package SelfSchedule.DbOption.ServiceImpl;
 
 import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
-import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Mapper.*;
 import SelfSchedule.DbOption.Service.IHabitService;
 import SelfSchedule.Entity.*;
@@ -15,7 +14,6 @@ import SelfSchedule.Model.HabitReminderModel;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.Utils.DateUtil;
-import SelfSchedule.Utils.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -97,7 +95,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     }
 
     @Override
-    public PagedData<HabitVO> getHabits(Integer current, Integer pageSize, String userId, Date time, RedisCache redis) {
+    public PagedData<HabitVO> getHabits(Integer current, Integer pageSize, String userId, Date time, boolean recycled, RedisCache redis) {
         final String key1 = String.format("Caching_%s_%s",userId, CachingKeys.GetHabits);
         final String key2 = String.format("Caching_%s_%s",userId,CachingKeys.GetHabitsDateValue);
         if(redis.has(key1)&&(redis.has(key2)&& DateUtil.onlyDateEquals((Date)redis.get(key2),time)))
@@ -109,7 +107,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         }
         Page<HabitVO> page = Page.of(current,pageSize);
         PagedData<HabitVO> res = new PagedData<>();
-        List<HabitVO> habits = mapper.getHabits(page,userId);
+        List<HabitVO> habits = mapper.getHabits(page,userId,recycled);
         Date date = DateUtil.onlyDate(time);
         Date today = DateUtil.onlyDate(Constants.Now());
         boolean flag = false;
@@ -378,10 +376,6 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     public int removeHabit(String habitId) {
         LambdaUpdateWrapper<Habit> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(Habit::getDeleteFlag,true).eq(Habit::getId,habitId);
-       /* optionMapper.delete(habitId);
-        reminderMapper.delete(habitId);
-        recordMapper.delete(habitId);
-        frequencyMapper.delete(habitId);*/
         return mapper.update(wrapper);
     }
 
@@ -456,5 +450,21 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         frequencyMapper.delete(new LambdaQueryWrapper<HabitFrequency>().in(HabitFrequency::getHabitId,habitIds));
         groupMapper.delete(new LambdaQueryWrapper<HabitGroup>().eq(HabitGroup::getUserId,userId));
         mapper.delete(new LambdaQueryWrapper<Habit>().eq(Habit::getUserId,userId));
+    }
+
+    @Override
+    public int recover(String habitId) {
+        LambdaUpdateWrapper<Habit> wrapper= new LambdaUpdateWrapper<>();
+        wrapper.set(Habit::getDeleteFlag,false).eq(Habit::getId,habitId);
+        return mapper.update(wrapper);
+    }
+
+    @Override
+    public int remove(String habitId) {
+        optionMapper.delete(habitId);
+        reminderMapper.delete(habitId);
+        recordMapper.delete(habitId);
+        frequencyMapper.delete(habitId);
+        return mapper.delete(new LambdaQueryWrapper<Habit>().eq(Habit::getId,habitId));
     }
 }

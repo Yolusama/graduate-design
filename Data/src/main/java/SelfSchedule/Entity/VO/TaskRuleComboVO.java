@@ -28,22 +28,5 @@ public class TaskRuleComboVO extends IndexDisplayVO{
     private Integer count;
     private Date deadline;
     private Map<String,Integer> custom;
-
-    public static TaskRuleComboVO combo(Task task, TaskRepeatRule rule){
-         TaskRuleComboVO combo = new TaskRuleComboVO();
-         combo.setTitle(task.getTitle());
-         combo.setDescription(task.getDescription());
-         combo.setUserId(task.getUserId());
-         combo.setBeginTime(task.getBeginTime());
-         combo.setEndTime(task.getEndTime());
-         combo.setPriority(task.getPriority());
-         combo.setCreateTime(task.getCreateTime());
-         combo.setState(task.getState());
-         combo.setPeriod(rule.getPeriod());
-         combo.setPeriodUnit(rule.getPeriodUnit());
-         combo.setDeadline(rule.getDeadline());
-         combo.setCount(rule.getCount());
-         combo.setCustom(rule.getCustom());
-         return combo;
-    }
+    private Boolean deleteFlag;
 }

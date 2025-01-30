@@ -1,7 +1,9 @@
 package SelfSchedule.DbOption.Service;
 
 import SelfSchedule.Entity.User;
+import SelfSchedule.Entity.VO.PagedData;
 import SelfSchedule.Entity.VO.UserLoginVO;
+import SelfSchedule.Entity.VO.UserVO;
 import SelfSchedule.Model.UserPwdModel;
 import SelfSchedule.Service.EmailService;
 import SelfSchedule.Service.FileService;
@@ -22,4 +24,5 @@ public interface IUserService extends IService<User> {
     String changeAvatar(String avatar, String userId, MultipartFile file, FileService fileService);
     Boolean changePassword(UserPwdModel model,RedisCache redis);
     Boolean changeEmail(String email, String newEmail, String checkCode, RedisCache redis);
+    PagedData<UserVO> getUsers(Integer page,Integer pageSize,Boolean status,Integer role,String queryKey);
 }

@@ -136,9 +136,38 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         return Constants.EOF;
     }
 
+    @Override
+    @Transactional
+    public int removeTask(TaskModel model,Integer mode) {
+       LambdaUpdateWrapper<TaskInstance> wrapper = new LambdaUpdateWrapper<>();
+       wrapper.set(TaskInstance::getFlag,false);
+       if(!model.getRepeatable())
+       {
+           wrapper.eq(TaskInstance::getInstanceId,model.getInstanceId());
+           return instanceMapper.update(wrapper);
+       }
+       else{
+           if(mode.equals(TaskEditMode.ALL.value()))
+           {
+               wrapper.eq(TaskInstance::getTaskId,model.getTaskId());
+               return instanceMapper.update(wrapper);
+           }
+           else if(mode.equals(TaskEditMode.ONLYTHIS.value())){
+               wrapper.eq(TaskInstance::getInstanceId,model.getInstanceId());
+               return instanceMapper.update(wrapper);
+           }
+           else if(mode.equals(TaskEditMode.THISNALL.value())){
+               ruleMapper.setDeadline(Constants.Now(),model.getTaskId());
+               wrapper.in(TaskInstance::getInstanceId,instanceMapper.getRepeatIdsUnder(model.getBeginTime(),model.getTaskId()));
+               return instanceMapper.update(wrapper);
+           }
+       }
+       return Constants.NormalState;
+    }
+
     /*分页获取某时间下的任务，对于可重复任务，提取其规则，获取实例，如果其实例不存在则生成实例
-      并使用redis缓存数据，提高响应速度
-     */
+          并使用redis缓存数据，提高响应速度
+         */
     @Override
     @Transactional
     public PagedData<TaskRuleComboVO> getTasks(Integer current, Integer pageSize, String userId, Date time, Long labelId, RedisCache redis) {
@@ -539,7 +568,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
 
     @Override
     @Transactional
-    public int updateTask(TaskModel model) {
+    public void updateTask(TaskModel model) {
         Long taskId = model.getTaskId();
         Long instanceId = model.getInstanceId();
         Task task = mapper.selectById(instanceId);
@@ -592,6 +621,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             }
             ruleMapper.updateById(toCompareRule);
         }
+
         TaskReminderInfoModel[] reminderModels = model.getReminderInfoModels();
         var taskReminders = reminderMapper.getTaskReminders(instanceId);
         List<Long> toDeleteIds = new ArrayList<>();
@@ -617,7 +647,6 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getId,toDeleteIds));
         if(toInsert.size()>0)
             reminderMapper.batchInsert(toInsert);
-        return Constants.NormalState;
     }
 
     @Override
@@ -701,6 +730,23 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,taskIds));
         ruleMapper.delete(new LambdaQueryWrapper<TaskRepeatRule>().in(TaskRepeatRule::getTaskId,taskIds));
         mapper.delete(new LambdaQueryWrapper<Task>().eq(Task::getUserId,userId));
+    }
+
+
+    @Override
+    public int remove(Long taskId) {
+       List<Long> taskIds = instanceMapper.getRepeatIds(taskId);
+       instanceMapper.delete(new LambdaQueryWrapper<TaskInstance>().eq(TaskInstance::getTaskId,taskId));
+       reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,taskIds));
+       ruleMapper.delete(new LambdaQueryWrapper<TaskRepeatRule>().eq(TaskRepeatRule::getTaskId,taskId));
+       return  mapper.delete(new LambdaQueryWrapper<Task>().eq(Task::getId,taskId));
+    }
+
+    @Override
+    public int recover(Long taskId) {
+        LambdaUpdateWrapper<TaskInstance> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(TaskInstance::getFlag,false).eq(TaskInstance::getInstanceId,taskId);
+        return instanceMapper.update(wrapper);
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

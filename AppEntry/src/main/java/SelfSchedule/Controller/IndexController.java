@@ -133,4 +133,28 @@ public class IndexController extends ControllerBase{
             return ok("已退出登录！");
     }
 
+    @PatchMapping("/RemoveOrRecoverTask/{taskId}")
+    @ApiOperation(value="删除/恢复回收站中的任务",notes = "删除/恢复回收站中的任务")
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData,CachingKeys.GetTasks,CachingKeys.GetTasksDateValue})
+    public ActionResult RemoveOrRecoverTask(@PathVariable Long taskId,@RequestParam Boolean isRemove,
+                                            HttpServletRequest request){
+         int res = indexService.removeOrRecoverTask(taskId,isRemove);
+         if(res==Constants.AbNormalState)
+             return fail("操作失败！");
+         return ok(isRemove?"已正式删除！":"已恢复!");
+    }
+
+    @PostMapping("/RemoveOrRecoverHabit/{habitId}")
+    @ApiOperation(value="删除/恢复回收站中的习惯",notes = "删除/恢复回收站中的习惯")
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData, CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue})
+    public ActionResult RemoveOrRecoverHabit(@PathVariable String habitId,@RequestParam Boolean isRemove,
+                                            HttpServletRequest request){
+        int res = indexService.removeOrRecoverHabit(habitId,isRemove);
+        if(res==Constants.AbNormalState)
+            return fail("操作失败！");
+        return ok(isRemove?"已正式删除！":"已恢复!");
+    }
+
+
+
 }

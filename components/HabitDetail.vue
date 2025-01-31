@@ -171,6 +171,7 @@
 							return;
 						}
 						emits("removed",{index:state.selectedHabit.index,groupName:state.selectedHabit.groupName});
+						detailPopup.value.close();
 					});
 				}
 			}

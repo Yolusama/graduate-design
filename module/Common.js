@@ -427,3 +427,7 @@ export function isBaseDayLabel(labelId){
 export function isBaseLabel(labelId){
 	return [1,2,3,5,6,7].findIndex(l=>l==labelId)>=0;
 }
+
+export function isStateLabel(labelId){
+	return [5,6,7,8].findIndex(l=>l==labelId)>=0;
+}

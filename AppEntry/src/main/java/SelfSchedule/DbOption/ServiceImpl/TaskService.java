@@ -140,7 +140,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     @Transactional
     public int removeTask(TaskModel model,Integer mode) {
        LambdaUpdateWrapper<TaskInstance> wrapper = new LambdaUpdateWrapper<>();
-       wrapper.set(TaskInstance::getFlag,false);
+       wrapper.set(TaskInstance::getFlag,true);
        if(!model.getRepeatable())
        {
            wrapper.eq(TaskInstance::getInstanceId,model.getInstanceId());
@@ -371,6 +371,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                     TaskInstance instance = new TaskInstance();
                     instance.setTaskId(newTask.getId());
                     instance.setInstanceId(newTask.getId());
+                    instance.setFlag(true);
                     instanceMapper.insert(instance);
                     instanceMapper.setTaskIdFor(newTask.getId(),task.getId());
                     LambdaUpdateWrapper<TaskRepeatRule> wrapper1 = new LambdaUpdateWrapper<>();
@@ -588,6 +589,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 TaskInstance instance = new TaskInstance();
                 instance.setTaskId(newTask.getId());
                 instance.setInstanceId(newTask.getId());
+                instance.setFlag(true);
                 instanceMapper.insert(instance);
                 newRule = ObjectUtil.copy(rule,new TaskRepeatRule());
                 newRule.setTaskId(newTask.getId());

@@ -9,6 +9,7 @@ import SelfSchedule.Model.VersionModel;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VersionStatusService extends ServiceImpl<VersionStatusMapper,VersionStatus> implements IVersionStatusService {
@@ -20,6 +21,7 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
     }
 
     @Override
+    @Transactional
     public String publish(VersionModel model) {
         VersionStatus version = new VersionStatus(RandomGenerator.generateVersionId());
         version.setCreateTime(Constants.Now());

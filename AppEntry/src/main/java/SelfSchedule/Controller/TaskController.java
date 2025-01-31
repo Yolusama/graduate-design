@@ -48,6 +48,7 @@ public class TaskController extends ControllerBase
 
     @GetMapping("/GetTasks/{userId}")
     @ApiOperation(value = "获取某天的任务日程",notes="异步获取某天的任务日程并分页处理")
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData})
     public CompletableFuture<ActionResult<PagedData<TaskRuleComboVO>>> GetTasks(
             @RequestParam Integer page,@RequestParam Integer pageSize,@RequestParam Long time,
             @PathVariable String userId,HttpServletRequest request

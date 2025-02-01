@@ -1,5 +1,6 @@
 package SelfSchedule.Utils;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
@@ -52,5 +53,14 @@ public class ObjectUtil {
 
     public static boolean isRequestParamStrNull(String param){
         return param==null||param.equals("")||param.equals("null");
+    }
+
+    public static<T> List<T> toList(T[] array){
+        return List.of(array);
+    }
+
+    public static<T> T[] toArray(List<T> list,Class<T> type){
+        T[] array = (T[]) Array.newInstance(type,list.size());
+        return list.toArray(array);
     }
 }

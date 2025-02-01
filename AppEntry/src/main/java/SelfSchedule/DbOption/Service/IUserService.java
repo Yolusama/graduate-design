@@ -25,4 +25,5 @@ public interface IUserService extends IService<User> {
     Boolean changePassword(UserPwdModel model,RedisCache redis);
     Boolean changeEmail(String email, String newEmail, String checkCode, RedisCache redis);
     PagedData<UserVO> getUsers(Integer page,Integer pageSize,Boolean status,Integer role,String queryKey);
+    UserLoginVO adminLogin(String account,String password,JwtService jwtService,RedisCache redis);
 }

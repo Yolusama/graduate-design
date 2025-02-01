@@ -2,7 +2,7 @@ package SelfSchedule.Entity.Enum;
 
 public enum UserLoginStatus
 {
-    SUCCESS(1), NOT_EXISTS(2),FAIL(3),CHECKFAILED(4);
+    SUCCESS(1), NOT_EXISTS(2),FAIL(3),CHECKFAILED(4),NOTADMIN(5);
 
     private final int status;
     UserLoginStatus(int status){

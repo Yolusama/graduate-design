@@ -5,6 +5,7 @@ import SelfSchedule.DbOption.Mapper.HabitGroupMapper;
 import SelfSchedule.DbOption.Mapper.UserMapper;
 import SelfSchedule.DbOption.Service.IUserService;
 import SelfSchedule.Entity.Enum.UserLoginStatus;
+import SelfSchedule.Entity.Enum.UserRole;
 import SelfSchedule.Entity.HabitGroup;
 import SelfSchedule.Entity.User;
 import SelfSchedule.Entity.VO.PagedData;
@@ -102,7 +103,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         if(!StringEncryptUtil.checkPassword(password,user.getPassword()))
         {
             res.setLoginStatus(UserLoginStatus.FAIL);
-            return null;
+            return res;
         }
         String key =String.format("%s_token",user.getId());
         String token = jwtService.GenerateToken(user.getId(),Constants.TokenExpire);
@@ -229,5 +230,39 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         for(User user:pageOption.getRecords())
             data.add(ObjectUtil.copy(user,new UserVO()));
         return new PagedData<>(data,pageOption.getTotal());
+    }
+
+    @Override
+    @Transactional
+    public UserLoginVO adminLogin(String account, String password, JwtService jwtService, RedisCache redis) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getId,account).or().eq(User::getEmail,account);
+        User user = mapper.selectOne(wrapper);
+        UserLoginVO res = new UserLoginVO();
+        if(user==null)
+        {
+            res.setLoginStatus(UserLoginStatus.NOT_EXISTS);
+            return res;
+        }
+        if(!StringEncryptUtil.checkPassword(password,user.getPassword()))
+        {
+            res.setLoginStatus(UserLoginStatus.FAIL);
+            return res;
+        }
+        if(!user.getRole().equals(UserRole.ADMIN.value()))
+        {
+            res.setLoginStatus(UserLoginStatus.NOTADMIN);
+            return res;
+        }
+        user.setLastLoginTime(Constants.Now());
+        String key = String.format("%s_token",user.getId());
+        if(redis.has(key))
+            redis.remove(key);
+        String token = jwtService.GenerateToken(user.getId(),Constants.AdminTokenExpire);
+        ObjectUtil.copy(user,res);
+        res.setLoginStatus(UserLoginStatus.SUCCESS);
+        res.setToken(token);
+        redis.set(key,token,Constants.AdminTokenExpire);
+        return res;
     }
 }

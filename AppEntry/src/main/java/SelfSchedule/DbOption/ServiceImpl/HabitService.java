@@ -14,6 +14,7 @@ import SelfSchedule.Model.HabitReminderModel;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.Utils.DateUtil;
+import SelfSchedule.Utils.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -423,7 +424,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         ArrayDataModel<HabitReminderInfoVO> model;
         if(redis.has(key)){
             model = (ArrayDataModel<HabitReminderInfoVO>) redis.get(key);
-            return List.of(model.getData());
+            return ObjectUtil.toList(model.getData());
         }
         var res = new ArrayList<HabitReminderInfoVO>();
         var reminders = reminderMapper.getUserReminders(userId);
@@ -433,10 +434,8 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
                 res.add(reminder);
             }
         }
-        HabitReminderInfoVO[] data = new HabitReminderInfoVO[res.size()];
         model = new ArrayDataModel<>();
-        res.toArray(data);
-        model.setData(data);
+        model.setData(ObjectUtil.toArray(res,HabitReminderInfoVO.class));
         redis.set(key,model,Constants.CachingExpire);
         return res;
     }

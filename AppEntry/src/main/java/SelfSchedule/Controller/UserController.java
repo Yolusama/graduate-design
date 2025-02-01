@@ -72,8 +72,8 @@ public class UserController extends ControllerBase{
             return fail("验证码错误或验证码已过期！");
     }
 
-    @ApiOperation(value="用户登录",notes = "登录")
     @PostMapping("/Login")
+    @ApiOperation(value="用户登录",notes = "登录")
     public ActionResult<UserLoginVO> Login(@RequestBody UserLoginRegModel model) throws IllegalAccessException {
         UserLoginVO res = userService.login(model.getEmail(),model.getPassword(),jwtService,redis);
         if(res.getLoginStatus() == UserLoginStatus.SUCCESS)

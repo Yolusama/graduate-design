@@ -136,14 +136,12 @@ public class IndexService implements IndexServiceInterface {
         String key = String.format("Caching_%s_%s",userId,CachingKeys.GetTaskLabels);
         if(redis.has(key)){
             model =(ArrayDataModel<TaskLabelVO>)redis.get(key);
-            return List.of(model.getData());
+            return ObjectUtil.toList(model.getData());
         }
 
         List<TaskLabelVO> res = labelMapper.getLabels(userId);
-        TaskLabelVO[] data = new TaskLabelVO[res.size()];
-        res.toArray(data);
         model = new ArrayDataModel<>();
-        model.setData(data);
+        model.setData(ObjectUtil.toArray(res,TaskLabelVO.class));
         redis.set(key,model,Constants.CachingExpire);
         return res;
     }
@@ -264,10 +262,8 @@ public class IndexService implements IndexServiceInterface {
             return List.of(model.getData());
         }
         List<TaskLabelVO> res = labelMapper.getHiddenLabels(userId);
-        TaskLabelVO[] data = new TaskLabelVO[res.size()];
-        res.toArray(data);
         model = new ArrayDataModel<>();
-        model.setData(data);
+        model.setData(ObjectUtil.toArray(res,TaskLabelVO.class));
         redis.set(key,model,Constants.CachingExpire);
         return res;
     }

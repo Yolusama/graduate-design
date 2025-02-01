@@ -77,7 +77,7 @@ import { Logout } from '../api/UserInfo';
 		width: 100%;
 		padding-top: 3%;
 		/*#ifndef H5*/
-		padding-top: 3vh;
+		padding-top: 4vh;
 		/*#endif*/
 		display: flex;
 		flex-flow: column nowrap;

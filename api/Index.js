@@ -1,4 +1,4 @@
-import { Delete, Get, Patch, Post, UploadFile } from "../module/Request"
+import { Delete, Get, Patch, Post, Put, UploadFile } from "../module/Request"
 import { FinishOrNot } from "./Task";
 import { auth, formDataAuth } from "./User"
 
@@ -11,11 +11,15 @@ export function GetLabels(userId,successCallback){
 }
 
 export function CreateLabel(label,file,successCallback){
-	UploadFile("/Api/Index/CreateLabel",file,formDataAuth,label,successCallback);
+	Put("/Api/Index/CreateLabel",auth,label,successCallback);
 }
 
-export function UpdateLabel(label,file,successCallback){
-	UploadFile("/Api/Index/UpdateLabel",file,formDataAuth,label,successCallback);
+export function UpdateLabel(labelId,labelName,successCallback){
+	Patch(`/Api/Index/UpdateLabel/${labelId}?labelName=${labelName}`,auth,{},successCallback);
+}
+
+export function UploadLabelIcon(label,file,successCallback){
+	UploadFile("/Api/Index/UploadLabelIcon",file,formDataAuth,label,successCallback);
 }
 
 export function CheckLabelNameExists(labelName,userId,successCallback){

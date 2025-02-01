@@ -16,12 +16,14 @@
 									<image :src="imgSrc(list.icon)" class="label-icon"></image>
 									<text class="text">{{list.labelName}}</text>
 									<view style="margin-left: 5%;display: flex;width:90px">
-										<uni-icons type="compose" v-if="!list.notCustom"
-											@click.stop="openLabelEditor(list,true,index);">
-										</uni-icons>
+										<view @click.stop="openLabelEditor(list,true,index);">
+											<uni-icons type="compose" v-if="!list.notCustom">
+											</uni-icons>
+										</view>
 										<text class="hide" @click.stop="hideOrShowLabel(index,true,false)">隐藏</text>
-										<uni-icons type="trash" v-if="!list.notCustom"
-											@click.stop="removeLabel(index,true)"></uni-icons>
+										<view @click.stop="removeLabel(index,true)">
+											<uni-icons type="trash" v-if="!list.notCustom"></uni-icons>
+										</view>
 									</view>
 								</view>
 								<view style="height: 100%;width:100%" v-if="list.labelId==IdOfLableNamed">
@@ -42,12 +44,14 @@
 												style="width: 16px;height: 16px;"></image>
 											<text class="text" style="width:75px;">{{label.labelName}}</text>
 											<view style="margin-left: 5%;display: flex;width:80px">
-												<uni-icons type="compose"
-													@click.stop="openLabelEditor(label,false,index1);"></uni-icons>
+												<view @click.stop="openLabelEditor(label,false,index1);">
+													<uni-icons type="compose"></uni-icons>
+												</view>
 												<text class="hide" style="margin-left: 6%;margin-right: 6%;"
 													@click.stop="hideOrShowLabel(index1,false,false)">隐藏</text>
-												<uni-icons type="trash"
-													@click.stop="removeLabel(index1,false)"></uni-icons>
+												<view @click.stop="removeLabel(index1,false)">
+													<uni-icons type="trash"></uni-icons>
+												</view>
 											</view>
 										</view>
 									</scroll-view>
@@ -91,17 +95,19 @@
 							<uni-swipe-action>
 								<uni-swipe-action-item :disabled="habit.finished">
 									<template v-slot:right>
-										<view class="finishBtn" @click.stop="finishHabit(index)" v-if="state.currentLabel.labelId!=IdOfBin"
-										>完成</view>
-										<view  style="display: flex;align-items: center;"  v-if="state.currentLabel.labelId==IdOfBin"> 
-											 <uni-icons type="close" color="red" @click="removeHabit(index)" :size="22"></uni-icons>
+										<view class="finishBtn" @click.stop="finishHabit(index)"
+											v-if="state.currentLabel.labelId!=IdOfBin">完成</view>
+										<view style="display: flex;align-items: center;"
+											v-if="state.currentLabel.labelId==IdOfBin">
+											<uni-icons type="close" color="red" @click="removeHabit(index)"
+												:size="22"></uni-icons>
 										</view>
 									</template>
-									<template v-if="state.currentLabel.labelId==IdOfBin"
-									v-slot:left>
-									  <view style="display: flex;align-items: center;">
-										  <uni-icons type="undo" color="rgb(0,125,235)" @click="recoverHabit(index)" :size="22"></uni-icons>
-									  </view>
+									<template v-if="state.currentLabel.labelId==IdOfBin" v-slot:left>
+										<view style="display: flex;align-items: center;">
+											<uni-icons type="undo" color="rgb(0,125,235)" @click="recoverHabit(index)"
+												:size="22"></uni-icons>
+										</view>
 									</template>
 									<view style="display: flex;justify-content: space-between;"
 										@click="seeHabitDetail(index)">
@@ -173,8 +179,7 @@
 											v-if="state.currentLabel.labelId==IdOfBin"></uni-icons>
 									</view>
 								</template>
-								<view
-									style="display: flex;justify-content: center;padding-right: 1%;
+								<view style="display: flex;justify-content: center;padding-right: 1%;
 									position: relative;z-index: 0;margin-top: 1%;border-radius: 5px;">
 									<view class="mask" v-if="showMask(task)"></view>
 									<view @click="openTaskEditor(task)" class="task">
@@ -241,8 +246,8 @@
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
 			@close="habitDetailClose" @removed="habitRemoved"></habit-detail>
-		<uni-fab :pattern="pattern" horizontal="right" vertical="bottom" :pop-menu="false" @fabClick="openToEdit" 
-		v-if="!isStateLabel(state.currentLabel.labelId)"/>
+		<uni-fab :pattern="pattern" horizontal="right" vertical="bottom" :pop-menu="false" @fabClick="openToEdit"
+			v-if="!isStateLabel(state.currentLabel.labelId)" />
 	</view>
 </template>
 
@@ -384,13 +389,13 @@
 			openToEdit();
 		});
 	}
-	
-	function showMask(task){
+
+	function showMask(task) {
 		const labelId = state.currentLabel.labelId;
-		if(isBaseDayLabel(labelId))
-		   return task.state == TaskState.abondoned;
-		if(isStateLabel(labelId))
-			return dateGE(today.value,task.beginTime)&&dateGE(today.value,task.endTime);
+		if (isBaseDayLabel(labelId))
+			return task.state == TaskState.abondoned;
+		if (isStateLabel(labelId))
+			return dateGE(today.value, task.beginTime) && dateGE(today.value, task.endTime);
 		return false;
 	}
 
@@ -724,51 +729,51 @@
 			url: "/pages/userInfo"
 		});
 	}
-	
-	function removeOrRecoverTask(index,isRemove){
+
+	function removeOrRecoverTask(index, isRemove) {
 		const task = state.data['task'][index];
-		RemoveOrRecoverTask(task.instanceId,isRemove,response=>{
+		RemoveOrRecoverTask(task.instanceId, isRemove, response => {
 			const res = response.data;
-			if(!res.succeeded){
+			if (!res.succeeded) {
 				uni.showToast({
-					title:res.message,
-					icon:"none"
+					title: res.message,
+					icon: "none"
 				});
 				return;
 			}
-			state.data['task'].splice(index,1);
+			state.data['task'].splice(index, 1);
 		});
 	}
-	
-	function removeTask(index){
-		removeOrRecoverTask(index,true);
+
+	function removeTask(index) {
+		removeOrRecoverTask(index, true);
 	}
-	
-	function recoverTask(index){
-		removeOrRecoverTask(index,false);
+
+	function recoverTask(index) {
+		removeOrRecoverTask(index, false);
 	}
-	
-	function removeOrRecoverHabit(index,isRemove){
+
+	function removeOrRecoverHabit(index, isRemove) {
 		const habit = state.data['habit'][index];
-		RemoveOrRecoverHabit(habit.habitId,isRemove,response=>{
+		RemoveOrRecoverHabit(habit.habitId, isRemove, response => {
 			const res = response.data;
-			if(!res.succeeded){
+			if (!res.succeeded) {
 				uni.showToast({
-					title:res.message,
-					icon:"none"
+					title: res.message,
+					icon: "none"
 				});
 				return;
 			}
-			state.data['habit'].splice(index,1);
+			state.data['habit'].splice(index, 1);
 		});
 	}
-	
-	function removeHabit(index){
-		removeOrRecoverHabit(index,true);
+
+	function removeHabit(index) {
+		removeOrRecoverHabit(index, true);
 	}
-	
-	function recoverHabit(index){
-		removeOrRecoverHabit(index,false);
+
+	function recoverHabit(index) {
+		removeOrRecoverHabit(index, false);
 	}
 </script>
 
@@ -778,7 +783,12 @@
 		height: 96vh;
 		width: 100%;
 		padding: 2%;
+		/*#ifdef H5*/
 		padding-top: 2vh;
+		/*#endif
+		/*#ifndef H5*/
+		padding-top: 3vh;
+		/*#endif*/
 	}
 
 
@@ -790,6 +800,9 @@
 		display: flex;
 		align-items: center;
 		flex-direction: column;
+		/*#ifndef H5*/
+		padding-top: 3.5vh;
+		/*#endif*/
 	}
 
 	#index .header .text {
@@ -925,7 +938,7 @@
 		display: flex;
 		flex-flow: column nowrap;
 		font-size: 13px;
-		padding-right: 2%;
+		padding-right: 3%;
 	}
 
 

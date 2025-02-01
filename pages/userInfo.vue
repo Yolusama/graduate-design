@@ -1,10 +1,10 @@
 <template>
-	<uni-nav-bar left-text="账户" @clickLeft="goBack" left-icon="arrow-left" right-icon="list"
-		@clickRight="infoListedPopup.open();">
-	</uni-nav-bar>
 	<view id="user" v-if="state.user!=null">
+		<uni-nav-bar left-text="账户" @clickLeft="goBack" left-icon="arrow-left" right-icon="list"
+			@clickRight="infoListedPopup.open();">
+		</uni-nav-bar>
 		<view class="info">
-			<image :src="imgSrc(state.user.avatar)" @click="picturePopup.open()" class="image"></image>
+			<image :src="imgSrc(state.user.avatar)" @click="changeAvatar" class="image"></image>
 			<view class="nickname-edit">
 				<text v-if="!state.modify.nickname" class="nickname">{{state.user.nickname}}</text>
 				<uni-easyinput v-model="state.user.nickname" v-if="state.modify.nickname" @input="nicknameInput"
@@ -20,12 +20,6 @@
 			</view>
 			<button type="primary" @click="pwdPopup.open()" size="mini" style="margin-top: 2%;">修改密码</button>
 		</view>
-		<!--#ifndef H5-->
-		<uni-popup ref="picturePopup" background-color="#fff" border-radius="7px 7px 7px 7px">
-			<k-radio-group :data="state.picture.data" v-model="state.picture.mode"
-				@itemClick="changeAvatar"></k-radio-group>
-		</uni-popup>
-		<!--#endif-->
 		<uni-popup ref="emailPopup" background-color="#fff" type="left" @change="emailPopupClose" style="z-index: 101;">
 			<view class="change">
 				<view class="header">
@@ -150,9 +144,6 @@
 		GetCheckCode
 	} from '../api/User';
 
-	//#ifndef H5
-	const picturePopup = ref(null);
-	//#endif
 	const emailPopup = ref(null);
 	const pwdPopup = ref(null);
 	const infoListedPopup = ref(null);
@@ -162,13 +153,6 @@
 		modify: {
 			nickname: false
 		},
-		imageGetMode: 0,
-		//#ifndef H5
-		picture: {
-			data: [new ValueText(0, "使用相机"), new ValueText(1, "使用本地图片")],
-			mode: 0
-		},
-		//#endif
 		newEmail: "",
 		pwd: {
 			newPassword: "",
@@ -316,30 +300,17 @@
 	}
 
 	function changeAvatar() {
-		//#ifndef H5
-		if (state.picture.mode == 0) {
-			const context = uni.createCameraContext();
-			context.takePhoto({
-				quality: "high",
-				success: res => {
-					const file = res.tempImagePath;
-					ChangeAvatar(state.user.avatar, file, state.user.userId, changeAvatarCallback);
-				}
-			})
-		} else {
-			uni.chooseImage({
-				count: 1,
-				success: res => {
-					const filePath = res.tempFilePaths[0];
-					ChangeAvatar(state.user.avatar, filePath, state.user.userId, changeAvatarCallback);
-				}
-			});
-		}
-		//#endif
+		uni.chooseImage({
+			count: 1,
+			success: res => {
+				const filePath = res.tempFilePaths[0];
+				ChangeAvatar(state.user.avatar, filePath, state.user.userId, changeAvatarCallback);
+			}
+		});
 	}
 
 	function changeAvatarCallback(response) {
-		const res = response.data;
+		const res = JSON.parse(response.data);
 		if (!res.succeeded) {
 			uni.showToast({
 				title: res.message,
@@ -451,6 +422,9 @@
 	#user {
 		position: relative;
 		width: 100%;
+		/*#ifndef H5*/
+		padding-top: 2vh;
+		/*#endif*/
 	}
 
 	#user .info {

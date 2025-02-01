@@ -38,14 +38,15 @@
 	import {
 		CheckLabelNameExists,
 		CreateLabel,
-		UpdateLabel
+		UpdateLabel,
+		UploadLabelIcon
 	} from '../api/Index';
 	const popup = ref(null);
 	const pros = defineProps({
 		isList: Boolean,
 		labelName: String,
 		isLabelUpdate: Boolean,
-		label:Object
+		label: Object
 	});
 	const emits = defineEmits(["created", "close", "updated"]);
 	const state = reactive({
@@ -54,7 +55,7 @@
 		selectedFile: null,
 		imgShow: "",
 		canCreate: false,
-		userId:""
+		userId: ""
 	});
 	const isList = ref(pros.isList);
 	const label = ref(pros.label);
@@ -76,8 +77,8 @@
 			};
 		}
 		state.isLabelUpdate = isLabelUpdate.value;
-		if(isLabelUpdate.value)
-		   state.canCreate = true;
+		if (isLabelUpdate.value)
+			state.canCreate = true;
 		state.imgShow = imgSrc(state.label.icon);
 	});
 
@@ -116,7 +117,7 @@
 		if (!state.canCreate) return;
 		if (!state.isLabelUpdate) {
 			CreateLabel(state.label, state.selectedFile, response => {
-				const res = JSON.parse(response.data);
+				const res = response.data;
 				if (!res.succeeded) {
 					uni.showToast({
 						title: res.message,
@@ -124,18 +125,26 @@
 					});
 					return;
 				}
-				state.label.icon = res.data.item2;
-				const label = {};
-				label.id = res.data.item1;
-				copy(state.label, label);
-				emits("created", {
-					item: label
-				});
-				popup.value.close();
+				state.label.labelId = res.data;
+				if (state.selectedFile == null)
+					afterCreating(null);
+				else {
+					UploadLabelIcon(state.label, state.selectedFile, response => {
+						const res = JSON.parse(response.data);
+						if (!res.succeeded) {
+							uni.showToast({
+								title: res.message,
+								icon: "none"
+							});
+							return;
+						}
+						afterCreating(res.data);
+					});
+				}
 			});
 		} else {
-			UpdateLabel(state.label, state.selectedFile, response => {
-				const res = JSON.parse(response.data);
+			UpdateLabel(state.label.labelId, state.label.labelName, response => {
+				const res = response.data;
 				if (!res.succeeded) {
 					uni.showToast({
 						title: res.message,
@@ -143,21 +152,51 @@
 					});
 					return;
 				}
-				state.label.icon = res.data;
-				const label = {};
-				copy(state.label, label);
-				emits("updated", {
-					item: label,
-					index: state.label.index
-				});
-				popup.value.close();
+				if(state.selectedFile==null)
+				   afterUpdating(null);
+				else{
+					UploadLabelIcon(state.label, state.selectedFile, response => {
+						const res = JSON.parse(response.data);
+						if (!res.succeeded) {
+							uni.showToast({
+								title: res.message,
+								icon: "none"
+							});
+							return;
+						}
+						afterUpdating(res.data);
+					});
+				}
 			});
 		}
+	}
+	
+	function afterCreating(icon){
+		const label = {};   
+		copy(state.label, label);
+		if(icon!=null)
+		   label.icon = icon;
+		emits("created", {
+			item: label
+		});
+		popup.value.close();
+	}
+
+	function afterUpdating(icon) {
+		const label = {};
+		copy(state.label, label);
+		if (icon != null)
+			label.icon = icon;
+		emits("updated", {
+			item: label,
+			index: state.label.index
+		});
+		popup.value.close();
 	}
 
 	function check(e) {
 		if (isList.value) return;
-		CheckLabelNameExists(e,state.userId,response => {
+		CheckLabelNameExists(e, state.userId, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -209,15 +248,15 @@
 		color: black;
 		font-weight: 600;
 	}
-	
-	.label-edit .upload{
-		width:80px;
+
+	.label-edit .upload {
+		width: 80px;
 		height: 80px;
 		line-height: 80px;
 		text-align: center;
-		border:1px dashed gray;
+		border: 1px dashed gray;
 		font-size: 15px;
-		color:rgb(0,75,235);
+		color: rgb(0, 75, 235);
 		margin-left: 2%;
 	}
 </style>

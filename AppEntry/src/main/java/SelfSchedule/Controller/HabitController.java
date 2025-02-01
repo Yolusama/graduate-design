@@ -133,8 +133,7 @@ public class HabitController extends ControllerBase{
     @ApiOperation(value = "坚持选择的日期是否在频率中",notes = "坚持选择的日期是否在频率中")
     public ActionResult<Boolean> DayInFrequency(@PathVariable String habitId,@RequestParam Long day,
                                                   @RequestParam Long habitBeginDate){
-       return  successWithData(habitService.isInFrequency( habitId,new Date(day),habitBeginDate));
-
+       return  successWithData(habitService.isInFrequency(habitId,new Date(day),habitBeginDate));
     }
 
     @GetMapping("/GetHabitRecords/{habitId}")

@@ -150,38 +150,41 @@ public class IndexService implements IndexServiceInterface {
 
     @Override
     @Transactional
-    public Pair<Long,String> createLabel(String labelName, String userId, String icon, Boolean isList, MultipartFile file, FileService fileService) {
+    public Long createLabel(String labelName, String userId, String icon, Boolean isList) {
        TaskLabel label = new TaskLabel();
        label.setName(labelName);
        label.setIsList(isList);
        label.setCreateTime(Constants.Now());
        label.setNotCustom(false);
        label.setUserId(userId);
-       if(file.getOriginalFilename().indexOf('.')<0){
-           if(label.getIsList())
-               label.setIcon(Constants.DefaultListIcon);
-           else if(!label.getIsList())
-               label.setIcon(Constants.DefaultLabelIcon);
-       }
-       else
-           label.setIcon(updateIconOptions(isList,icon,file,fileService));
+       label.setIcon(isList?Constants.DefaultListIcon:Constants.DefaultLabelIcon);
        labelMapper.insert(label);
-       return Pair.makePair(label.getId(),label.getIcon());
+       return label.getId();
     }
 
     @Override
     @Transactional
-    public String updateLabel(Long labelId, String labelName, String icon, Boolean isList, MultipartFile file, FileService fileService) {
+    public int updateLabel(Long labelId, String labelName) {
         LambdaUpdateWrapper<TaskLabel> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(TaskLabel::getName,labelName);
-        if(file.getOriginalFilename().indexOf('.')>=0)
-        {
-            icon = updateIconOptions(isList,icon,file,fileService);
-            wrapper.set(TaskLabel::getIcon,icon);
+        wrapper.set(TaskLabel::getName,labelName).eq(TaskLabel::getId,labelId);
+        return labelMapper.update(wrapper);
+    }
+
+    @Override
+    public String uploadLabelIcon(Long labelId, String icon, boolean isList, MultipartFile file, FileService fileService) {
+        if(isList){
+            if(!icon.equals(Constants.DefaultListIcon))
+                fileService.removeImage(icon);
         }
-        wrapper.eq(TaskLabel::getId,labelId);
+        else{
+            if(!icon.equals(Constants.DefaultLabelIcon))
+                 fileService.removeImage(icon);
+        }
+        String newIcon = fileService.uploadImage(file);
+        LambdaUpdateWrapper<TaskLabel> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(TaskLabel::getIcon,newIcon).eq(TaskLabel::getId,labelId);
         labelMapper.update(wrapper);
-        return icon;
+        return newIcon;
     }
 
     /*

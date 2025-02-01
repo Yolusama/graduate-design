@@ -10,4 +10,5 @@ public class TaskLabelModel {
     private String userId;
     private String labelName;
     private String icon;
+    private Boolean isList;
 }

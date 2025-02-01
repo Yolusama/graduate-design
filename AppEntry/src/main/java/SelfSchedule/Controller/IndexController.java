@@ -2,11 +2,11 @@ package SelfSchedule.Controller;
 
 import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
-import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
 import SelfSchedule.DbOption.ServiceImpl.IndexService;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
 import SelfSchedule.Entity.VO.TaskLabelVO;
+import SelfSchedule.Model.TaskLabelModel;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
@@ -53,27 +53,37 @@ public class IndexController extends ControllerBase{
         return CompletableFuture.completedFuture(successWithData(indexService.getLabels(userId,redis)));
     }
 
-    @PostMapping("/CreateLabel")
+    @PutMapping("/CreateLabel")
     @ApiOperation(value="创建标签",notes = "创建标签")
     @ClearRedisCache(keys = {CachingKeys.GetIndexData,CachingKeys.GetTaskLabels})
-    public ActionResult<Pair<Long,String>> CreateLabel(@RequestPart("labelName") String labelName,
-                                                       @RequestPart("userId") String userId,@RequestPart("icon")String icon,
-                                                       @RequestPart("isList")String isList,
-                                                       @RequestPart("file")MultipartFile file,HttpServletRequest request)
+    public ActionResult<Long> CreateLabel(@RequestBody TaskLabelModel model, HttpServletRequest request)
     {
-        Boolean _isList = Boolean.parseBoolean(isList);
-        return successWithData(indexService.createLabel(labelName,userId,icon,_isList,file,fileService));
+        String labelName = model.getLabelName();
+        String userId = model.getUserId();
+        String icon = model.getIcon();
+        Boolean isList = model.getIsList();
+        return successWithData(indexService.createLabel(labelName,userId,icon,isList));
     }
 
-    @PostMapping("/UpdateLabel")
+    @PatchMapping("/UpdateLabel/{labelId}")
     @ApiOperation(value="更新标签",notes = "更新标签")
     @ClearRedisCache(keys = {CachingKeys.GetIndexData,CachingKeys.GetTaskLabels})
-    public ActionResult<String> UpdateLabel(@RequestPart("labelId")String labelId,@RequestPart("labelName") String labelName,
-                                            @RequestPart("icon")String icon, @RequestPart("isList")String isList,
-                                            @RequestPart("file")MultipartFile file,HttpServletRequest request)
+    public ActionResult UpdateLabel(@PathVariable Long labelId,@RequestParam String labelName,
+                                           HttpServletRequest request)
     {
-        Boolean _isList = Boolean.parseBoolean(isList);
-        return successWithData(indexService.updateLabel(Long.parseLong(labelId),labelName,icon,_isList,file,fileService));
+        int res = indexService.updateLabel(labelId,labelName);
+        if(res==Constants.AbNormalState)
+            return fail("更新失败！");
+        return ok("已更新！");
+    }
+
+    @PostMapping("/UploadLabelIcon")
+    @ApiOperation(value="上传标签图标",notes = "上传标签图标")
+    public ActionResult<String> UploadLabelIcon(@RequestPart("labelId")String labelId, @RequestPart("icon")String icon,
+                                                @RequestPart("isList")String isList, @RequestPart("file")MultipartFile file){
+        return successWithData(indexService.uploadLabelIcon(
+                Long.parseLong(labelId),icon,Boolean.parseBoolean(isList),file,fileService
+        ));
     }
 
     @GetMapping("/CheckLabelNameExists/{userId}")

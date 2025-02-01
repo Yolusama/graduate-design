@@ -223,7 +223,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         if(status!=null)
             wrapper.eq(User::getStatus,status);
         if(queryKey!=null)
-            wrapper.and(q->q.like(User::getNickname,queryKey).or().eq(User::getEmail,queryKey).or().eq(User::getId,queryKey));
+            wrapper.and(q->q.like(User::getNickname,queryKey).or().like(User::getEmail,queryKey).or().like(User::getId,queryKey));
         Page<User> pageOption = mapper.selectPage(Page.of(page,pageSize),wrapper);
         List<UserVO> data = new ArrayList<>();
         for(User user:pageOption.getRecords())

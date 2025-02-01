@@ -1,6 +1,5 @@
 package SelfSchedule.DbOption.Service;
 
-import SelfSchedule.Common.Pair;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
 import SelfSchedule.Entity.VO.TaskLabelVO;
 import SelfSchedule.Service.FileService;
@@ -14,8 +13,9 @@ import java.util.Map;
 public interface IndexServiceInterface {
     Map<String, List<IndexDisplayVO>> getData(String userId, Long labelId, Date time,RedisCache redis);
     List<TaskLabelVO> getLabels(String userId,RedisCache redis);
-    Pair<Long,String> createLabel(String labelName, String userId, String icon, Boolean isList, MultipartFile file, FileService fileService);
-    String updateLabel(Long labelId,String labelName,String icon,Boolean isList, MultipartFile file, FileService fileService);
+    Long createLabel(String labelName, String userId, String icon, Boolean isList);
+    int updateLabel(Long labelId,String labelName);
+    String uploadLabelIcon(Long labelId,String icon,boolean isList,MultipartFile file,FileService fileService);
     boolean checkLabelNameExists(String labelName,String userId);
     int hideOrShowLabel(Boolean display,Long labelId);
     int removeLabel(Long labelId,FileService fileService);

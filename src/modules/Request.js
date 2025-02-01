@@ -1,17 +1,30 @@
 import axios from "axios";
 
-const baseUrl = "http://localhost:5325/api";
+const baseUrl = "http://localhost:5225/Api";
 
 axios.defaults.baseURL = baseUrl;
 
-export function imgSrc(sourceName)
-{
-  return `${baseUrl}/image/${sourceName}`;
+class RequestOption{
+  constructor(url,headers,method){
+    this.url = url;
+    this.headers = headers;
+    this.method = method;
+  }
 }
 
-export function videoSrc(sourceName)
+export function imgSrc(sourceName)
 {
-  return `${baseUrl}/video/${sourceName}`;
+  return `${baseUrl}/img/${sourceName}`;
+}
+
+export async function request(url,type,data,headers){
+  const option = new RequestOption();
+  if(data!=null)
+    option.data = data;
+  option.url = url;
+  option.headers = headers;
+  option.method = type;
+  return (await axios.request(option)).data;
 }
 
 export async function Get(url, config) {
@@ -34,29 +47,3 @@ export async function Head(url,config){
   return (await axios.head(url,config)).data;
 }
 
-
-/*class AxiosHelper{
-  constructor(){
-  }
-   Get(url,config){
-    return  Get(url,config);
-  }
-  Post(url,data,config){
-    return  Post(url,data,config);
-  }
-   Put(url,data,config)
-  {
-    return  Put(url,data,config);
-  }
-   Delete(url,config){
-    return  Delete(url,config);
-  }
-  Patch(url,data,config){
-    return  Patch(url,data,config);
-  }
-  Head(url,config){
-    return Head(url,config);
-  }
-}
-const axiosHelper=new AxiosHelper();
-export default axiosHelper;*/

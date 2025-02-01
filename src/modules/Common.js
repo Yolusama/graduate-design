@@ -1,31 +1,4 @@
 import stateStroge from "./StateStorage";
-import { switchPage } from "./domHelper";
-import { ElLoading } from "element-plus";
-
-function MakeAuthorization(useCookie,contentType,token="")
-{
-     const authorization = {
-        headers:{
-            token : ""
-        }
-     };
-     if(useCookie)
-       {
-        authorization['withCredentials'] = true;
-       }
-      authorization.headers.token = token; 
-      authorization.headers['ContentType'] = contentType;
-    return authorization;
-}
-
-export const authorization = MakeAuthorization(false,"application/json");
-export const formDataAuth = MakeAuthorization(false,"multipart/form-data");
-export const makeAuthorization = (token,contentType) => {
-       return MakeAuthorization(false,contentType,token);
-};
-
-authorization.headers.token = stateStroge.get("token");
-formDataAuth.headers.token = stateStroge.get("token");
 
 export function copy(src,to)
 {
@@ -33,7 +6,7 @@ export function copy(src,to)
     to[pro] = src[pro];
 }
 
-export function DelayRunning(func,expire)
+export function DelayToRun(func,expire)
 {
   const timer = setTimeout(()=>{
     func();

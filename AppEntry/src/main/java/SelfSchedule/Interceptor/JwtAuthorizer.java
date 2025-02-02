@@ -28,7 +28,7 @@ public class JwtAuthorizer implements HandlerInterceptor
         NotInterceptedPatterns = new String[]{
                 "/Api/User/Login","/Api/User/CheckCodeLogin/**",
                 "/Api/Common/Heartbeat","/Api/User/Register/**",
-                "/Api/User/VerifyToken","/Api/User/GetCheckCode/**",
+                "/Api/User/VerifyToken","/Api/User/GetCheckCode/**","/Api/Admin/Login",
                 "/swagger-ui/**","/swagger-resources/**","/webjars/**","/v2/**"
         };
     }

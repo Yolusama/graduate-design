@@ -35,6 +35,7 @@ public final class Constants {
     public static final Duration CheckCodeGetExpire = Duration.ofMinutes(1);
     public static final Duration CachingExpire = Duration.ofMinutes(3);
     public static final Duration AdminTokenExpire = Duration.ofDays(15);
+    public static final Duration MonthExpire = Duration.ofDays(30);
     public static Date Now(){
         return new Date();
     }

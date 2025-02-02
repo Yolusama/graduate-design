@@ -11,7 +11,7 @@
  Target Server Version : 80032
  File Encoding         : 65001
 
- Date: 30/01/2025 22:34:32
+ Date: 02/02/2025 22:28:43
 */
 
 SET NAMES utf8mb4;
@@ -45,7 +45,7 @@ INSERT INTO `habit` VALUES ('H36176125942', 'U47811742828165', '起飞式锻炼'
 INSERT INTO `habit` VALUES ('H4024690107768', 'U47811742828165', '123', 'habit.png', '2025-01-24 16:16:49', '2025-01-27', 1, '12', '2025-01-28 09:19:07', 0);
 INSERT INTO `habit` VALUES ('H568694593215', 'U47811742828165', '快乐cheems', 'fe259405-f999-4237-b2d6-b82caa2b2d56.jpg', '2025-01-17 16:22:55', '2025-01-17', 3, '快乐cheems，happy every day！', '2025-01-17 16:52:21', 0);
 INSERT INTO `habit` VALUES ('H5791865054', 'U47811742828165', '阅读', 'reading.png', '2025-01-09 10:54:47', '2025-01-01', 2, '阅读使人受益', '2025-01-11 15:12:18', 0);
-INSERT INTO `habit` VALUES ('H612712257344', 'U47811742828165', '12', 'habit.png', '2025-01-09 10:26:48', '2025-01-01', 2, '飞', NULL, 0);
+INSERT INTO `habit` VALUES ('H612712257344', 'U47811742828165', '12', 'habit.png', '2025-01-09 10:26:48', '2025-01-01', 2, '飞', '2025-01-31 21:00:35', 0);
 INSERT INTO `habit` VALUES ('H81035800324', 'U28533327585573', 'q', 'habit.png', '2025-01-21 10:28:09', '2025-01-21', 8, 'q', '2025-01-21 10:36:48', 0);
 
 -- ----------------------------
@@ -61,7 +61,7 @@ CREATE TABLE `habitfrequency`  (
   `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 33 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitfrequency
@@ -87,7 +87,7 @@ CREATE TABLE `habitgroup`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `index_habitId_code`(`userId`, `code`) USING BTREE,
   INDEX `index_user_id`(`userId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitgroup
@@ -121,7 +121,7 @@ CREATE TABLE `habitoption`  (
   `mostDays` int NULL DEFAULT NULL COMMENT '最多坚持天数',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 33 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitoption
@@ -149,7 +149,7 @@ CREATE TABLE `habitrecord`  (
   `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_time`(`finishTime`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 38 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitrecord
@@ -176,6 +176,19 @@ INSERT INTO `habitrecord` VALUES (20, NULL, 'H4024690107768', 0, '2025-01-29', N
 INSERT INTO `habitrecord` VALUES (21, NULL, 'H568694593215', 0, '2025-01-29', NULL);
 INSERT INTO `habitrecord` VALUES (22, NULL, 'H5791865054', 0, '2025-01-29', NULL);
 INSERT INTO `habitrecord` VALUES (23, NULL, 'H612712257344', 0, '2025-01-29', NULL);
+INSERT INTO `habitrecord` VALUES (24, NULL, 'H36176125942', 0, '2025-01-31', NULL);
+INSERT INTO `habitrecord` VALUES (25, NULL, 'H4024690107768', 0, '2025-01-31', NULL);
+INSERT INTO `habitrecord` VALUES (26, NULL, 'H568694593215', 0, '2025-01-31', NULL);
+INSERT INTO `habitrecord` VALUES (27, NULL, 'H612712257344', 0, '2025-01-31', NULL);
+INSERT INTO `habitrecord` VALUES (28, NULL, 'H4024690107768', 0, '2025-01-30', NULL);
+INSERT INTO `habitrecord` VALUES (29, NULL, 'H568694593215', 0, '2025-01-30', NULL);
+INSERT INTO `habitrecord` VALUES (30, NULL, 'H5791865054', 0, '2025-01-30', NULL);
+INSERT INTO `habitrecord` VALUES (31, NULL, 'H612712257344', 0, '2025-01-30', NULL);
+INSERT INTO `habitrecord` VALUES (33, NULL, 'H10895488584113', 0, '2025-02-01', NULL);
+INSERT INTO `habitrecord` VALUES (34, NULL, 'H81035800324', 0, '2025-02-01', NULL);
+INSERT INTO `habitrecord` VALUES (35, NULL, 'H4024690107768', 0, '2025-02-01', NULL);
+INSERT INTO `habitrecord` VALUES (36, NULL, 'H568694593215', 0, '2025-02-01', NULL);
+INSERT INTO `habitrecord` VALUES (37, NULL, 'H612712257344', 0, '2025-02-01', NULL);
 
 -- ----------------------------
 -- Table structure for habitreminder
@@ -188,7 +201,7 @@ CREATE TABLE `habitreminder`  (
   `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_habit_id`(`habitId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitreminder
@@ -215,7 +228,7 @@ CREATE TABLE `task`  (
   INDEX `index_begin_time`(`beginTime`) USING BTREE,
   INDEX `index_end_time`(`endTime`) USING BTREE,
   INDEX `index_label_id`(`labelId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of task
@@ -226,6 +239,8 @@ INSERT INTO `task` VALUES (3, 'U47811742828165', '2025-01-26 22:02:10', '2025-01
 INSERT INTO `task` VALUES (4, 'U47811742828165', '2025-01-27 15:30:44', '2025-01-27 15:30:00', '2025-01-27 16:30:00', '23', 4, '23', 4, 0, '2025-01-28 10:18:09', 54);
 INSERT INTO `task` VALUES (5, 'U47811742828165', '2025-01-27 15:40:43', '2025-01-27 15:40:00', '2025-01-27 16:40:00', '45', 4, '32', 4, 0, '2025-01-28 10:18:09', 54);
 INSERT INTO `task` VALUES (6, 'U47811742828165', '2025-01-27 15:59:38', '2025-01-27 16:32:00', '2025-01-27 17:32:00', 'q2', 4, '无标题', 4, 0, '2025-01-28 10:18:09', 54);
+INSERT INTO `task` VALUES (8, 'U47811742828165', '2025-01-31 20:43:47', '2025-01-31 20:43:00', '2025-01-31 21:43:00', '12', 4, '12', 4, 0, '2025-02-01 14:57:56', 1);
+INSERT INTO `task` VALUES (9, 'U28533327585573', '2025-02-01 08:52:06', '2025-02-01 08:52:00', '2025-02-01 09:52:00', 'q', 4, 'q', 2, 0, NULL, 1);
 
 -- ----------------------------
 -- Table structure for taskinstance
@@ -240,7 +255,7 @@ CREATE TABLE `taskinstance`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_task_id`(`taskId`) USING BTREE,
   INDEX `index_instance_id`(`instanceId`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of taskinstance
@@ -251,6 +266,8 @@ INSERT INTO `taskinstance` VALUES (3, '3', 3, 0, NULL);
 INSERT INTO `taskinstance` VALUES (4, '4', 4, 0, NULL);
 INSERT INTO `taskinstance` VALUES (5, '5', 5, 0, NULL);
 INSERT INTO `taskinstance` VALUES (6, '6', 6, 0, NULL);
+INSERT INTO `taskinstance` VALUES (8, '8', 8, 0, NULL);
+INSERT INTO `taskinstance` VALUES (9, '9', 9, 0, NULL);
 
 -- ----------------------------
 -- Table structure for tasklabel
@@ -270,7 +287,7 @@ CREATE TABLE `tasklabel`  (
   INDEX `index_userId`(`userId`) USING BTREE,
   INDEX `index_isList`(`isList`) USING BTREE,
   INDEX `index_notCustom`(`notCustom`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 58 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 60 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of tasklabel
@@ -281,12 +298,13 @@ INSERT INTO `tasklabel` VALUES (3, NULL, '昨天', 1, NULL, NULL, 1, 1, 'yesterd
 INSERT INTO `tasklabel` VALUES (4, NULL, '标签', 1, NULL, NULL, 1, 1, 'labels.png');
 INSERT INTO `tasklabel` VALUES (5, NULL, '已完成', 1, NULL, NULL, 1, 1, 'finish.png');
 INSERT INTO `tasklabel` VALUES (6, NULL, '已搁置', 1, NULL, NULL, 1, 1, 'delay.png');
-INSERT INTO `tasklabel` VALUES (7, NULL, '已取消', 1, '2025-01-30 16:51:45', NULL, 0, 0, 'cancel.png');
+INSERT INTO `tasklabel` VALUES (7, NULL, '已取消', 1, '2025-01-30 16:51:45', '2025-01-31 19:44:06', 1, 1, 'cancel.png');
 INSERT INTO `tasklabel` VALUES (8, NULL, '垃圾桶', 1, NULL, '2025-01-30 16:51:30', 1, 1, 'bin.png');
-INSERT INTO `tasklabel` VALUES (54, 'U47811742828165', 'q', 1, '2025-01-27 15:30:32', '2025-01-27 22:06:52', 0, 0, 'label.png');
+INSERT INTO `tasklabel` VALUES (54, 'U47811742828165', 'q', 1, '2025-01-27 15:30:32', '2025-02-01 15:31:37', 0, 0, 'ac711997-abef-476a-9f94-471621c7ad4d.jpg');
 INSERT INTO `tasklabel` VALUES (55, 'U47811742828165', '1', 0, '2025-01-27 20:38:38', '2025-01-27 22:06:12', 0, 1, 'list.png');
 INSERT INTO `tasklabel` VALUES (56, 'U47811742828165', '23', 1, '2025-01-27 20:38:52', '2025-01-27 22:06:35', 0, 1, 'list.png');
 INSERT INTO `tasklabel` VALUES (57, 'U47811742828165', '23', 0, '2025-01-27 20:51:37', '2025-01-27 22:04:52', 0, 0, 'label.png');
+INSERT INTO `tasklabel` VALUES (59, 'U47811742828165', 'qq', 1, '2025-02-01 15:37:28', '2025-02-01 15:37:28', 0, 0, '37594605-5544-4b7b-8b98-c3f1fac61ba0.jpg');
 
 -- ----------------------------
 -- Table structure for taskreminder
@@ -300,7 +318,7 @@ CREATE TABLE `taskreminder`  (
   `value` int NULL DEFAULT NULL COMMENT '提醒模式下的数值',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_task_id`(`taskId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 42 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of taskreminder
@@ -321,7 +339,7 @@ CREATE TABLE `taskrepeatrule`  (
   `count` int NULL DEFAULT NULL COMMENT '执行次数',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_task_id`(`taskId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of taskrepeatrule
@@ -336,7 +354,7 @@ CREATE TABLE `user`  (
   `email` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户电子邮箱',
   `password` varchar(125) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户登录密码',
   `nickname` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户昵称',
-  `avatar` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户头像',
+  `avatar` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户头像',
   `role` tinyint UNSIGNED NULL DEFAULT 1 COMMENT '1.管理员，2.普通用户，3.VIP用户\r\n',
   `createTime` datetime NULL DEFAULT NULL COMMENT '用户创建时间',
   `lastLoginTime` datetime NULL DEFAULT NULL COMMENT '用户上次登录时间',
@@ -349,8 +367,9 @@ CREATE TABLE `user`  (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('U28533327585573', '1816440933@qq.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '用户U28533327585573', 'default.png', 1, '2024-12-16 16:44:12', '2025-01-17 21:07:10', 1);
-INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414', 'yyolu', 'default.png', 1, '2024-11-24 21:59:28', '2025-01-29 21:20:38', 1);
+INSERT INTO `user` VALUES ('admin', '112131234', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'yolu', 'default.png', 1, '2025-02-02 15:20:13', NULL, 1);
+INSERT INTO `user` VALUES ('U28533327585573', '1816440933@qq.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'sasuke', '599fe04d-04b5-476c-9b7e-7904ac9bcc82.jpg', 2, '2024-12-16 16:44:12', '2025-02-01 09:44:31', 1);
+INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414', 'yyolu', 'default.png', 2, '2024-11-24 21:59:28', '2025-02-01 14:57:56', 1);
 
 -- ----------------------------
 -- Table structure for versionstatus
@@ -358,15 +377,17 @@ INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b1
 DROP TABLE IF EXISTS `versionstatus`;
 CREATE TABLE `versionstatus`  (
   `id` varchar(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '版本id',
-  `type` tinyint(1) NULL DEFAULT NULL COMMENT '版本类型，1.正式版，2.α测试版，3.β测试版，4.标准测试版',
-  `number` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版号',
-  `code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '版本代号',
+  `adminId` varchar(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '发布版本的操作者的id',
+  `number` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '版号',
   `publishDate` date NULL DEFAULT NULL COMMENT '发布日期',
-  `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版本描述信息',
-  `authorAbout` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作者描述信息',
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版本描述信息',
   `createTime` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  `downloadLink` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '下载链接',
+  `type` tinyint(1) NULL DEFAULT NULL COMMENT '版本类型，1.正式版，2.α测试版，3.β测试版,4.γ测试版',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `index_type`(`type`) USING BTREE
+  INDEX `index_createTime`(`createTime`) USING BTREE,
+  INDEX `index_type`(`type`) USING BTREE,
+  UNIQUE INDEX `index_number`(`number`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------

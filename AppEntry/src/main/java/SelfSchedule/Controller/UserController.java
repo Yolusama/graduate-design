@@ -80,6 +80,8 @@ public class UserController extends ControllerBase{
             return successWithData("正在登录...",res);
         else if(res.getLoginStatus() == UserLoginStatus.NOT_EXISTS)
             return fail("用户不存在！",HttpStatus.NOT_FOUND);
+        else if(res.getLoginStatus() == UserLoginStatus.USER_EXCEPTION)
+            return fail("用户异常！");
         else
             return fail("密码错误，登录失败！");
     }
@@ -144,22 +146,5 @@ public class UserController extends ControllerBase{
         if(!res)
             return fail("验证码错误或者已过期！");
         return ok("已更改电子邮箱！");
-    }
-
-    @GetMapping("/GetUsers")
-    public CompletableFuture<ActionResult<PagedData<UserVO>>> GetUsers(@RequestParam Integer page, @RequestParam Integer pageSize,
-                                                                       @RequestParam String role,
-                                                                       @RequestParam String queryKey,@RequestParam String status)
-    {
-        Integer _role = null;
-        if(!ObjectUtil.isRequestParamStrNull(role))
-            _role = Integer.parseInt(role);
-        Integer _status = null;
-        if(!ObjectUtil.isRequestParamStrNull(status))
-            _status = Integer.parseInt(status);
-
-        return CompletableFuture.completedFuture(successWithData(
-                userService.getUsers(page,pageSize,_status.equals(Constants.NormalState),_role,queryKey)
-        ));
     }
 }

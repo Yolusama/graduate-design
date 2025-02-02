@@ -105,6 +105,11 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             res.setLoginStatus(UserLoginStatus.FAIL);
             return res;
         }
+        if(!user.getStatus())
+        {
+            res.setLoginStatus(UserLoginStatus.USER_EXCEPTION);
+            return res;
+        }
         String key =String.format("%s_token",user.getId());
         String token = jwtService.GenerateToken(user.getId(),Constants.TokenExpire);
         redis.set(key,token,Constants.TokenExpire);
@@ -134,7 +139,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         }
         if(!redis.get(checkCodeKey).equals(checkCode))
         {
-            res.setLoginStatus(UserLoginStatus.CHECKFAILED);
+            res.setLoginStatus(UserLoginStatus.CHECK_FAILED);
             return res;
         }
         String key =String.format("%s_token",user.getId());
@@ -251,7 +256,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         }
         if(!user.getRole().equals(UserRole.ADMIN.value()))
         {
-            res.setLoginStatus(UserLoginStatus.NOTADMIN);
+            res.setLoginStatus(UserLoginStatus.NOT_ADMIN);
             return res;
         }
         user.setLastLoginTime(Constants.Now());
@@ -262,7 +267,17 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         ObjectUtil.copy(user,res);
         res.setLoginStatus(UserLoginStatus.SUCCESS);
         res.setToken(token);
+        user.setLastLoginTime(Constants.Now());
+        mapper.updateById(user);
         redis.set(key,token,Constants.AdminTokenExpire);
         return res;
+    }
+
+    @Override
+    @Transactional
+    public int changeStatus(String userId, Boolean status) {
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(User::getId,userId).set(User::getStatus,status);
+        return mapper.update(wrapper);
     }
 }

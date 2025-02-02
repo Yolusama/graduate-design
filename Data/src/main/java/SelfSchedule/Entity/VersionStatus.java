@@ -23,6 +23,10 @@ public class VersionStatus {
     @TableId
     private String id;
     /**
+     * 发布版本的操作者的id
+     */
+    private String adminId;
+    /**
     * 版号
     */
     private String number;
@@ -35,10 +39,6 @@ public class VersionStatus {
     */
     private String description;
     /**
-     * 作者相关内容
-     */
-    private String authorAbout;
-    /**
      * 版本代号
      */
     private String code;
@@ -46,4 +46,12 @@ public class VersionStatus {
      * 创建设计
      */
     private Date createTime;
+    /**
+     * 版本类型，1.正式版，2.α测试版，3.β测试版,4.γ测试版
+     */
+    private Integer type;
+    /**
+     * 下载链接
+     */
+    private String downloadLink;
 }

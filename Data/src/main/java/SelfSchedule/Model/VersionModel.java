@@ -12,6 +12,7 @@ public class VersionModel {
     private String versionNumber;
     private Date publishDate;
     private String description;
-    private String authorAbout;
+    private String downloadLink;
+    private Integer type;
     private String versionCode;
 }

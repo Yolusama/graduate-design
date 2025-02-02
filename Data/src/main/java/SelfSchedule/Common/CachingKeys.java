@@ -15,4 +15,6 @@ public final class CachingKeys {
     public static final String GetIndexCurrentLabelId = "GetIndexCurrentLabelId";
     public static final String GetHiddenLabels = "GetHiddenLabels";
     public static final String YesterdayTaskChecked = "YesterdayTaskChecked";
+    public static final String GetCurrentVersion = "GetCurrentVersion";
+    public static final String GetVersions = "GetVersions";
 }

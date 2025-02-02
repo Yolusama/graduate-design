@@ -1,6 +1,6 @@
 <template>
    <div id="login">
-    <img src="../imgs/intro_back.png" alt="" style="width:420px;height:430px">
+    <img src="../imgs/intro_back.png" alt="" style="width:420px;height:430px;border-radius: 5px;">
      <el-form label-width="auto" class="login">
         <el-input type="text" v-model="state.account" placeholder="电子邮箱/用户id" :prefix-icon="User" maxlength="30"></el-input>
         <el-input v-model="state.password" placeholder="密码" :prefix-icon="Lock" maxlength="20" minlength="6" type="password"></el-input>
@@ -13,11 +13,10 @@
 import {reactive} from "vue";
 import { Lock,User } from "@element-plus/icons-vue"
 import { Login } from "@/api/User";
-import { ElMessage } from "element-plus";
 import stateStroge from "@/modules/StateStorage";
-import { authorization, BeforeRouteLeave, defalutLodingColor, formDataAuth, LoadingOperate } from "@/modules/Common";
-import { switchPage } from "@/modules/domHelper";
+import { BeforeRouteLeave, defalutLodingColor, LoadingOperate } from "@/modules/Common";
 import { onBeforeRouteLeave } from "vue-router";
+import Route from "@/modules/Route";
 
 const state = reactive({
     account:"",
@@ -27,27 +26,15 @@ const state = reactive({
 
 async function login()
 {
-   const res = await Login(state.account,state.password);
-   if(res==null)return;
-   if(res.type!=4){
-    ElMessage({
-        message:"非管理员！",
-        type:"error"
-    });
-    return;
-   }
-   stateStroge.set("uid",res.id);
-   stateStroge.set("email",res.mail);
-   stateStroge.set("name",res.name);
-   stateStroge.set("avatar",res.avatar);
-   stateStroge.set("type",res.type);
-   stateStroge.set("token",res.token);
-   authorization.headers.token = res.token;
-   formDataAuth.headers.token = res.token;
-   LoadingOperate(true,"登录中...",defalutLodingColor,()=>{
+    await Login(state.account,state.password,res=>{
+    const data = res.data;
+    stateStroge.set("user",data);
+    LoadingOperate(true,"登录中...",defalutLodingColor,()=>{
          state.hasLogan = true;
-         switchPage("#/Home");
-   },2000);
+         Route.switch("#/Home");
+    },2000);
+   });
+   
 }
 
 onBeforeRouteLeave((to,from,next)=>{

@@ -4,7 +4,7 @@
 
 <script>
 import { ref, onMounted,onBeforeUnmount} from "vue";
-import { Get } from "./modules/AxiosHelper";
+import { Get } from "./modules/Request";
 
 export default {
   name: "App",
@@ -14,7 +14,7 @@ export default {
 
     onMounted(() => {
       timer.value = setInterval(async () => {
-        await Get("/Common/HeartBeat");
+        await Get("/Common/Heartbeat");
       }, expire.value);
     });
 

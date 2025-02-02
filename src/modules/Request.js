@@ -14,7 +14,7 @@ class RequestOption{
 
 export function imgSrc(sourceName)
 {
-  return `${baseUrl}/img/${sourceName}`;
+  return `http://localhost:5225/img/${sourceName}`;
 }
 
 export async function request(url,type,data,headers){

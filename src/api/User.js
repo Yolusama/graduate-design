@@ -1,6 +1,4 @@
-import { Delete, Post, Get, Patch } from "@/modules/AxiosHelper";
-import { authorization } from "@/modules/Common";
-import { ElMessage, ElNotification } from "element-plus";
+import { authorization, Get, Patch, Post } from "./Api";
 
 const userType = [];
 userType[2] = "普通用户";
@@ -22,63 +20,24 @@ export function UserType()
 }
 
 
-export async function Login(account,password)
+export async function Login(account,password,successCallback)
 {
-    const res = await Post("/User/Login",{
+   await Post("/Admin/Login",{},{
         account:account,
         password:password
-    });
-    if(!res.successful)
-    {
-        ElMessage({
-            message:res.message,
-            type:"error"
-        });
-        return null;
-    }
-    return res.data;
+    },successCallback);
 }
 
-export async function RemoveToken(id)
-{
-    const res = Delete(`/User/RemoveToken/${id}`,authorization);
-    if (!res.successful) {
-      ElMessage({
-        message: res.message,
-        type: "error",
-      });
-    }
-    return res.successful;
+export async function GetUsers(pagination,queryKey,status,role,successCallback){
+    await Get(`/Admin/GetUsers?page=${pagination.current}&pageSize=${pagination.size}&queryKey=${queryKey}&status=${status}&role=${role}`,
+        authorization(),successCallback
+    );
 }
 
-export async function GetUsers(pageOption,queryKey,status,type)
-{
-    const res = await Get(
-        `/User/GetUsers?page=${pageOption.current}&pageSize=${pageOption.size}&queryKey=${queryKey}&status=${status}&type=${type}`,authorization);
-    if(!res.successful)
-    {
-        ElMessage({
-            message:res.message,
-            type:"error"
-        });
-        return null;
-    }
-    return res.data;
+export async function ChangeStatus(userId,status,successCallback) {
+    await Patch(`/Admin/ChangeStatus/${userId}?status=${status}`,authorization(),{},successCallback);
 }
 
-export async function ChangeStatus(status,id) {
-    const res = await Patch(`/User/ChangeStatus/${id}?status=${status}`,{},authorization);
-    if(!res.successful)
-    {
-        ElMessage({
-            message:res.message,
-            type:"error"
-        });
-        return false;
-    }
-    ElNotification({
-      message: res.message,
-      type: "success",
-    });
-    return true;
+export async function Logout(userId,email,successCallback) {
+    await Post(`/Index/Logout/${userId}?cancelAccount=false&email=${email}`,authorization(),{},successCallback);
 }

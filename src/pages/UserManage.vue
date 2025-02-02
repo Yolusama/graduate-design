@@ -7,13 +7,13 @@
          <span>用户状态：</span>
      <el-radio-group v-model="state.status" class="select">
              <el-radio label="">全部</el-radio>
-             <el-radio label="1">正常</el-radio>
-             <el-radio label="2">异常</el-radio>
+             <el-radio label="true">正常</el-radio>
+             <el-radio label="false">异常</el-radio>
          </el-radio-group>
       </div>
       <div class="select">
          <span>用户类型：</span>
-         <el-select v-model="state.type" placeholder="用户类型">
+         <el-select v-model="state.role" placeholder="用户类型">
             <el-option label="全部" value=""></el-option>
             <el-option v-for="(key,value) in UserType()" :key="key" :label="key" :value="value">
             </el-option>
@@ -23,20 +23,20 @@
                <el-icon><Search /></el-icon>
             </el-button>
     </header>
-    <el-table :data="state.users" border>
-      <el-table-column label="uid" prop="id" width="110"> </el-table-column>
+    <el-table :data="pagination.data" border>
+      <el-table-column label="uid" prop="id" width="130"> </el-table-column>
       <el-table-column label="用户信息" width="220">
         <template #default="scope">
           <div class="user-info">
-            <el-image :src="imgSrc(scope.row.avatar)"> </el-image>
-            <span class="name">{{ scope.row.name }}</span>
+            <el-image :src="imgSrc(scope.row.avatar)" style="border-radius: 50%;"> </el-image>
+            <span class="name">{{ scope.row.nickname }}</span>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="电子邮箱" prop="email" width="160"> </el-table-column>
+      <el-table-column label="电子邮箱" prop="email" width="170"> </el-table-column>
       <el-table-column label="用户状态">
         <template #default="scope">
-          <div class="normal" v-if="scope.row.status==1">
+          <div class="normal" v-if="scope.row.status">
               正常
           </div>
           <div class="abnormal" v-else>
@@ -46,17 +46,17 @@
       </el-table-column>
       <el-table-column label="用户类型" width="90">
         <template #default="scope">
-          <el-tag :type="tagType(scope.row.type)" size="small">{{
-            getUserType(scope.row.type)
+          <el-tag :type="tagType(scope.row.role)" size="small">{{
+            getUserType(scope.row.role)
           }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="注册时间" width="150">
+      <el-table-column label="注册时间" width="160">
         <template #default="scope">
           {{ new Date(scope.row.createTime).toLocaleString() }}
         </template>
       </el-table-column>
-      <el-table-column label="上次登录" width="150">
+      <el-table-column label="上次登录" width="160">
         <template #default="scope">
           {{ new Date(scope.row.lastLoginTime).toLocaleString() }}
         </template>
@@ -85,24 +85,23 @@
 <script setup>
 import { PageOption } from "@/modules/Common";
 import { reactive, ref, onMounted } from "vue";
-import { imgSrc } from "@/modules/AxiosHelper";
+import { imgSrc } from "@/modules/Request";
 import { getUserType,UserType,GetUsers, ChangeStatus } from "@/api/User";
 
 const state = reactive({
-  users: [],
   queryKey: "",
   status: "",
-  type: "",
+  role: "",
 });
 const pagination = ref(new PageOption(1, 10, 0, [10, 20, 30]));
 
 function tagType(type) {
   switch (type) {
-    case 2:
+    case 1:
       return "primary";
+    case 2:
+      return "success";
     case 3:
-      return "warning";
-    case 4:
       return "danger";
   }
 }
@@ -112,21 +111,24 @@ onMounted(async () => {
 });
 
 async function getData() {
-  const res = await GetUsers(
+  await GetUsers(
     pagination.value,
     state.queryKey,
     state.status,
-    state.type
+    state.role,
+    res=>{
+      const data = res.data;
+      pagination.value.total = data.total;
+      pagination.value.data = data.data;
+    }
   );
-  if (res == null) return;
-  pagination.value.total = res.total;
-  state.users = res.data;
+
 }
 
 async function changeStatus(user,status) {
-  const res = await ChangeStatus(status,user.id);
-  if(res)
-     user.status = status;
+  await ChangeStatus(user.id,status,()=>{
+    user.status = status;
+  });  
 }
 </script>
 

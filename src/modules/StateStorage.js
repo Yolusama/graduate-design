@@ -44,7 +44,7 @@ class StateStroge
     clear()
     {
         this.state = {};
-        localStorage.removeItem("state");
+        localStorage.clear();
     }
 
 }

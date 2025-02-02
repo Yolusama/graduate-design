@@ -1,4 +1,5 @@
-import stateStroge from "./StateStorage";
+import { ElLoading } from "element-plus";
+import Route from "./Route";
 
 export function copy(src,to)
 {
@@ -43,13 +44,14 @@ export function BeforeRouteLeave(to,from,next,notPrevented)
    next();
  }
  if (to.redirectedFrom != undefined) {
-   switchPage("#" + from.fullPath);
+   Route.switch("#" + from.fullPath);
  }
  next(from);
 }
 
 export function PageOption(current,size,total,sizes)
 {
+  this.data = [];
   this.current = current;
   this.size = size;
   this.total = total;
@@ -82,3 +84,12 @@ export function getFileSuffix(fileName)
 }
 
 export const DefaultAvatar = "default.png";
+
+export function getVersionType(type){
+   switch(type){
+      case 1:return "正式版";
+      case 2:return "α测试版";
+      case 3:return "β测试版";
+      case 4:return "γ测试版";
+   }
+}

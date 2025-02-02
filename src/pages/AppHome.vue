@@ -3,25 +3,16 @@
     <el-menu :router="true" mode="vertical" 
            :default-active="route.path" 
            class="main-menu"
-        active-text-color="#ffd04b"
+        active-text-color="rgb(0,125,235)"
         background-color="#545c64"
         text-color="white"
         >
         <el-menu-item :index="state.routes['user']">
            <el-icon><Avatar /></el-icon>用户管理
         </el-menu-item>
-        <el-sub-menu index="/Home/Video">
-           <template #title>
-            <el-icon><Film /></el-icon>视频管理功能
-           </template>
-           <el-menu-item :index="state.routes['video']">
-           <el-icon><Memo /></el-icon> 视频管理
-           </el-menu-item>
-           <el-menu-item :index="state.routes['videoUpload']">
-           <el-icon><Upload /></el-icon> 上传视频
-           </el-menu-item>
-          
-        </el-sub-menu>
+        <el-menu-item :index="state.routes['version']">
+            <el-icon><Tools /></el-icon>版本控制管理
+        </el-menu-item>
          <el-menu-item :index="state.routes['userInfo']">
            <el-icon><User></User></el-icon>个人信息
         </el-menu-item>
@@ -35,7 +26,10 @@
   </div>
 </template>
 <script setup>
+import { Logout } from "@/api/User";
 import { BeforeRouteLeave } from "@/modules/Common";
+import Route from "@/modules/Route";
+import stateStroge from "@/modules/StateStorage";
 import { reactive,onMounted } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 
@@ -47,16 +41,22 @@ const state = reactive({
 
 onMounted(function(){
     state.routes['user'] = "/Home/UserManage";
-    state.routes['video'] = "/Home/Video/Manage";
-    state.routes['videoUpload'] = "/Home/Video/Upload";
+    state.routes['version'] = "/Home/VersionManage";
     state.routes['userInfo'] = "/Home/UserInfo";
 });
-
-
 
 onBeforeRouteLeave(function(to,from,next){
    BeforeRouteLeave(to,from,next,state.hasLogouted);
 });
+
+async function logout(){
+  const user = stateStroge.get("user");
+  await Logout(user.id,user.email,()=>{
+       stateStroge.clear();
+       state.hasLogouted = true;
+       Route.switch("#/Login");
+    });
+}
 
 </script>
 <style scoped>

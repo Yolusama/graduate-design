@@ -14,7 +14,7 @@ async function apiTemplate(url, headers, type, data, successCallback = null, fai
         return;
     }
     if (successCallback != null)
-        successCallback(res.data);
+        successCallback({message:res.message,data:res.data});
 }
 
 export async function Get(url, headers, successCallback = null, failCallback = null) {
@@ -42,14 +42,16 @@ export async function Patch(url, headers, data, successCallback = null, failCall
 }
 
 export function authorization(isFormData = false){
+const user = stateStroge.get("user");
+const token = user.token;
 if (!isFormData)
     return {
-        token: stateStroge.get("token")
+        token: token
     }
 else
     return {
         ContentType: "multipart/form-data",
-        token: stateStroge.get("token")
+        token: token
     }
 }
 

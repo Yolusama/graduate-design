@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 public interface IVersionStatusService extends IService<VersionStatus> {
     String publish(VersionModel model,String adminId);
-    PagedData<VersionStatus> getVersions(Integer page,Integer pageSize,String queryKey,Integer year,String type,RedisCache redis);
+    PagedData<VersionStatus> getVersions(Integer page,Integer pageSize,String queryKey,Integer year,Integer type,RedisCache redis);
     VersionStatus getLatestVersion();
     VersionStatus getCurrentVersion(RedisCache redis);
 }

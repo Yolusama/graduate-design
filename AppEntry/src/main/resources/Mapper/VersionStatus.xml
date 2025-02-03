@@ -4,7 +4,7 @@
 <mapper namespace="SelfSchedule.DbOption.Mapper.VersionStatusMapper">
 
     <select id="getLatestVersion" resultType="SelfSchedule.Entity.VersionStatus">
-        select v.id,v.number,v.publishDate,v.code,v.description,v.createTime,v.type,v.downloadLink
+        select v.id,v.number,v.publishDate,v.description,v.createTime,v.type,v.fileName
           from VersionStatus v
         <where>
             <if test="type!=null">

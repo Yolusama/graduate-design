@@ -39,11 +39,7 @@ public class VersionStatus {
     */
     private String description;
     /**
-     * 版本代号
-     */
-    private String code;
-    /**
-     * 创建设计
+     * 创建时间
      */
     private Date createTime;
     /**
@@ -51,7 +47,7 @@ public class VersionStatus {
      */
     private Integer type;
     /**
-     * 下载链接
+     * 文件名称
      */
-    private String downloadLink;
+    private String fileName;
 }

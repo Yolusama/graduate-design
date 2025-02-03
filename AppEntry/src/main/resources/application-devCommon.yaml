@@ -12,3 +12,7 @@ resource:
      pattern: /img/**
      path: D:\repos\scResource\img\
      location: file:D:/repos/scResource/img/
+   download:
+     pattern: /download/**
+     path: D:\repos\scResource\download\
+     location: file:D:/repos/scResource/download/

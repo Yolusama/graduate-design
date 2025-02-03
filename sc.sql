@@ -11,7 +11,7 @@
  Target Server Version : 80032
  File Encoding         : 65001
 
- Date: 02/02/2025 22:28:43
+ Date: 03/02/2025 16:46:06
 */
 
 SET NAMES utf8mb4;
@@ -149,7 +149,7 @@ CREATE TABLE `habitrecord`  (
   `updateTime` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `index_time`(`finishTime`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 38 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 42 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of habitrecord
@@ -189,6 +189,10 @@ INSERT INTO `habitrecord` VALUES (34, NULL, 'H81035800324', 0, '2025-02-01', NUL
 INSERT INTO `habitrecord` VALUES (35, NULL, 'H4024690107768', 0, '2025-02-01', NULL);
 INSERT INTO `habitrecord` VALUES (36, NULL, 'H568694593215', 0, '2025-02-01', NULL);
 INSERT INTO `habitrecord` VALUES (37, NULL, 'H612712257344', 0, '2025-02-01', NULL);
+INSERT INTO `habitrecord` VALUES (38, NULL, 'H36176125942', 0, '2025-02-03', NULL);
+INSERT INTO `habitrecord` VALUES (39, NULL, 'H4024690107768', 0, '2025-02-03', NULL);
+INSERT INTO `habitrecord` VALUES (40, NULL, 'H568694593215', 0, '2025-02-03', NULL);
+INSERT INTO `habitrecord` VALUES (41, NULL, 'H612712257344', 0, '2025-02-03', NULL);
 
 -- ----------------------------
 -- Table structure for habitreminder
@@ -367,9 +371,9 @@ CREATE TABLE `user`  (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('admin', '112131234', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'yolu', 'default.png', 1, '2025-02-02 15:20:13', NULL, 1);
+INSERT INTO `user` VALUES ('admin', '112131234', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'yolu', 'default.png', 1, '2025-02-02 15:20:13', '2025-02-03 15:16:55', 1);
 INSERT INTO `user` VALUES ('U28533327585573', '1816440933@qq.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'sasuke', '599fe04d-04b5-476c-9b7e-7904ac9bcc82.jpg', 2, '2024-12-16 16:44:12', '2025-02-01 09:44:31', 1);
-INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414', 'yyolu', 'default.png', 2, '2024-11-24 21:59:28', '2025-02-01 14:57:56', 1);
+INSERT INTO `user` VALUES ('U47811742828165', '2504319659@qq.com', '8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414', 'yyolu', 'default.png', 2, '2024-11-24 21:59:28', '2025-02-03 16:45:01', 1);
 
 -- ----------------------------
 -- Table structure for versionstatus
@@ -382,16 +386,17 @@ CREATE TABLE `versionstatus`  (
   `publishDate` date NULL DEFAULT NULL COMMENT '发布日期',
   `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '版本描述信息',
   `createTime` datetime NULL DEFAULT NULL COMMENT '创建时间',
-  `downloadLink` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '下载链接',
+  `fileName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文件名称',
   `type` tinyint(1) NULL DEFAULT NULL COMMENT '版本类型，1.正式版，2.α测试版，3.β测试版,4.γ测试版',
   PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `index_number`(`number`) USING BTREE,
   INDEX `index_createTime`(`createTime`) USING BTREE,
-  INDEX `index_type`(`type`) USING BTREE,
-  UNIQUE INDEX `index_number`(`number`) USING BTREE
+  INDEX `index_type`(`type`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of versionstatus
 -- ----------------------------
+INSERT INTO `versionstatus` VALUES ('V27Uyv4CD4Q0', 'admin', '20250203_1.0alpha', '2025-02-03', '第一测试版', '2025-02-03 12:54:18', 'example.download', 2);
 
 SET FOREIGN_KEY_CHECKS = 1;

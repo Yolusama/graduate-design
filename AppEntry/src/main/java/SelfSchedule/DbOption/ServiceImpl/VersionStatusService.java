@@ -14,6 +14,7 @@ import SelfSchedule.Utils.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +36,9 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
     public String publish(VersionModel model, String adminId) {
         VersionStatus version = new VersionStatus(RandomGenerator.generateVersionId());
         version.setCreateTime(Constants.Now());
-        version.setCode(model.getVersionCode());
         version.setPublishDate(model.getPublishDate());
-        version.setType(model.getType());
-        version.setDownloadLink(model.getDownloadLink());
+        version.setType(model.getVersionType());
+        version.setFileName(model.getFileName());
         version.setDescription(model.getDescription());
         version.setNumber(model.getVersionNumber());
         version.setAdminId(adminId);
@@ -56,14 +56,15 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
         final String key = CachingKeys.GetCurrentVersion;
         if(redis.has(key))
             return (VersionStatus) redis.get(key);
-        VersionStatus currentVersion = mapper.getLatestVersion(VersionType.FULL.value());
+        VersionStatus currentVersion = mapper.getLatestVersion(null);
+                // mapper.getLatestVersion(VersionType.FULL.value());
         redis.set(key,currentVersion,Constants.MonthExpire);
         return currentVersion;
     }
 
     @Override
     public PagedData<VersionStatus> getVersions(Integer page, Integer pageSize, String queryKey, Integer year,
-                                                String type,RedisCache redis) {
+                                                Integer type, RedisCache redis) {
         LambdaQueryWrapper<VersionStatus> wrapper = new LambdaQueryWrapper<>();
         boolean flag = false;
         if(ObjectUtil.isRequestParamStrNull(queryKey))
@@ -73,10 +74,11 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
         }
         if(year!=null)
         {
-            Date leftBound = new Date(year, Calendar.JANUARY,1);
+            final Integer javaDateBegin = 1900;
+            Date leftBound = new Date(year-javaDateBegin, Calendar.JANUARY,1);
             Date rightBound = new Date(leftBound.getTime());
             rightBound.setYear(rightBound.getYear()+1);
-            wrapper.and(q->q.gt(VersionStatus::getPublishDate,leftBound).lt(VersionStatus::getPublishDate,rightBound));
+            wrapper.and(q->q.ge(VersionStatus::getPublishDate,leftBound).lt(VersionStatus::getPublishDate,rightBound));
             flag = true;
         }
         if(type!=null)
@@ -89,6 +91,7 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
                return (PagedData<VersionStatus>)redis.get(CachingKeys.GetVersions);
         else
             redis.remove(CachingKeys.GetVersions);
+        wrapper.orderByDesc(VersionStatus::getCreateTime);
         Page<VersionStatus> pagination = mapper.selectPage(Page.of(page,pageSize),wrapper);
         PagedData<VersionStatus> res = new PagedData<>(pagination.getRecords(),pagination.getTotal());
         redis.set(CachingKeys.GetVersions,res,Constants.CachingExpire);

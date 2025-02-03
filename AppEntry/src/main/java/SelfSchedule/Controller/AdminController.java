@@ -80,5 +80,16 @@ public class AdminController extends ControllerBase{
         return ok();
     }
 
-
+    @GetMapping("/GetVersions")
+    public CompletableFuture<ActionResult<PagedData<VersionStatus>>> GetVersions(@RequestParam Integer page,
+                                                                                 @RequestParam Integer pageSize,
+                                                                                 @RequestParam String queryKey,
+                                                                                 @RequestParam String year,
+                                                                                 @RequestParam String type){
+        Integer _year = ObjectUtil.isRequestParamStrNull(year)? null:Integer.parseInt(year);
+        Integer _type = ObjectUtil.isRequestParamStrNull(type)? null:Integer.parseInt(type);
+        return CompletableFuture.completedFuture(
+                successWithData(versionService.getVersions(page,pageSize,queryKey,_year,_type,redis))
+        );
+    }
 }

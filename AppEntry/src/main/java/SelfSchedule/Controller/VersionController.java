@@ -7,10 +7,12 @@ import SelfSchedule.Entity.VersionStatus;
 import SelfSchedule.Functional.RandomGenerator;
 import SelfSchedule.Model.VersionModel;
 import SelfSchedule.Result.ActionResult;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.annotation.ClearRedisCache;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,10 +22,12 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/Api/Version")
 public class VersionController extends ControllerBase{
     private final IVersionStatusService versionService;
+    private final FileService fileService;
 
     @Autowired
-    private VersionController(VersionStatusService versionService, RedisCache redis){
+    public VersionController(VersionStatusService versionService,FileService fileService, RedisCache redis){
         this.versionService = versionService;
+        this.fileService = fileService;
         this.redis = redis;
     }
 
@@ -40,5 +44,10 @@ public class VersionController extends ControllerBase{
         return CompletableFuture.completedFuture(
                 successWithData(versionService.getCurrentVersion(redis))
         );
+    }
+
+    @GetMapping("/Download/{fileName}")
+    public HttpEntity<byte[]> Download(@PathVariable String fileName){
+        return fileResult(fileName,fileService.toDownload(fileName));
     }
 }

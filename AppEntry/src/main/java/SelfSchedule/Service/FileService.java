@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,8 @@ import java.util.UUID;
 public class FileService {
     @Value("${resource.img.path}")
     private String imgPath;
+    @Value("${resource.download.path}")
+    private String downloadPath;
 
     private final Integer bufferSize = 2048;
 
@@ -45,5 +48,18 @@ public class FileService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public byte[] toDownload(String fileName){
+        try {
+            FileInputStream stream = new FileInputStream(downloadPath+fileName);
+            byte[] res = stream.readAllBytes();
+            stream.close();
+            return res;
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return null;
     }
 }

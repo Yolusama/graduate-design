@@ -1,9 +1,9 @@
 <template>
 	<view id="setting" v-if="state.user!=null">
-		<uni-list style="width: 92%;" @click="goToSelfInfo">
+		<uni-list style="width: 92%;">
 			<uni-list-item show-arrow >
 				<template v-slot:body>
-					<view class="item">
+					<view class="item" @click="goToSelfInfo">
 						<image :src="imgSrc(state.user.avatar)" class="avatar"></image>
 						<text class="item-text">{{state.user.nickname}}</text>
 					</view>
@@ -17,9 +17,9 @@
 					</view>
 				</template>
 			</uni-list-item>
-			<uni-list-item show-arrow @click="showAbout">
+			<uni-list-item show-arrow>
 				<template v-slot:body>
-					<view class="item">
+					<view class="item" @click="showAbout">
 						<uni-icons type="flag-filled" :size="32"></uni-icons>
 						<text class="item-text">关于</text>
 					</view>
@@ -67,6 +67,12 @@ import { Logout } from '../api/UserInfo';
 	function goToSelfInfo(){
 		uni.navigateTo({
 			url:"/pages/userInfo"
+		});
+	}
+	
+	function showAbout(){
+		uni.navigateTo({
+			url:"/pages/version"
 		});
 	}
 </script>

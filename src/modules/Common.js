@@ -93,3 +93,12 @@ export function getVersionType(type){
       case 4:return "γ测试版";
    }
 }
+
+export function onlyDate(date=new Date()){
+     const res = new Date(date);
+     res.setHours(0);
+     res.setMinutes(0);
+     res.setSeconds(0);
+     res.setMilliseconds(0);
+     return res;
+}

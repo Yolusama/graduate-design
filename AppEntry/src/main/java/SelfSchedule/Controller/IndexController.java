@@ -156,7 +156,8 @@ public class IndexController extends ControllerBase{
 
     @PatchMapping("/RemoveOrRecoverHabit/{habitId}")
     @ApiOperation(value="删除/恢复回收站中的习惯",notes = "删除/恢复回收站中的习惯")
-    @ClearRedisCache(keys = {CachingKeys.GetIndexData, CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue})
+    @ClearRedisCache(keys = {CachingKeys.GetIndexData, CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue,
+                                             CachingKeys.GetUserHabits})
     public ActionResult RemoveOrRecoverHabit(@PathVariable String habitId,@RequestParam Boolean isRemove,
                                             HttpServletRequest request){
         int res = indexService.removeOrRecoverHabit(habitId,isRemove);

@@ -44,4 +44,15 @@
                      left join TaskRepeatRule r on t.id = r.taskId
         where i.flag = 1 and userId=#{userId} and t.state &lt;= 2
     </select>
+
+    <select id="getTaskCount" resultType="java.lang.Long">
+        select count(1) from Task t join TaskInstance i on t.id = i.instanceId and i.flag = 0
+                   where  userId = #{userId} and state = #{state}
+
+    </select>
+
+    <select id="getDurationTaskCounts" resultType="java.lang.Long">
+        select count(1) from Task t join TaskInstance i on t.id = i.instanceId and i.flag = 0
+        where  userId = #{userId} and state = 2 and (t.finishTime&gt;=#{leftBound} nad t.finishTime&lt#{rightBound})
+    </select>
 </mapper>

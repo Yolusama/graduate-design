@@ -125,7 +125,8 @@ public class TaskController extends ControllerBase
 
     @PatchMapping("/FinishOrNot/{taskId}")
     @ApiOperation(value = "完成或取消完成任务",notes = "完成或取消完成")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData,
+            CachingKeys.GetTaskCountsMode})
     public ActionResult FinishOrNot(@PathVariable Long taskId,@RequestParam Integer state,HttpServletRequest request){
        int res = taskService.finishOrNot(taskId,state);
        if(res==Constants.AbNormalState)
@@ -155,7 +156,7 @@ public class TaskController extends ControllerBase
 
     @PutMapping("/RemoveTask")
     @ApiOperation(value = "形式删除当前任务",notes = "重复任务的主实例才会被放入回收站")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData,CachingKeys.GetTaskCountsMode})
     public ActionResult RemoveTask(@RequestBody TaskModel model,@RequestParam Integer mode,HttpServletRequest request){
         int res = taskService.removeTask(model,mode);
         if(res==Constants.AbNormalState)
@@ -163,4 +164,19 @@ public class TaskController extends ControllerBase
         return ok("已移动至回收站！");
     }
 
+    @GetMapping("/GetFinishedTaskCount/{userId}")
+    @ApiOperation(value = "获取完成的任务数",notes = "获取完成的任务数")
+    public ActionResult<Long> GetFinishedTaskCount(@PathVariable String userId){
+        return successWithData(taskService.getFinishedTaskCount(userId));
+    }
+
+    @GetMapping("/GetFinishedTaskCounts/{userId}")
+    @ApiOperation(value = "获取段时间完成的任务数",notes = "段时间为日，周，月模式")
+    public CompletableFuture<ActionResult<List<Long>[]>> GetFinishedCounts(@PathVariable String userId,
+                                                                           @RequestParam Integer mode,
+                                                                           @RequestParam Long today){
+        return CompletableFuture.completedFuture(
+                successWithData(taskService.getFinishedTaskCounts(userId,mode,new Date(today),redis))
+        );
+    }
 }

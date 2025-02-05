@@ -8,10 +8,7 @@ import SelfSchedule.DbOption.Mapper.TaskMapper;
 import SelfSchedule.DbOption.Mapper.TaskReminderMapper;
 import SelfSchedule.DbOption.Mapper.TaskRepeatRuleMapper;
 import SelfSchedule.DbOption.Service.ITaskService;
-import SelfSchedule.Entity.Enum.PeriodUnit;
-import SelfSchedule.Entity.Enum.SchedulePriority;
-import SelfSchedule.Entity.Enum.TaskEditMode;
-import SelfSchedule.Entity.Enum.TaskState;
+import SelfSchedule.Entity.Enum.*;
 import SelfSchedule.Entity.TaskInstance;
 import SelfSchedule.Entity.Task;
 import SelfSchedule.Entity.TaskReminder;
@@ -667,7 +664,14 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     @Override
     @Transactional
     public int finishOrNot(Long taskId, Integer state) {
-        return mapper.changeState(state,taskId);
+       LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
+       wrapper.set(Task::getState,state);
+       if(state.equals(TaskState.FINISHED.value()))
+           wrapper.set(Task::getFinishTime,Constants.Now());
+       else if(state.equals(TaskState.UNFINISHED.value()))
+           wrapper.set(Task::getFinishTime,null);
+       wrapper.eq(Task::getId,taskId);
+       return mapper.update(wrapper);
     }
 
     @Override
@@ -749,6 +753,66 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         LambdaUpdateWrapper<TaskInstance> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(TaskInstance::getFlag,false).eq(TaskInstance::getInstanceId,taskId);
         return instanceMapper.update(wrapper);
+    }
+
+    @Override
+    public Long getFinishedTaskCount(String userId) {
+        return mapper.getTaskCount(userId,TaskState.FINISHED.value());
+    }
+
+    @Override
+    public List<Long>[] getFinishedTaskCounts(String userId, Integer mode, Date today, RedisCache redis) {
+        String key1 = String.format("Caching_%s_%s",userId,CachingKeys.GetFinishedTaskCounts);
+        String key2 = String.format("Caching_%s_%s",userId,CachingKeys.GetTaskCountsMode);
+        if(redis.has(key2)){
+            if(!redis.get(key2).equals(mode))
+            {
+                redis.remove(key1);
+                redis.remove(key2);
+            }
+        }
+        ArrayDataModel<List<Long>> model;
+        if(redis.has(key1))
+        {
+            model = (ArrayDataModel<List<Long>>) redis.get(key1);
+            return model.getData();
+        }
+        model = new ArrayDataModel<>();
+        List<Long>[] data = new List[Constants.Week];
+        if(mode.equals(TaskCountMode.DAY.value()))
+        {
+            for(int i=1;i<=Constants.Week;i++)
+            {
+                Date date = new Date(today.getTime());
+                date.setDate(today.getDate()-Constants.Week-i);
+                Pair<Date,Date> bound = DateUtil.bound(date);
+                data[i] = mapper.getDurationTaskCounts(userId,bound.getItem1(),bound.getItem2());
+            }
+        }
+        else if(mode.equals(TaskCountMode.WEEK.value())){
+            for(int i=1;i<=Constants.Week;i++)
+            {
+                Date leftBound = new Date(today.getTime());
+                leftBound.setDate(today.getDate()-Constants.Week-i);
+                Date rightBound = new Date(leftBound.getTime());
+                rightBound.setDate(leftBound.getDate()+Constants.Week);
+                data[i] = mapper.getDurationTaskCounts(userId,leftBound,rightBound);
+            }
+        }
+        else if(mode.equals(TaskCountMode.MONTH.value())){
+            for(int i=1;i<=Constants.Week;i++)
+            {
+                Date leftBound = new Date(today.getTime());
+                leftBound.setMonth(today.getMonth()-i-Constants.Week);
+                Date rightBound = new Date(leftBound.getTime());
+                rightBound.setMonth(leftBound.getMonth()+1);
+                data[i] = mapper.getDurationTaskCounts(userId,leftBound,rightBound);
+            }
+        }
+        model.setData(data);
+        redis.set(key1,model,Constants.CachingExpire);
+        redis.set(key2,mode,Constants.CachingExpire);
+        return data;
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

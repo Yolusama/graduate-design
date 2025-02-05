@@ -466,4 +466,19 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         frequencyMapper.delete(habitId);
         return mapper.delete(new LambdaQueryWrapper<Habit>().eq(Habit::getId,habitId));
     }
+
+    @Override
+    public List<HabitVO> getHabits(String userId, RedisCache redis) {
+        String key = String.format("Caching_%s_%s",userId,CachingKeys.GetUserHabits);
+        ArrayDataModel<HabitVO> model;
+        if(redis.has(key)){
+            model = (ArrayDataModel<HabitVO>) redis.get(key);
+            return ObjectUtil.toList(model.getData());
+        }
+        model = new ArrayDataModel<>();
+        List<HabitVO> res = mapper.getHabits(Page.of(1,1000),userId,false);
+        model.setData(ObjectUtil.toArray(res,HabitVO.class));
+        redis.set(key,model,Constants.CachingExpire);
+        return res;
+    }
 }

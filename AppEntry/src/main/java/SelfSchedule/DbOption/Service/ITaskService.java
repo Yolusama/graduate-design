@@ -32,4 +32,6 @@ public interface ITaskService extends IService<Task> {
    void removeAllAbout(String userId);
    int remove(Long taskId);
    int recover(Long taskId);
+   Long getFinishedTaskCount(String userId);
+   List<Long>[] getFinishedTaskCounts(String userId,Integer mode,Date today,RedisCache redis);
 }

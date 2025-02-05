@@ -64,6 +64,10 @@ public class Task{
     *用户自定义标签时带有的标签id
     */
     private Long labelId;
+    /**
+     * 任务完成时间
+     */
+    private Date finishTime;
 
     @Override
     public boolean equals(Object o) {

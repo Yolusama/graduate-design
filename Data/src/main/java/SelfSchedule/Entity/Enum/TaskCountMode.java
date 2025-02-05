@@ -1,10 +1,9 @@
 package SelfSchedule.Entity.Enum;
 
-public enum SchedulePriority {
-    INU(1),IBNU(2),NIBU(3),NIONU(4);
-
+public enum TaskCountMode {
+    DAY(0),WEEK(1),MONTH(2);
     private final int val;
-    SchedulePriority(int value)
+    TaskCountMode(int value)
     {
         this.val = value;
     }

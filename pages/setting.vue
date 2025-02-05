@@ -25,6 +25,14 @@
 					</view>
 				</template>
 			</uni-list-item>
+			<uni-list-item show-arrow>
+				<template v-slot:body>
+					<view class="item" @click="showAbout">
+						<uni-icons type="chat-filled" :size="32"></uni-icons>
+						<text class="item-text">反馈</text>
+					</view>
+				</template>
+			</uni-list-item>
 		</uni-list>
 		<button @click="logout" class="logout">退出登录</button>
 	</view>

@@ -1,4 +1,4 @@
-import { Patch, Post, Put, UploadFile } from "../module/Request";
+import { Get, Patch, Post, Put, UploadFile } from "../module/Request";
 import { auth,formDataAuth } from "./User";
 
 export function ChangeNickname(nickname,userId,successCallback){
@@ -23,4 +23,16 @@ export function ChangeEmail(email,newEmail,checkCode,successCallback){
 
 export function Logout(cancelAccount,userId,email,successCallback){
 	Post(`/Api/Index/Logout/${userId}?cancelAccount=${cancelAccount}&email=${email}`,auth,{},successCallback);
+}
+
+export function GetFinishedTaskCount(userId,successCallback){
+	Get(`/Api/Task/GetFinishedTaskCount/${userId}`,auth,successCallback);
+}
+
+export function GetFinishedTaskCounts(userId,mode,today,successCallback){
+	Get(`/Api/Task/GetFinishedTaskCounts/${userId}?mode=${mode}&today=${today.getTime()}`,auth,successCallback);
+}
+
+export function GetUserHabits(userId,successCallback){
+	Get(`/Api/Habit/GetUserHabits/${userId}`,auth,successCallback);
 }

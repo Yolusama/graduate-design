@@ -113,6 +113,30 @@
 						</template>
 					</uni-list-item>
 				</uni-list>
+				<uni-list style="width: 100%;margin-top:4%">
+					<uni-list-item show-arrow>
+						<template v-slot:body>
+							<view>
+								<text>总完成任务数：{{state.finishCount}}</text>
+								<view>
+									<el-data-checkbox v-model="state.taskCheck.mode" :localdata="state.taskCheck.data"
+										mode="tag" @change="switchTaskFinishDetail">
+									</el-data-checkbox>
+									<uni-grid>
+										<uni-grid-item v-for="(item,index) in state.lastestTaskOption"></uni-grid-item>
+									</uni-grid>
+								</view>
+							</view>
+						</template>
+					</uni-list-item>
+					<uni-list-item show-arrow>
+						<template v-slot:body>
+							<view class="between" @click="habitPopup.open()">
+								<text>习惯完成概况</text>
+							</view>
+						</template>
+					</uni-list-item>
+				</uni-list>
 				<button @click="logout(true)" class="logout" size="mini">注销账号</button>
 			</view>
 		</uni-popup>
@@ -147,6 +171,7 @@
 	const emailPopup = ref(null);
 	const pwdPopup = ref(null);
 	const infoListedPopup = ref(null);
+	const habitPopup = ref(null);
 
 	const state = reactive({
 		user: null,
@@ -160,7 +185,12 @@
 		},
 		checkCodeText: "获取验证码",
 		checkCode: "",
-		hasGotCode: false
+		hasGotCode: false,
+		finishCount: 0,
+		taskCheck: {
+			data: [new ValueText(0, "日"), new ValueText(1, "周"), new ValueText(2, "月")],
+			mode: 0
+		}
 	});
 
 	onMounted(() => {
@@ -415,6 +445,49 @@
 		uni.navigateBack({
 			delta: 1
 		});
+	}
+	
+	function getFinishRate(habit) {
+		const frequency = {
+			value:{
+				days:habit.days,
+				weekPersistDays:habit.weekPersistDays,
+				period:habit.period
+			}
+		};
+		var count = 0;
+		if (frequency.value.days != null) {
+			for (let i = 0; i < state.daysFromBeginDateToNow; i++) {
+				const date = new Date(new Date(beginDate.value).setDate(beginDate.value.getDate() + i));
+				for (let pro in frequency.value.days) {
+					if (frequency.value.days[pro] == date.getDay()) {
+						count++;
+						break;
+					}
+				}
+			}
+		}
+	
+		if (frequency.value.weekPersistDays != null) {
+			const beginDateDay = beginDate.value.getDay();
+			if (beginDateDay <= frequency.value.weekPersistDays) {
+				count += frequency.value.weekPersistDays;
+			}
+			const leftDays = state.daysFromBeginDateToNow - (7 - beginDateDay);
+			const mod = leftDays % 7;
+			const left = Math.floor(leftDays / 7);
+			count += frequency.value.weekPersistDays * left + mod <= frequency.value.persistDays ? mode : frequency
+				.value.weekPersistDays;
+		}
+	
+		if (frequency.value.period != null)
+			{
+				count = Math.floor(state.daysFromBeginDateToNow / frequency.value.period);
+				if(count == 0)
+				  return 0;
+			}
+		
+		return ((persistDays.value / count).toFixed(2)) * 100;
 	}
 </script>
 

@@ -627,12 +627,12 @@
 	}
 
 	function finishTaskOrNot(index) {
-		const task = state.data['task'][index];
-		var state;
+		const task = state.data["task"][index];
+		var taskState;
 		if (task.state == TaskState.finished)
-			state = TaskState.unfinished;
-		else state = TaskState.finished;
-		FinishTaskOrNot(task.instanceId, state, response => {
+			taskState = TaskState.unfinished;
+		else taskState = TaskState.finished;
+		FinishTaskOrNot(task.instanceId, taskState, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({

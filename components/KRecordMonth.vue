@@ -396,8 +396,8 @@
 			const leftDays = state.daysFromBeginDateToNow - (7 - beginDateDay);
 			const mod = leftDays % 7;
 			const left = Math.floor(leftDays / 7);
-			count += frequency.value.weekPersistDays * left + mod <= frequency.value.persistDays ? mode : frequency
-				.value.weekPersistDays;
+			count += frequency.value.weekPersistDays * left + (mod < frequency.value.weekPersistDays ? mod : frequency
+				.value.weekPersistDays);
 		}
 
 		if (frequency.value.period != null)

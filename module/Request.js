@@ -56,11 +56,14 @@ class GlobalRequest
 }
 const timeout = 1000*60*3;
 //#ifndef H5
-const request = new GlobalRequest("http://192.168.43.71:5225",timeout);
+const baseUrl = "http://192.168.43.71:5225";
 //#endif
 //#ifdef H5
-const request = new GlobalRequest("http://localhost:5225",timeout);
+const baseUrl = "http://localhost:5225";
 //#endif
+const request = new GlobalRequest(baseUrl,timeout);
+
+export const requestBaseUrl = baseUrl;
 
 const defaultFailBack = res=>console.log(res);
 /*const defaultFailBack = res =>{

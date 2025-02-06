@@ -18,6 +18,37 @@
 				<text><uni-icons type="email" :size="18"></uni-icons> {{state.user.email}}</text>
 				<text style="color:rgb(0,75,235);margin-left: 4%;" @click="emailPopup.open()">更换</text>
 			</view>
+			<uni-list style="width: 92%;margin-top:4%">
+				<uni-list-item>
+					<template v-slot:body>
+						<view>
+							<text style="font-size: 14px;">总完成任务数：<text
+									style="color: rgb(0,75,235);font-weight: 600;">{{state.finishCount}}</text></text>
+							<view>
+								<uni-data-checkbox v-model="state.taskCheck.mode" :localdata="state.taskCheck.data"
+									mode="tag" @change="getFinishTaskCounts">
+								</uni-data-checkbox>
+								<uni-grid :show-border="false">
+									<uni-grid-item v-for="(count,index) in state.finishCounts">
+										<view class="task-count">
+											<text style="font-weight: 600;">{{count.item2}}</text>
+											<text
+												style="color:red;font-size: 14px;">{{getTaskCountDateStr(count.item1,index)}}</text>
+										</view>
+									</uni-grid-item>
+								</uni-grid>
+							</view>
+						</view>
+					</template>
+				</uni-list-item>
+				<uni-list-item show-arrow>
+					<template v-slot:body>
+						<view class="between" @click="habitPopup.open()" style="width: 100%;">
+							<text style="font-size: 13px;">习惯完成概况</text>
+						</view>
+					</template>
+				</uni-list-item>
+			</uni-list>
 			<button type="primary" @click="pwdPopup.open()" size="mini" style="margin-top: 2%;">修改密码</button>
 		</view>
 		<uni-popup ref="emailPopup" background-color="#fff" type="left" @change="emailPopupClose" style="z-index: 101;">
@@ -113,31 +144,42 @@
 						</template>
 					</uni-list-item>
 				</uni-list>
-				<uni-list style="width: 100%;margin-top:4%">
-					<uni-list-item show-arrow>
-						<template v-slot:body>
-							<view>
-								<text>总完成任务数：{{state.finishCount}}</text>
-								<view>
-									<el-data-checkbox v-model="state.taskCheck.mode" :localdata="state.taskCheck.data"
-										mode="tag" @change="switchTaskFinishDetail">
-									</el-data-checkbox>
-									<uni-grid>
-										<uni-grid-item v-for="(item,index) in state.lastestTaskOption"></uni-grid-item>
-									</uni-grid>
-								</view>
-							</view>
-						</template>
-					</uni-list-item>
-					<uni-list-item show-arrow>
-						<template v-slot:body>
-							<view class="between" @click="habitPopup.open()">
-								<text>习惯完成概况</text>
-							</view>
-						</template>
-					</uni-list-item>
-				</uni-list>
 				<button @click="logout(true)" class="logout" size="mini">注销账号</button>
+			</view>
+		</uni-popup>
+		<uni-popup ref="habitPopup" background-color="#fff" type="right">
+			<view class="habits">
+				<view class="header">
+					<uni-icons type="closeempty" :size="24" @click="habitPopup.close();"></uni-icons>
+				</view>
+				<scroll-view scroll-y style="height: 84vh;">
+					<uni-table empty-text="暂时没有设置习惯">
+						<uni-th>
+							习惯
+						</uni-th>
+						<uni-th>
+							完成率
+						</uni-th>
+						<uni-th>
+							是否达标
+						</uni-th>
+						<uni-tr v-for="(habit,index) in state.habits" :key="index">
+							<uni-td align="center">
+								<view class="habit">
+									<image :src="imgSrc(habit.thumb)" class="thumb"></image>
+									<text class="habit-name">{{habit.name}}</text>
+								</view>
+							</uni-td>
+							<uni-td>
+								<text style="font-weight: 600;color:black">{{getFinishRate(habit)}}%</text>
+							</uni-td>
+							<uni-td>
+								<text v-if="habit.aimDays>0">{{habit.persistDays>=habit.aimDays?"是":"否"}}</text>
+								<text v-if="habit.aimDays<0">否</text>
+							</uni-td>
+						</uni-tr>
+					</uni-table>
+				</scroll-view>
 			</view>
 		</uni-popup>
 	</view>
@@ -153,15 +195,21 @@
 		imgSrc
 	} from '../module/Request';
 	import {
+		ADayMillseconds,
+		AWeek,
 		ValueText,
 		delayToRun,
-		loading
+		loading,
+		onlyDate
 	} from '../module/Common';
 	import {
 		ChangeAvatar,
 		ChangeEmail,
 		ChangeNickname,
 		ChangePassword,
+		GetFinishedTaskCount,
+		GetFinishedTaskCounts,
+		GetUserHabits,
 		Logout
 	} from '../api/UserInfo';
 	import {
@@ -172,6 +220,8 @@
 	const pwdPopup = ref(null);
 	const infoListedPopup = ref(null);
 	const habitPopup = ref(null);
+
+	const today = ref(onlyDate(new Date()));
 
 	const state = reactive({
 		user: null,
@@ -187,10 +237,12 @@
 		checkCode: "",
 		hasGotCode: false,
 		finishCount: 0,
+		finishCounts: [],
 		taskCheck: {
 			data: [new ValueText(0, "日"), new ValueText(1, "周"), new ValueText(2, "月")],
 			mode: 0
-		}
+		},
+		habits: []
 	});
 
 	onMounted(() => {
@@ -205,6 +257,20 @@
 					if (pro != "uid")
 						state.user[pro] = data[pro];
 				}
+				getTaskCountOption();
+				GetUserHabits(state.user.userId, response => {
+					const res = response.data;
+					if (!res.succeeded) {
+						uni.showToast({
+							title: res.message,
+							icon: "none"
+						});
+						return;
+					}
+					state.habits = res.data;
+					for (let habit of state.habits)
+						habit.beginDate = new Date(habit.beginDate);
+				});
 			}
 		});
 	});
@@ -446,19 +512,22 @@
 			delta: 1
 		});
 	}
-	
+
 	function getFinishRate(habit) {
 		const frequency = {
-			value:{
-				days:habit.days,
-				weekPersistDays:habit.weekPersistDays,
-				period:habit.period
+			value: {
+				days: habit.days,
+				weekPersistDays: habit.weekPersistDays,
+				period: habit.period
 			}
 		};
+		const beginDate = habit.beginDate;
+		const persistDays = habit.persistDays;
+		const daysFromBeginDateToNow = (today.value.getTime() - beginDate.getTime()) / ADayMillseconds;
 		var count = 0;
 		if (frequency.value.days != null) {
 			for (let i = 0; i < state.daysFromBeginDateToNow; i++) {
-				const date = new Date(new Date(beginDate.value).setDate(beginDate.value.getDate() + i));
+				const date = new Date(new Date(beginDate).setDate(beginDate.getDate() + i));
 				for (let pro in frequency.value.days) {
 					if (frequency.value.days[pro] == date.getDay()) {
 						count++;
@@ -467,27 +536,77 @@
 				}
 			}
 		}
-	
+
 		if (frequency.value.weekPersistDays != null) {
-			const beginDateDay = beginDate.value.getDay();
+			const beginDateDay = beginDate.getDay();
 			if (beginDateDay <= frequency.value.weekPersistDays) {
 				count += frequency.value.weekPersistDays;
 			}
-			const leftDays = state.daysFromBeginDateToNow - (7 - beginDateDay);
+			const leftDays = daysFromBeginDateToNow - (7 - beginDateDay);
 			const mod = leftDays % 7;
 			const left = Math.floor(leftDays / 7);
-			count += frequency.value.weekPersistDays * left + mod <= frequency.value.persistDays ? mode : frequency
-				.value.weekPersistDays;
+			count += frequency.value.weekPersistDays * left + (mod<frequency.value.weekPersistDays ? mod : frequency
+				.value.weekPersistDays);
 		}
-	
-		if (frequency.value.period != null)
-			{
-				count = Math.floor(state.daysFromBeginDateToNow / frequency.value.period);
-				if(count == 0)
-				  return 0;
+
+		if (frequency.value.period != null) {
+			count = Math.floor(daysFromBeginDateToNow / frequency.value.period);
+		}
+
+		if (count == 0)
+			return 0;
+
+		return ((persistDays / count).toFixed(2)) * 100;
+	}
+
+	function getTaskCountOption() {
+		GetFinishedTaskCount(state.user.userId, response => {
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
 			}
-		
-		return ((persistDays.value / count).toFixed(2)) * 100;
+			state.finishCount = res.data;
+		});
+		getFinishTaskCounts();
+	}
+
+	function getFinishTaskCounts() {
+		GetFinishedTaskCounts(state.user.userId, state.taskCheck.mode, today.value, response => {
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			state.finishCounts = res.data;
+		});
+	}
+
+	function getTaskCountDateStr(time, index) {
+		const date = new Date(time);
+		switch (state.taskCheck.mode) {
+			case 0:
+				if (index < AWeek - 1)
+					return `${date.getDate()}日`;
+				else
+					return "今天";
+			case 1:
+				if (index < AWeek - 1)
+					return `${date.getDate()}日`;
+				else
+					return "本周";
+			case 2:
+				if (index < AWeek - 1)
+					return `${date.getMonth()+1}月`;
+				else
+					return "本月";
+		}
 	}
 </script>
 
@@ -617,5 +736,42 @@
 		background-color: white;
 		position: absolute;
 		bottom: 7%;
+	}
+
+	#user .habits {
+		position: relative;
+		width: 100vw;
+		height: 94vh;
+		/*#ifndef H5*/
+		padding-top:3vh ;
+		/*#endif*/
+	}
+
+	#user .task-count {
+		display: flex;
+		height: 40px;
+		flex-direction: column;
+		justify-content: flex-end;
+		align-items: center;
+		font-size: 13px;
+	}
+
+	#user .habit {
+		display: flex;
+		align-items: center;
+	}
+
+	#user .thumb {
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+	}
+
+	#user .habit-name {
+		max-width: 30vw;
+		overflow: hidden;
+		text-wrap: nowrap;
+		text-overflow: ellipsis;
+		margin-left: 2%;
 	}
 </style>

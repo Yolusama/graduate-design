@@ -431,3 +431,5 @@ export function isBaseLabel(labelId){
 export function isStateLabel(labelId){
 	return [5,6,7,8].findIndex(l=>l==labelId)>=0;
 }
+
+export const AWeek = 7;

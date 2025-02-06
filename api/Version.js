@@ -10,3 +10,7 @@ export const appInfo = {
 export function GetCurrentVersion(successCallback){
 	Get("/Api/Version/GetCurrentVersion",auth,successCallback);
 }
+
+export function GetLatestVersion(successCallback){
+	Get("/Api/Version/GetLatestVersion",auth,successCallback);
+}

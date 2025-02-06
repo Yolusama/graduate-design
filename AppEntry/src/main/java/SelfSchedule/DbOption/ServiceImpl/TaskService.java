@@ -761,7 +761,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     }
 
     @Override
-    public List<Long>[] getFinishedTaskCounts(String userId, Integer mode, Date today, RedisCache redis) {
+    public List<Pair<Date, Long>> getFinishedTaskCounts(String userId, Integer mode, Date today, RedisCache redis) {
         String key1 = String.format("Caching_%s_%s",userId,CachingKeys.GetFinishedTaskCounts);
         String key2 = String.format("Caching_%s_%s",userId,CachingKeys.GetTaskCountsMode);
         if(redis.has(key2)){
@@ -771,48 +771,51 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 redis.remove(key2);
             }
         }
-        ArrayDataModel<List<Long>> model;
-        if(redis.has(key1))
-        {
-            model = (ArrayDataModel<List<Long>>) redis.get(key1);
-            return model.getData();
+        ArrayDataModel<Pair<Date,Long>> model;
+        if(redis.has(key1)) {
+           model = (ArrayDataModel<Pair<Date,Long>>) redis.get(key1);
+           return ObjectUtil.toList(model.getData());
         }
-        model = new ArrayDataModel<>();
-        List<Long>[] data = new List[Constants.Week];
+        Pair<Date,Long>[] data = new Pair[Constants.Week];
         if(mode.equals(TaskCountMode.DAY.value()))
         {
             for(int i=1;i<=Constants.Week;i++)
             {
                 Date date = new Date(today.getTime());
-                date.setDate(today.getDate()-Constants.Week-i);
+                date.setDate(today.getDate()-Constants.Week+i);
                 Pair<Date,Date> bound = DateUtil.bound(date);
-                data[i] = mapper.getDurationTaskCounts(userId,bound.getItem1(),bound.getItem2());
+                data[i-1] = Pair.makePair(date,mapper.getDurationTaskCounts(userId,bound.getItem1(),bound.getItem2()));
             }
         }
         else if(mode.equals(TaskCountMode.WEEK.value())){
+            Date bound = new Date(today.getTime());
+            bound.setDate(bound.getDate()-today.getDay());
             for(int i=1;i<=Constants.Week;i++)
             {
-                Date leftBound = new Date(today.getTime());
-                leftBound.setDate(today.getDate()-Constants.Week-i);
+                Date leftBound = new Date(bound.getTime());
+                leftBound.setDate(bound.getDate()-(Constants.Week-i)*Constants.Week);
                 Date rightBound = new Date(leftBound.getTime());
                 rightBound.setDate(leftBound.getDate()+Constants.Week);
-                data[i] = mapper.getDurationTaskCounts(userId,leftBound,rightBound);
+                data[i-1] = Pair.makePair(rightBound,mapper.getDurationTaskCounts(userId,leftBound,rightBound));
             }
         }
         else if(mode.equals(TaskCountMode.MONTH.value())){
+            Date bound = new Date(today.getTime());
+            bound.setDate(1);
             for(int i=1;i<=Constants.Week;i++)
             {
-                Date leftBound = new Date(today.getTime());
-                leftBound.setMonth(today.getMonth()-i-Constants.Week);
+                Date leftBound = new Date(bound.getTime());
+                leftBound.setMonth(bound.getMonth()+i-Constants.Week);
                 Date rightBound = new Date(leftBound.getTime());
-                rightBound.setMonth(leftBound.getMonth()+1);
-                data[i] = mapper.getDurationTaskCounts(userId,leftBound,rightBound);
+                rightBound.setMonth(leftBound.getMonth());
+                data[i-1] = Pair.makePair(leftBound,mapper.getDurationTaskCounts(userId,leftBound,rightBound));
             }
         }
+        model = new ArrayDataModel<>();
         model.setData(data);
         redis.set(key1,model,Constants.CachingExpire);
         redis.set(key2,mode,Constants.CachingExpire);
-        return data;
+        return ObjectUtil.toList(data);
     }
 
     //某个时间下的任务的重复任务的提醒清除，或者更新

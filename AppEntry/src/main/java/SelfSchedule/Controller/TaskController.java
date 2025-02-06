@@ -2,6 +2,7 @@ package SelfSchedule.Controller;
 
 import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
+import SelfSchedule.Common.Pair;
 import SelfSchedule.DbOption.Service.ITaskService;
 import SelfSchedule.DbOption.ServiceImpl.TaskService;
 import SelfSchedule.Entity.VO.*;
@@ -172,9 +173,9 @@ public class TaskController extends ControllerBase
 
     @GetMapping("/GetFinishedTaskCounts/{userId}")
     @ApiOperation(value = "获取段时间完成的任务数",notes = "段时间为日，周，月模式")
-    public CompletableFuture<ActionResult<List<Long>[]>> GetFinishedCounts(@PathVariable String userId,
-                                                                           @RequestParam Integer mode,
-                                                                           @RequestParam Long today){
+    public CompletableFuture<ActionResult<List<Pair<Date,Long>>>> GetFinishedCounts(@PathVariable String userId,
+                                                                         @RequestParam Integer mode,
+                                                                         @RequestParam Long today){
         return CompletableFuture.completedFuture(
                 successWithData(taskService.getFinishedTaskCounts(userId,mode,new Date(today),redis))
         );

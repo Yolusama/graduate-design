@@ -10,5 +10,5 @@ public interface IVersionStatusService extends IService<VersionStatus> {
     String publish(VersionModel model,String adminId);
     PagedData<VersionStatus> getVersions(Integer page,Integer pageSize,String queryKey,Integer year,Integer type,RedisCache redis);
     VersionStatus getLatestVersion();
-    VersionStatus getCurrentVersion(RedisCache redis);
+    VersionStatus getCurrentVersion(String userId,RedisCache redis);
 }

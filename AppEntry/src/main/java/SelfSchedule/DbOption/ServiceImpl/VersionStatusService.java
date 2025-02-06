@@ -14,7 +14,6 @@ import SelfSchedule.Utils.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,12 +47,12 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
 
     @Override
     public VersionStatus getLatestVersion() {
-        return mapper.getLatestVersion(null);
+        return mapper.getLatestVersion(VersionType.FULL.value());
     }
 
     @Override
-    public VersionStatus getCurrentVersion(RedisCache redis) {
-        final String key = CachingKeys.GetCurrentVersion;
+    public VersionStatus getCurrentVersion(String userId, RedisCache redis) {
+        final String key = String.format("Caching_%s_%s",userId,CachingKeys.GetCurrentVersion);
         if(redis.has(key))
             return (VersionStatus) redis.get(key);
         VersionStatus currentVersion = mapper.getLatestVersion(null);

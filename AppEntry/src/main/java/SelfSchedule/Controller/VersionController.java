@@ -4,7 +4,6 @@ import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.DbOption.Service.IVersionStatusService;
 import SelfSchedule.DbOption.ServiceImpl.VersionStatusService;
 import SelfSchedule.Entity.VersionStatus;
-import SelfSchedule.Functional.RandomGenerator;
 import SelfSchedule.Model.VersionModel;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.FileService;
@@ -38,16 +37,24 @@ public class VersionController extends ControllerBase{
         return successWithData(versionService.publish(model,adminId));
     }
 
-    @GetMapping("/GetCurrentVersion")
+    @GetMapping("/GetCurrentVersion/{userId}")
     @ApiOperation(value = "获取当前版本",notes = "获取当前版本")
-    public CompletableFuture<ActionResult<VersionStatus>> GetCurrentVersion(){
+    public CompletableFuture<ActionResult<VersionStatus>> GetCurrentVersion(@PathVariable String userId){
         return CompletableFuture.completedFuture(
-                successWithData(versionService.getCurrentVersion(redis))
+                successWithData(versionService.getCurrentVersion(userId, redis))
         );
     }
 
     @GetMapping("/Download/{fileName}")
+    @ApiOperation(value = "下载文件",notes = "下载文件")
     public HttpEntity<byte[]> Download(@PathVariable String fileName){
         return fileResult(fileName,fileService.toDownload(fileName));
+    }
+
+    @GetMapping("/GetLatestVersion")
+    @ApiOperation(value = "获取最新版本",notes = "获取最新版本")
+    @ClearRedisCache(keys = {CachingKeys.GetCurrentVersion})
+    public ActionResult<VersionStatus> GetLatestVersion(HttpServletRequest request){
+        return successWithData(versionService.getLatestVersion());
     }
 }

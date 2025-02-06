@@ -1,5 +1,6 @@
 package SelfSchedule.DbOption.Service;
 
+import SelfSchedule.Common.Pair;
 import SelfSchedule.Entity.Task;
 import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.TaskModel;
@@ -33,5 +34,5 @@ public interface ITaskService extends IService<Task> {
    int remove(Long taskId);
    int recover(Long taskId);
    Long getFinishedTaskCount(String userId);
-   List<Long>[] getFinishedTaskCounts(String userId,Integer mode,Date today,RedisCache redis);
+   List<Pair<Date, Long>> getFinishedTaskCounts(String userId, Integer mode, Date today, RedisCache redis);
 }

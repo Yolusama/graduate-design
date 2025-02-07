@@ -39,9 +39,9 @@
 				</view>
 			</view>
 		</view>
-		<task-editor ref="quadrantTaskEditor" :task="state.selectedTask" @click="beforeEditorClose" 
+		<task-editor ref="quadrantTaskEditor" :task="state.selectedTask" @close="beforeEditorClose"  :isTaskUpdate="state.selectedTask!=null"
 		v-if="state.show" @created="taskCreated" @updated="taskUpdated" @removed="taskRemoved"></task-editor>
-		<uni-fab :pattern="pattern" :content="menuContent" horizontal="right" vertical="bottom" :pop-menu="false"
+		<uni-fab :pattern="pattern" horizontal="right" vertical="bottom" :pop-menu="false"
 			@fabClick="openToEdit" />
 	</view>
 </template>
@@ -58,7 +58,12 @@
 		weekDaySign,
 		buildElById,
 		TaskReminderKey,
-		delayToRun
+		delayToRun,
+		priority,
+		ValueText,
+		dateEquals,
+		timeWithoutSeconds,
+		getDateTimeStr
 	} from '../module/Common';
 	import {
 		GetTaskReminders,
@@ -91,11 +96,18 @@
 		data: {},
 		dataOption:{},
 		show:false,
-		userId:""
+		userId:"",
+		priority:[]
 	});
 	const quadrant = ref("quadrant");
 
 	onMounted(() => {
+		for (let i = 0; i < 4; i++)
+			state.priority.push(new ValueText(i + 1, ""));
+		state.priority[0].text = "Ⅰ " + priority[0].text;
+		state.priority[1].text = "Ⅱ " + priority[1].text;
+		state.priority[2].text = "Ⅲ " + priority[2].text;
+		state.priority[3].text = "Ⅳ " + priority[3].text;
 		const user = uni.getStorageSync("user");
 		state.userId = user.uid;
 		getData();
@@ -136,7 +148,7 @@
 	}
 
 	function beforeEditorClose() {
-		delayToRun(()=>state.show=false,750);
+		delayToRun(()=>{state.show=false;state.selectedTask=null;},450);
 	}
 
 	function toUpdate(index,quadrantName) {
@@ -372,6 +384,13 @@
 	
 	function getQuadrant(index){
 		return `${quadrant.value}-${index+1}`;
+	}
+	
+	function getTimeStr(date){
+		if(dateEquals(date,today.value))
+		  return timeWithoutSeconds(date);
+		const year = today.value.getFullYear();
+		return getDateTimeStr(date,year);
 	}
 
 </script>

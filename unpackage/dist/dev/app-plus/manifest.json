@@ -4,7 +4,7 @@
     "iPhone",
     "iPad"
   ],
-  "id": "",
+  "id": "__UNI__30DE7E9",
   "name": "SelfShedule",
   "version": {
     "name": "1.0.0",
@@ -76,7 +76,9 @@
           "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
           "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
           "<uses-feature android:name=\"android.hardware.camera\"/>",
-          "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
+          "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
+          "<uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\"/>",
+          "<uses-permission android:name=\"android.permission.INSTALL_PACKAGES\"/>"
         ]
       },
       "apple": {},
@@ -160,8 +162,8 @@
         {
           "pagePath": "pages/fourQuadrants",
           "text": "四象限",
-          "iconPath": "/static/分类.png",
-          "selectedIconPath": "/static/全部.png"
+          "iconPath": "/static/sort.png",
+          "selectedIconPath": "/static/sort-filled.png"
         },
         {
           "pagePath": "pages/habit",

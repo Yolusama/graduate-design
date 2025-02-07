@@ -41,21 +41,21 @@
 				</view>
 				<view class="card">
 					<view class="head">
-						<image src="../static/完成.png" class="head-image"></image>
+						<image src="../static/finish.png" class="head-image"></image>
 						<text>总完成</text>
 					</view>
 					<view class="card-option">{{persistDays}}&nbsp;<text class="card-option-text">天</text></view>
 				</view>
 				<view class="card">
 					<view class="head">
-						<image src="../static/曲线图2.png" class="head-image"></image>
+						<image src="../static/lean.png" class="head-image"></image>
 						<text>连续</text>
 					</view>
 					<view class="card-option">{{continuousDays}}&nbsp;<text class="card-option-text">天</text></view>
 				</view>
 				<view class="card">
 					<view class="head">
-						<image src="../static/连续.png" class="head-image"></image>
+						<image src="../static/continuous.png" class="head-image"></image>
 						<text>最多连续</text>
 					</view>
 					<view class="card-option">{{mostDays}}&nbsp;<text class="card-option-text">天</text></view>

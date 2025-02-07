@@ -96,8 +96,8 @@
 	  {
 	    "pagePath":"pages/fourQuadrants", //页面路径
 	    "text":"四象限"   ,                //tab字体显示
-	  	"iconPath": "static/分类.png",
-		"selectedIconPath": "static/全部.png"
+	  	"iconPath": "static/sort.png",
+		"selectedIconPath": "static/sort-filled.png"
 	  }, {
 	    "pagePath":"pages/habit", //页面路径
 	    "text":"习惯管理"   ,                //tab字体显示

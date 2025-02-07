@@ -2,7 +2,6 @@
 	<view class="k-calendar">
 		<view v-if="state.selectedDay!=undefined" class="title">
 			{{ labelText()}}
-			
 			<view class="sign" @click="signRotate" :style="state.view.rotation" v-if="!unchangable"></view>
 			<view class="select-date">
 				<picker mode="date" :value="state.dateStr" start="1970-01-01" @change="dateChange"
@@ -19,7 +18,7 @@
 			v-if="state.view.expanded" @clickItem="switchViewMode" style="margin-bottom:5px">
 		</uni-segmented-control>
 		<swiper :current="state.current" @transition="toTransform" @change="transformed" :duration="state.duration"
-			@animationfinish="backTransform" v-if="showWay==CalendarDisplayWay.week" style="height: fit-content);">
+			@animationfinish="backTransform" v-if="showWay==CalendarDisplayWay.week" style="height: 110px;">
 			<swiper-item v-for="(item,index) in state.data" :key="index">
 				<view class="header">
 					<view class="day-label">
@@ -77,7 +76,7 @@
 			</swiper-item>
 		</swiper>
 		<swiper v-if="showWay==CalendarDisplayWay.day" :current="state.current" @transition="toTransform"
-			@change="transformed" @animationfinish="backTransform">
+			@change="transformed" @animationfinish="backTransform" style="height: 70px;">
 			<swiper-item v-for="(item,index) in state.data" :key="index"
 				style="height: 50px;background-color: aliceblue;">
 				<view v-for="(day,index1) in state.days[index]" :key="index1" 
@@ -131,7 +130,7 @@
 	const current = ref(pros.currentDay);
 	const showWay = ref(pros.showWay);
 	const unchangable = ref(pros.unchangable);
-	const emits = defineEmits();
+	const emits = defineEmits(["modeChange","dateChange"]);
 
 	onMounted(() => {
 		if (current.value == undefined)
@@ -240,11 +239,10 @@
 			const date = new Date(new Date().setFullYear(year + i - 1));
 			for (let j = 0; j < 12; j++) {
 				const days = [];
-
 				for (let k = 0; k < monthDays(date.getFullYear(), j + 1); k++) {
 					const day = new Date(date);
-					day.setDate(k + 1);
 					day.setMonth(j);
+					day.setDate(k + 1);
 					for (let n = 0; k == 0 && n < day.getDay(); n++)
 						days.push(null);
 					const item = {
@@ -252,9 +250,10 @@
 					};
 					days.push(item);
 				}
-				state.days[i].push(days);
+				state.days[i].push(days);	
 			}
 		}
+		console.log(state.days);
 	}
 
 	function loadDays() {
@@ -589,6 +588,8 @@
 		updateView(showWay.value);
 		state.view.current = 1;
 		state.view.expanded = false;
+		emits("modeChange",showWay.value);
+		emits("dateChange",state.selectedDay);
 	}
 
 	function freshItems() {

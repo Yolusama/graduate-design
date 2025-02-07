@@ -168,9 +168,9 @@ export function getDateStr(date = new Date()) {
 
 export function getDateTimeStr(date = new Date(), thisYear) {
 	if (date.getFullYear() == thisYear)
-		return `${date.getMonth()+1}月${date.getDate()}日 ${weekdays[date.getDay()].text} ${timeWithoutSeconds(date)}`;
+		return `${date.getMonth()+1}月${date.getDate()}日 ${timeWithoutSeconds(date)}`;
 	else
-		return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${weekdays[date.getDay()].text} ${timeWithoutSeconds(date)}`;
+		return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${timeWithoutSeconds(date)}`;
 }
 
 export function copy(src, to) {

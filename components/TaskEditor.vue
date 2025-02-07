@@ -5,7 +5,7 @@
 				<text :class="'quadrant-'+state.task.priority" @click="priorityPopup.open()">
 					{{state.priority[state.task.priority-1].text}}
 				</text>
-				<image src="../static/日历.png" @click="timePopup.open()" class="image"></image>
+				<image src="../static/task.png" @click="timePopup.open()" class="image"></image>
 				<image src="../static/plane.png" v-if="!state.canCreateTask&&!state.isTaskUpdate" :size="18"
 					class="image" />
 				<image src="../static/plane-filled.png" v-if="state.isTaskUpdate||state.canCreateTask" :size="18"
@@ -44,7 +44,7 @@
 			<uni-list-item show-arrow>
 				<template v-slot:body>
 					<view class="time-item">
-						<image src="../static/闹钟.png" class="image"></image>
+						<image src="../static/clock.png" class="image"></image>
 						<view class="select-datetime">
 							开始：
 							<picker mode="date" @change="pick('begin-date',$event)" :value="startTime.date">
@@ -123,7 +123,7 @@
 				<uni-icons type="closeempty" @click="customPopup.close()" :size="20"></uni-icons>
 			</view>
 			<view class="head">
-				<image class="image" src="../static/闪电.png"></image>
+				<image class="image" src="../static/flash.png"></image>
 				<picker mode="multiSelector" :value="state.frequency.selected" @change="takeDef" :range="
 				[state.frequency.multiData[0],state.frequency.multiData[1]]">
 					{{getRuleText(state.task)}}
@@ -458,7 +458,7 @@ import { CreateOrGetLabel } from '../api/Index';
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
 		if (!state.isTaskUpdate) {
-			if(label.value!=undefined&&state.hasLabelSetter)
+			if(label.value!=undefined&&state.hasLabelSetter&&!isBaseLabel(label.value.labelId))
 			   state.task.labelId = label.value.labelId;
 			CreateTask(state.task, response => {
 				const res = response.data;

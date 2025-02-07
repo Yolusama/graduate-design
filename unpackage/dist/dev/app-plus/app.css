@@ -2458,13 +2458,13 @@
 		color: black;
 		font-weight: 600;
 }
-.label-edit .upload[data-v-99a35764]{
-		width:80px;
+.label-edit .upload[data-v-99a35764] {
+		width: 80px;
 		height: 80px;
 		line-height: 80px;
 		text-align: center;
-		border:1px dashed gray;
+		border: 1px dashed gray;
 		font-size: 15px;
-		color:rgb(0,75,235);
+		color: rgb(0, 75, 235);
 		margin-left: 2%;
 }

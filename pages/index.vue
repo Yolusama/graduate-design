@@ -611,9 +611,9 @@
 			res =
 			`<text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text><text style="color:red">${timeWithoutSeconds(endTime)}</text>`;
 		else if (dateEquals(beginTime, time) && !dateEquals(endTime, time))
-			res = `<text>开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
+			res = `<text style="text-align:center">开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
 		else if (!dateEquals(beginTime, time) && dateEquals(endTime, time))
-			res = `<text>结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
+			res = `<text style="text-align:center">结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
 		else if (onlyDate(endTime).getTime() < time.getTime()) {
 			if (!dateEquals(beginTime, endTime))
 				res = `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text>

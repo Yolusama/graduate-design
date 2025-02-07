@@ -28,8 +28,9 @@
 								<uni-data-checkbox v-model="state.taskCheck.mode" :localdata="state.taskCheck.data"
 									mode="tag" @change="getFinishTaskCounts">
 								</uni-data-checkbox>
+								<!--#ifdef H5-->
 								<uni-grid :show-border="false">
-									<uni-grid-item v-for="(count,index) in state.finishCounts">
+									<uni-grid-item v-for="(count,index) in state.finishCounts" :key="index" :index="index">
 										<view class="task-count">
 											<text style="font-weight: 600;">{{count.item2}}</text>
 											<text
@@ -37,6 +38,18 @@
 										</view>
 									</uni-grid-item>
 								</uni-grid>
+								<!--#endif-->
+								<!--#ifndef H5-->
+								<view style="display: flex;justify-content: space-between;width:75vw">
+									<view v-for="(count,index) in state.finishCounts" :key="index" :index="index" >
+										<view class="task-count">
+											<text style="font-weight: 600;">{{count.item2}}</text>
+											<text
+												style="color:red;font-size: 14px;">{{getTaskCountDateStr(count.item1,index)}}</text>
+										</view>
+									</view>
+								</view>
+								<!--#endif-->
 							</view>
 						</view>
 					</template>
@@ -152,34 +165,41 @@
 				<view class="header">
 					<uni-icons type="closeempty" :size="24" @click="habitPopup.close();"></uni-icons>
 				</view>
-				<scroll-view scroll-y style="height: 84vh;">
-					<uni-table empty-text="暂时没有设置习惯">
-						<uni-th>
-							习惯
-						</uni-th>
-						<uni-th>
-							完成率
-						</uni-th>
-						<uni-th>
-							是否达标
-						</uni-th>
-						<uni-tr v-for="(habit,index) in state.habits" :key="index">
-							<uni-td align="center">
-								<view class="habit">
-									<image :src="imgSrc(habit.thumb)" class="thumb"></image>
-									<text class="habit-name">{{habit.name}}</text>
-								</view>
-							</uni-td>
-							<uni-td>
-								<text style="font-weight: 600;color:black">{{getFinishRate(habit)}}%</text>
-							</uni-td>
-							<uni-td>
-								<text v-if="habit.aimDays>0">{{habit.persistDays>=habit.aimDays?"是":"否"}}</text>
-								<text v-if="habit.aimDays<0">否</text>
-							</uni-td>
-						</uni-tr>
-					</uni-table>
-				</scroll-view>
+				<uni-table empty-text="暂时没有设置习惯" :loading="state.pageLoading">
+					<uni-th>
+						习惯
+					</uni-th>
+					<uni-th>
+						完成率
+					</uni-th>
+					<uni-th>
+						是否达标
+					</uni-th>
+					<uni-tr v-for="(habit,index) in habitPageoption.data" :key="index">
+						<uni-td align="center">
+							<view class="habit">
+								<image :src="imgSrc(habit.thumb)" class="thumb"></image>
+								<text class="habit-name">{{habit.name}}</text>
+							</view>
+						</uni-td>
+						<uni-td>
+							<text style="font-weight: 600;color:black">{{getFinishRate(habit)}}%</text>
+						</uni-td>
+						<uni-td>
+							<text v-if="habit.aimDays>0">{{habit.persistDays>=habit.aimDays?"是":"否"}}</text>
+							<text v-if="habit.aimDays<0">否</text>
+						</uni-td>
+					</uni-tr>
+				</uni-table>
+				<view class="page">
+					<uni-pagination :current="habitPageoption.current" :total="habitPageoption.total" :show-icon="true"
+						:page-size="habitPageoption.size" @change="getUserHabits" />
+					<text style="font-size: 14px;">共计
+					<text style="color: red;">{{habitPageoption.total}}</text>
+					条数据</text>
+					<text style="font-size: 14px;text-align: left;">每页
+					 <text style="color: cyan;">{{habitPageoption.size}}</text>条</text>
+				</view>
 			</view>
 		</uni-popup>
 	</view>
@@ -197,6 +217,7 @@
 	import {
 		ADayMillseconds,
 		AWeek,
+		PageOption,
 		ValueText,
 		delayToRun,
 		loading,
@@ -222,6 +243,7 @@
 	const habitPopup = ref(null);
 
 	const today = ref(onlyDate(new Date()));
+	const habitPageoption = ref(new PageOption(1, 10, 0));
 
 	const state = reactive({
 		user: null,
@@ -242,7 +264,7 @@
 			data: [new ValueText(0, "日"), new ValueText(1, "周"), new ValueText(2, "月")],
 			mode: 0
 		},
-		habits: []
+		pageLoading:false
 	});
 
 	onMounted(() => {
@@ -258,18 +280,8 @@
 						state.user[pro] = data[pro];
 				}
 				getTaskCountOption();
-				GetUserHabits(state.user.userId, response => {
-					const res = response.data;
-					if (!res.succeeded) {
-						uni.showToast({
-							title: res.message,
-							icon: "none"
-						});
-						return;
-					}
-					state.habits = res.data;
-					for (let habit of state.habits)
-						habit.beginDate = new Date(habit.beginDate);
+				getUserHabits({
+					current: 1
 				});
 			}
 		});
@@ -545,7 +557,7 @@
 			const leftDays = daysFromBeginDateToNow - (7 - beginDateDay);
 			const mod = leftDays % 7;
 			const left = Math.floor(leftDays / 7);
-			count += frequency.value.weekPersistDays * left + (mod<frequency.value.weekPersistDays ? mod : frequency
+			count += frequency.value.weekPersistDays * left + (mod < frequency.value.weekPersistDays ? mod : frequency
 				.value.weekPersistDays);
 		}
 
@@ -607,6 +619,28 @@
 				else
 					return "本月";
 		}
+	}
+
+	function getUserHabits(e) {
+		habitPageoption.value.current = e.current;
+		state.pageLoading = true;
+		delayToRun(()=>{
+			GetUserHabits(habitPageoption.value, state.user.userId, response => {
+				const res = response.data;
+				if (!res.succeeded) {
+					uni.showToast({
+						title: res.message,
+						icon: "none"
+					});
+					return;
+				}
+				habitPageoption.value.total = res.data.total;
+				for (let habit of res.data.data)
+					habit.beginDate = new Date(habit.beginDate);
+				habitPageoption.value.data = res.data.data;
+				state.pageLoading = false;
+			});
+		},350);
 	}
 </script>
 
@@ -743,7 +777,7 @@
 		width: 100vw;
 		height: 94vh;
 		/*#ifndef H5*/
-		padding-top:3vh ;
+		padding-top: 3vh;
 		/*#endif*/
 	}
 
@@ -773,5 +807,14 @@
 		text-wrap: nowrap;
 		text-overflow: ellipsis;
 		margin-left: 2%;
+	}
+	
+	#user .page{
+		display: flex;
+		margin-top: 3%;
+		justify-content: space-between;
+		padding-left: 1%;
+		padding-right: 2%;
+		align-items: center;
 	}
 </style>

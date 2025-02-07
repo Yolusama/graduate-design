@@ -76,7 +76,7 @@
 					plus.push.remove(msg);
 					if (reminder.isTaskReminder)
 						notifyTaskWithModal(reminder, notifyTaskCallback);
-					if(reminder.isHabitReminder)
+					else if(reminder.isHabitReminder)
 						notifyHabitWithModal(reminder);
 				}
 			});

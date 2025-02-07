@@ -123,7 +123,7 @@
 					<template v-slot:body>
 						<view class="time">
 							<view style="display: flex;align-items: center;">
-								<image src="../static/闪电.png" style="width: 24px;height: 24px;"></image>
+								<image src="../static/flash.png" style="width: 24px;height: 24px;"></image>
 								<text style="margin-left: 3px;">重复</text>
 							</view>
 							<view v-if="state.isTaskUpdate&&state.frequency.selection>0" @click="changeRepeatRule"
@@ -199,7 +199,7 @@
 												{{state.defOpt.mode}}
 											</text>
 											<picker mode="date" v-if="state.defOpt.val==1" :value="state.task.deadline"
-												fields="year month day" @change="takeDeadline">
+												 @change="takeDeadline">
 												<text class="def-text">
 													{{state.task.deadline==null?getDateStr(today):
 											getDateStr(state.task.deadline)}}
@@ -224,6 +224,7 @@
 			<view class="header">
 				<uni-icons type="closeempty" @click="closeDetailPopup" class="close" :size="25"></uni-icons>
 				<text style="font-weight: 600;">查看/修改任务</text>
+				<text>&nbsp;</text>
 			</view>
 			<view class="task-detail-title">{{state.selectedTask.title}}</view>
 			<view v-html="'任务描述：'+state.selectedTask.description" class="description"></view>
@@ -1015,7 +1016,8 @@
 		background-color: azure;
 		padding: 3%;
 		z-index: 1;
-		height: 100vh;
+		height: 96vh;
+		overflow: hidden;
 	}
 
 	.content {

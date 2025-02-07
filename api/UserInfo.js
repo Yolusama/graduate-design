@@ -33,6 +33,6 @@ export function GetFinishedTaskCounts(userId,mode,today,successCallback){
 	Get(`/Api/Task/GetFinishedTaskCounts/${userId}?mode=${mode}&today=${today.getTime()}`,auth,successCallback);
 }
 
-export function GetUserHabits(userId,successCallback){
-	Get(`/Api/Habit/GetUserHabits/${userId}`,auth,successCallback);
+export function GetUserHabits(pageOption,userId,successCallback){
+	Get(`/Api/Habit/GetUserHabits/${userId}?page=${pageOption.current}&pageSize=${pageOption.size}`,auth,successCallback);
 }

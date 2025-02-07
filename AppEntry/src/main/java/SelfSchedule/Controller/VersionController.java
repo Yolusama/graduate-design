@@ -53,8 +53,14 @@ public class VersionController extends ControllerBase{
 
     @GetMapping("/GetLatestVersion")
     @ApiOperation(value = "获取最新版本",notes = "获取最新版本")
-    @ClearRedisCache(keys = {CachingKeys.GetCurrentVersion})
-    public ActionResult<VersionStatus> GetLatestVersion(HttpServletRequest request){
+    public ActionResult<VersionStatus> GetLatestVersion(){
         return successWithData(versionService.getLatestVersion());
+    }
+
+    @PostMapping("/ResetCurrentVersion/{userId}")
+    @ApiOperation(value = "重新设置用户当前版本",notes = "重新设置用户当前版本")
+    public ActionResult ResetCCurrentVersion(@PathVariable String userId,@RequestBody VersionStatus version){
+        versionService.resetCurrentVersion(version,userId,redis);
+        return ok();
     }
 }

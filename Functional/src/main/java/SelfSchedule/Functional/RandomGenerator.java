@@ -1,5 +1,7 @@
 package SelfSchedule.Functional;
 
+import SelfSchedule.Common.Constants;
+
 import java.util.Random;
 
 public class RandomGenerator {
@@ -12,9 +14,7 @@ public class RandomGenerator {
     private static final char UserIdPrefix = 'U';
     private static final char HabitIdPrefix = 'H';
     private static final char VersionIdPrefix = 'V';
-    private static final char VersionIdSep = '-';
     private static final Integer VersionIdLength = 12;
-    private static final Integer VersionNOLength = 16;
     private static final Integer HabitIdRandomBound = 5;
 
     public static String generateNumber(int count)
@@ -63,10 +63,19 @@ public class RandomGenerator {
         StringBuilder builder = new StringBuilder();
         builder.append(VersionIdPrefix);
         Random random = new Random(System.currentTimeMillis());
-        for(int i=1;i<VersionIdLength;i++)
+        for(int i=2;i<VersionIdLength;i++)
         {
             int rIndex = random.nextInt(Table.length());
-            builder.append(Table.charAt(rIndex));
+            char c = Table.charAt(rIndex);
+            if(c==VersionIdPrefix||c=='v')
+            {
+                int w = random.nextInt(2);
+                if(w== Constants.AbNormalState)
+                    c -= random.nextInt(Bound-1)+1;
+                else
+                    c += random.nextInt(Bound-1)+1;
+            }
+            builder.append(c);
         }
         return builder.toString();
     }

@@ -807,7 +807,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 Date leftBound = new Date(bound.getTime());
                 leftBound.setMonth(bound.getMonth()+i-Constants.Week);
                 Date rightBound = new Date(leftBound.getTime());
-                rightBound.setMonth(leftBound.getMonth());
+                rightBound.setMonth(leftBound.getMonth()+1);
                 data[i-1] = Pair.makePair(leftBound,mapper.getDurationTaskCounts(userId,leftBound,rightBound));
             }
         }

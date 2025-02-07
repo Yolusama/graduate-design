@@ -30,6 +30,6 @@ public interface IHabitService extends IService<Habit> {
     void removeAllAbout(String userId);
     int recover(String habitId);
     int remove(String habitId);
-    List<HabitVO> getHabits(String userId,RedisCache redis);
+    PagedData<HabitVO> getHabits(Integer page,Integer pageSize, String userId);
 }
 

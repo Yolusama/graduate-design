@@ -55,8 +55,8 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
         final String key = String.format("Caching_%s_%s",userId,CachingKeys.GetCurrentVersion);
         if(redis.has(key))
             return (VersionStatus) redis.get(key);
-        VersionStatus currentVersion = mapper.getLatestVersion(null);
-                // mapper.getLatestVersion(VersionType.FULL.value());
+        VersionStatus currentVersion = //mapper.getLatestVersion(null);
+                mapper.getLatestVersion(VersionType.FULL.value());
         redis.set(key,currentVersion,Constants.MonthExpire);
         return currentVersion;
     }
@@ -95,5 +95,13 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
         PagedData<VersionStatus> res = new PagedData<>(pagination.getRecords(),pagination.getTotal());
         redis.set(CachingKeys.GetVersions,res,Constants.CachingExpire);
         return res;
+    }
+
+    @Override
+    public void resetCurrentVersion(VersionStatus version, String userId, RedisCache redis) {
+        final String key = String.format("Caching_%s_%s",userId,CachingKeys.GetCurrentVersion);
+        if(redis.has(key))
+            redis.remove(key);
+        redis.set(key,version,Constants.MonthExpire);
     }
 }

@@ -55,8 +55,8 @@ public class HabitController extends ControllerBase{
 
     @PutMapping("/CreateHabit")
     @ApiOperation(value = "用户添加习惯",notes = "用户创建习惯")
-    @ClearRedisCache(keys = {CachingKeys.GetHabits,CachingKeys.GetUserHabits,
-            CachingKeys.GetHabitsDateValue,CachingKeys.GetUserHabitReminders,CachingKeys.GetIndexData})
+    @ClearRedisCache(keys = {CachingKeys.GetHabits, CachingKeys.GetHabitsDateValue,
+            CachingKeys.GetUserHabitReminders,CachingKeys.GetIndexData})
     public ActionResult<String> CreateHabit(@RequestBody HabitModel model, HttpServletRequest request){
         String res = habitService.createHabit(model);
         if(res==null)
@@ -66,7 +66,7 @@ public class HabitController extends ControllerBase{
 
     @PatchMapping("/UpdateHabit")
     @ClearRedisCache(keys = {CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue,
-            CachingKeys.GetUserHabitReminders,CachingKeys.GetIndexData,CachingKeys.GetUserHabits})
+            CachingKeys.GetUserHabitReminders,CachingKeys.GetIndexData})
     public ActionResult<HabitModel> UpdateHabit(@RequestBody HabitModel model,HttpServletRequest request){
         return successWithData(habitService.updateHabit(model));
     }
@@ -119,8 +119,8 @@ public class HabitController extends ControllerBase{
 
     @DeleteMapping("/RemoveHabit/{habitId}")
     @ApiOperation(value = "用户移除习惯",notes = "用户形式删除习惯")
-    @ClearRedisCache(keys={CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue,
-            CachingKeys.GetUserHabitReminders,CachingKeys.GetIndexData,CachingKeys.GetUserHabits})
+    @ClearRedisCache(keys={CachingKeys.GetHabits,CachingKeys.GetHabitsDateValue, CachingKeys.GetUserHabitReminders,
+            CachingKeys.GetIndexData})
     public ActionResult RemoveHabit(@PathVariable String habitId,HttpServletRequest request){
         int res = habitService.removeHabit(habitId);
         if(res == Constants.AbNormalState)
@@ -155,10 +155,12 @@ public class HabitController extends ControllerBase{
 
     @GetMapping("/GetUserHabits/{userId}")
     @ApiOperation(value = "获取用户所有习惯",notes = "获取用户所有习惯")
-    public CompletableFuture<ActionResult<List<HabitVO>>> GetUserHabits(@PathVariable String userId)
+    public CompletableFuture<ActionResult<PagedData<HabitVO>>> GetUserHabits(@PathVariable String userId,
+                                                                        @RequestParam Integer page,
+                                                                        @RequestParam Integer pageSize)
     {
         return CompletableFuture.completedFuture(
-                successWithData(habitService.getHabits(userId,redis))
+                successWithData(habitService.getHabits(page,pageSize,userId))
         );
     }
 }

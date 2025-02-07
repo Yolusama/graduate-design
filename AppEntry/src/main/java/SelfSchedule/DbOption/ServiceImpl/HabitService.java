@@ -468,17 +468,12 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     }
 
     @Override
-    public List<HabitVO> getHabits(String userId, RedisCache redis) {
-        String key = String.format("Caching_%s_%s",userId,CachingKeys.GetUserHabits);
-        ArrayDataModel<HabitVO> model;
-        if(redis.has(key)){
-            model = (ArrayDataModel<HabitVO>) redis.get(key);
-            return ObjectUtil.toList(model.getData());
-        }
-        model = new ArrayDataModel<>();
-        List<HabitVO> res = mapper.getHabits(Page.of(1,1000),userId,false);
-        model.setData(ObjectUtil.toArray(res,HabitVO.class));
-        redis.set(key,model,Constants.CachingExpire);
+    public PagedData<HabitVO> getHabits(Integer page, Integer pageSize, String userId) {
+        PagedData<HabitVO> res = new PagedData<>();
+        Page<HabitVO> pagedData = Page.of(page,pageSize);
+        List<HabitVO> data = mapper.getHabits(pagedData,userId,false);
+        res.setData(data);
+        res.setTotal(pagedData.getTotal());
         return res;
     }
 }

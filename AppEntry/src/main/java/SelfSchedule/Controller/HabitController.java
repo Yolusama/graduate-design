@@ -47,7 +47,8 @@ public class HabitController extends ControllerBase{
     @ApiOperation(value = "获取用户习惯",notes = "根据用户id获取")
     @ClearRedisCache(keys = {CachingKeys.GetIndexData})
     public CompletableFuture<ActionResult<PagedData<HabitVO>>> GetHabits(@PathVariable String userId,@RequestParam Integer page,
-                                                                         @RequestParam Integer pageSize,@RequestParam Long time){
+                                                                         @RequestParam Integer pageSize,@RequestParam Long time,
+                                                                         HttpServletRequest request){
         return CompletableFuture.completedFuture(
                 successWithData(habitService.getHabits(page,pageSize,userId,new Date(time),false, redis))
         );

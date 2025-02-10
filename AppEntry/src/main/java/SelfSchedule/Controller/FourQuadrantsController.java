@@ -37,7 +37,7 @@ public class FourQuadrantsController extends ControllerBase {
     @ApiOperation(value="以每个象限为键对应优先级中的数据",tags="键名称为quadrant-(1,2,3,4)对应优先级的值")
     @ClearRedisCache(keys = {CachingKeys.GetIndexData})
     public CompletableFuture<ActionResult<Map<String, List<TaskRuleComboVO>>>> GetTasks(@PathVariable String userId,
-            @RequestParam Long time){
+            @RequestParam Long time,HttpServletRequest request){
         return CompletableFuture.completedFuture(successWithData(taskService.getTasks(userId,new Date(time),redis)));
     }
 

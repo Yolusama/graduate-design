@@ -12,10 +12,8 @@ import SelfSchedule.Service.RedisCache;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.MessagingException;
-
 public interface IUserService extends IService<User> {
-    String getCheckCode(String email, Integer length, EmailService emailService, RedisCache redis) throws MessagingException;
+    String getCheckCode(String email, Integer length, EmailService emailService, RedisCache redis);
     int register(String email,String password,String checkCode,RedisCache redis);
     UserLoginVO login(String email, String password, JwtService jwtService, RedisCache redis);
     UserLoginVO checkCodeLogin(String email, String checkCode, JwtService jwtService, RedisCache redis);
@@ -27,4 +25,5 @@ public interface IUserService extends IService<User> {
     PagedData<UserVO> getUsers(Integer page,Integer pageSize,Boolean status,Integer role,String queryKey);
     UserLoginVO adminLogin(String account,String password,JwtService jwtService,RedisCache redis);
     int changeStatus(String userId,Boolean status);
+    void feedback(String email,String content,EmailService emailService,FileService fileService);
 }

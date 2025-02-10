@@ -59,11 +59,17 @@ public class DateUtil {
     public static boolean over(Date date,Date to){
         return date.getTime()>=to.getTime();
     }
+
     public static Date onlyDate(Date time){
         Date date = new Date(time.getTime());
         date.setHours(Constants.None);
         date.setMinutes(Constants.None);
         date.setSeconds(Constants.None);
         return date;
+    }
+
+    public static String fileNameFormatString(Date date){
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd HHmmss");
+        return format.format(date);
     }
 }

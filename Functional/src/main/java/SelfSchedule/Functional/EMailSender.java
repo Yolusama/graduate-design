@@ -10,19 +10,16 @@ import javax.mail.internet.*;
 public class EMailSender {
 
   private EMailSender(){}
-  private static String from;
-  private static String password;
-  private static boolean hasLoaded = false;
+  private String from;
+  private String password;
 
-  public static void init(String host,String authorizationCode)
+  public EMailSender(String host,String authorizationCode)
   {
-      if(hasLoaded) return;
       from = host;
       password = authorizationCode;
-      hasLoaded = true;
   }
 
-  public static void sendTo(String to,String subject,String msg) throws MessagingException {
+  public  void sendTo(String to,String subject,String msg){
       Properties properties = System.getProperties();
 
       // 连接协议
@@ -44,17 +41,21 @@ public class EMailSender {
               return new javax.mail.PasswordAuthentication(from, password);
           }
       });
+      try {
+          MimeMessage message = new MimeMessage(session);
+          message.setFrom(new InternetAddress(from));
+          message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+          message.setSubject(subject);
 
-      MimeMessage message = new MimeMessage(session);
-      message.setFrom(new InternetAddress(from));
-      message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-      message.setSubject(subject);
-
-      MimeBodyPart messageBodyPart = new MimeBodyPart();
-      messageBodyPart.setText(msg);
-      MimeMultipart multipart = new MimeMultipart();
-      multipart.addBodyPart(messageBodyPart);
-      message.setContent(multipart);
-      Transport.send(message);
+          MimeBodyPart messageBodyPart = new MimeBodyPart();
+          messageBodyPart.setText(msg);
+          MimeMultipart multipart = new MimeMultipart();
+          multipart.addBodyPart(messageBodyPart);
+          message.setContent(multipart);
+          Transport.send(message);
+      }
+      catch (Exception ex){
+          ex.printStackTrace();
+      }
   }
 }

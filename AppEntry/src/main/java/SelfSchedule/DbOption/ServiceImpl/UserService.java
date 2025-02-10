@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.MessagingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
 
     @Override
     public String getCheckCode(String email, Integer length, EmailService emailService, RedisCache redis)
-            throws MessagingException {
+    {
         String code = RandomGenerator.generateNumber(length);
         String key = String.format("%s_CheckCode",email);
         String key1 = String.format("%s_CheckCode_Get",email);
@@ -279,5 +278,10 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(User::getId,userId).set(User::getStatus,status);
         return mapper.update(wrapper);
+    }
+
+    @Override
+    public void feedback(String email, String content, EmailService emailService, FileService fileService) {
+        emailService.receiveFrom(email,content,fileService);
     }
 }

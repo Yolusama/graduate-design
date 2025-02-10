@@ -16,3 +16,5 @@ resource:
      pattern: /download/**
      path: D:\repos\scResource\download\
      location: file:D:/repos/scResource/download/
+   feedback:
+     path: D:\repos\scResource\feedback\

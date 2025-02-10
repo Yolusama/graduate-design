@@ -7,6 +7,7 @@ import SelfSchedule.Entity.Enum.UserLoginStatus;
 import SelfSchedule.Entity.VO.PagedData;
 import SelfSchedule.Entity.VO.UserLoginVO;
 import SelfSchedule.Entity.VO.UserVO;
+import SelfSchedule.Model.UserFeedbackModel;
 import SelfSchedule.Model.UserLoginRegModel;
 import SelfSchedule.Model.UserPwdModel;
 import SelfSchedule.Model.UserTokenModel;
@@ -51,7 +52,7 @@ public class UserController extends ControllerBase{
     @GetMapping("/GetCheckCode/{length}")
     @ApiOperation(value="发送电子邮箱验证码给目标邮箱",notes = "验证码分配")
     public ActionResult GetCheckCode(@RequestParam String email,@PathVariable String length)
-            throws MessagingException {
+    {
         String res = userService.getCheckCode(email,Integer.parseInt(length),emailService,redis);
         if(res==null)
             return fail("验证码已存在，1分钟内无法再次获取");
@@ -74,7 +75,7 @@ public class UserController extends ControllerBase{
 
     @PostMapping("/Login")
     @ApiOperation(value="用户登录",notes = "登录")
-    public ActionResult<UserLoginVO> Login(@RequestBody UserLoginRegModel model) throws IllegalAccessException {
+    public ActionResult<UserLoginVO> Login(@RequestBody UserLoginRegModel model)  {
         UserLoginVO res = userService.login(model.getEmail(),model.getPassword(),jwtService,redis);
         if(res.getLoginStatus() == UserLoginStatus.SUCCESS)
             return successWithData("正在登录...",res);
@@ -88,7 +89,7 @@ public class UserController extends ControllerBase{
 
     @PostMapping("/CheckCodeLogin/{checkCode}")
     @ApiOperation(value="使用验证码登录",notes = "验证码登录")
-    public ActionResult<UserLoginVO> CheckCodeLogin(@RequestParam String email,@PathVariable String checkCode) throws IllegalAccessException
+    public ActionResult<UserLoginVO> CheckCodeLogin(@RequestParam String email,@PathVariable String checkCode)
     {
         UserLoginVO res = userService.checkCodeLogin(email,checkCode,jwtService,redis);
         if(res.getLoginStatus() == UserLoginStatus.SUCCESS)
@@ -146,5 +147,12 @@ public class UserController extends ControllerBase{
         if(!res)
             return fail("验证码错误或者已过期！");
         return ok("已更改电子邮箱！");
+    }
+
+    @PostMapping("/Feedback")
+    @ApiOperation(value="接收用户反馈内容",notes = "接收反馈内容并生成文本文件记录到本地")
+    public ActionResult Feedback(@RequestBody UserFeedbackModel model){
+        emailService.receiveFrom(model.getEmail(),model.getContent(),fileService);
+        return ok("已收到反馈");
     }
 }

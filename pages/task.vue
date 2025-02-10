@@ -35,7 +35,7 @@
 	<uni-popup type="right" ref="popup" background-color="#fff" @change="beforeClosePopup" style="z-index:101">
 		<scroll-view class="popup" :scroll-y="true">
 			<view class="header">
-				<uni-icons type="closeempty" @click="closePopup" class="close" :size="25"></uni-icons>
+				<uni-icons type="closeempty" @click="popup.close()" class="close" :size="25"></uni-icons>
 				<text style="font-weight: 600;">{{state.isTaskUpdate?"修改任务":"新建任务"}}</text>
 				<uni-icons type="checkmarkempty" :style="state.canCreateTask?'':'color:lightgray'" :size="25"
 					class="create" @click="editTask"></uni-icons>
@@ -129,7 +129,7 @@
 							<view v-if="state.isTaskUpdate&&state.frequency.selection>0" @click="changeRepeatRule"
 								size="mini" style="margin-left: 5px;font-size: 13px;">修改</view>
 							<view @click="frequencyPopup.open()" class="def-text">
-								{{state.frequency.defText}}
+								{{getRuleText(state.task)}}
 							</view>
 						</view>
 					</template>
@@ -164,7 +164,7 @@
 					@onChange="notify">
 				</k-radio-group>
 			</uni-popup>
-			<uni-popup ref="defRulePopup" type="center" background-color="#fff">
+			<uni-popup ref="defRulePopup" type="center" background-color="#fff" >
 				<scroll-view :scroll-y="true" class="popup">
 					<view class="header" style="justify-content: flex-start;"><uni-icons type="closeempty"
 							@click="defRulePopup.close()"></uni-icons>
@@ -371,9 +371,6 @@
 			reminderInfoModels: [],
 			period: 0,
 			periodUnit: 0,
-			changed: function() {
-				return this.title.length > 0 || this.description.length > 0 || this.priority != 4;
-			},
 			custom: null,
 			deadline: null,
 			count: 0,
@@ -394,10 +391,8 @@
 			data: frequency,
 			multiData: [],
 			selectedOne: [],
-			defText: "不重复",
 			selection: 0
 		},
-		manualPopup: false,
 		notifications: [],
 		notifyIntervals: [],
 		notifyOpt: [
@@ -414,7 +409,7 @@
 		},
 		selectedDay: new Date(today.value),
 		selectedTask: null,
-		mode: 0,
+		mode: -1,
 		modeContent: [],
 		isTaskUpdate: false,
 		isTaskCancel: false,
@@ -460,36 +455,8 @@
 	}
 
 	function beforeClosePopup(e) {
-		if (e.show || state.manualPopup) return;
-		popupClose(e);
-	}
-
-	function closePopup() {
-		state.manualPopup = true;
-		popupClose({
-			show: true
-		});
-	}
-
-	function popupClose(e) {
-		if (state.task.changed()) {
-			uni.showModal({
-				title: "撤销编辑内容",
-				content: "已编辑的内容未使用，是否继续编辑？",
-				confirmText: "放弃",
-				cancelText: "继续",
-				success: (res) => {
-					if (!res.confirm) return;
-					popup.value.close();
-					reloadTaskModel();
-				}
-			});
-		} else {
-			if (e.show) {
-				popup.value.close();
-				reloadTaskModel();
-			}
-		}
+		if (e.show) return;
+		reloadTaskModel();
 	}
 
 	function reloadTaskModel() {
@@ -527,10 +494,7 @@
 		state.canCreateTask = false;
 		state.isTaskUpdate = false;
 		state.task.repeatable = false;
-		if (state.task.changed == undefined)
-			state.task.changed = function() {
-				return this.title.length > 0 || this.description.length > 0 || this.priority != 3;
-			};
+		state.mode = -1;	
 	}
 
 	function pick(event, sign) {
@@ -662,12 +626,19 @@
 	}
 
 	function addReminderInfoModel(e) {
+		const data = state.task.reminderInfoModels;
+		if(data.length == 5){
+			uni.showToast({
+				title:"最多只能有五个提醒",
+				icon:"none"
+			});
+			return;
+		}
 		const detail = e.detail;
 		const indexes = detail.value;
 		const mode = indexes[1] + 1;
 		const value = state.notifyOpt[0][indexes[0]];
 		const instance = ReminderInfo.getInstance(mode, value, state.task.beginTime);
-		const data = state.task.reminderInfoModels;
 		const func = () => {
 			if (data.length == 0)
 				data.push(instance);
@@ -714,6 +685,7 @@
 		const value = e.value;
 		if (state.isTaskUpdate && value == 0) {
 			frequencyPopup.value.close();
+			state.task.period = 0;
 			return;
 		}
 		if (value < state.frequency.data.length) {
@@ -723,7 +695,6 @@
 			state.frequency.defText = state.frequency.data[value].text;
 		} else {
 			state.task.repeatable = true;
-			state.frequency.defText = "自定义";
 			state.task.period = 1;
 			state.task.periodUnit = 1;
 			state.defOpt.text = `每${1}日`
@@ -902,13 +873,6 @@
 		state.startTime.time = timeWithoutSeconds(state.task.beginTime);
 		state.endTime.date = getDateStr(state.task.endTime);
 		state.endTime.time = timeWithoutSeconds(state.task.endTime);
-		state.task.changed = () => {
-			return state.task.title != state.selectedTask.title || state.task.description != state.selectedTask
-				.description ||
-				state.task.priority != state.selectedTask.priority ||
-				state.task.beginTime.getTime() != state.selectedTask.beginTime.getTime() ||
-				state.task.endTime.getTime() != state.selectedTask.endTime.getTime();
-		};
 		state.isTaskUpdate = true;
 		state.canCreateTask = true;
 		openToEdit();

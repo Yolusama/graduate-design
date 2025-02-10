@@ -317,12 +317,20 @@ import { CreateOrGetLabel } from '../api/Index';
 	}
 
 	function addReminderInfoModel(e) {
+		const data = state.task.reminderInfoModels;
+		if(data.length == 5){
+			uni.showToast({
+				title:"最多只能有五个提醒",
+				icon:"none"
+			});
+			return;
+		}
 		const values = e.detail.value;
 		const reminder = ReminderInfo.getInstance(values[1] + 1, values[0] + 1, new Date(startTime.value.date + " " +
 			startTime.value.time));
 		if (reminder.mode == 1)
 			reminder.value = values[0];
-		const data = state.task.reminderInfoModels;
+	
 		if (data.length == 0)
 			data.push(reminder);
 		else {

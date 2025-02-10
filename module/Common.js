@@ -252,7 +252,7 @@ export function getRuleText(task) {
 		}
 		res = res.substring(0, res.length - 1);
 	}
-	if (task.count != null) {
+	if (task.count != null&&task.count>0) {
 		res += `;重复${task.count}次`;
 	}
 	if (task.deadline != null) {

@@ -34,6 +34,13 @@ export function VerifyToken(userId,token,successCallback)
 	},successCallback);
 }
 
+export function Feedback(email,content,authoriztion,successCallback){
+	Post("/Api/User/Feedback",authoriztion,{
+		email:email,
+		content:content
+	},successCallback);
+}
+
 export const user =  uni.getStorageSync("user");
 
 export const auth = {

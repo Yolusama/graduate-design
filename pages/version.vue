@@ -152,7 +152,6 @@ import { copy } from '../module/Common';
 	}
 	
 	function resetCurrentVersion(version){
-		console.log(version);
 		ResetCurrentVersion(state.userId,version,response=>{
 			const res = response.data;
 			if (!res.succeeded) {

@@ -130,7 +130,7 @@
 	const current = ref(pros.currentDay);
 	const showWay = ref(pros.showWay);
 	const unchangable = ref(pros.unchangable);
-	const emits = defineEmits(["modeChange","dateChange"]);
+	const emits = defineEmits(["modeChange","onChange"]);
 
 	onMounted(() => {
 		if (current.value == undefined)
@@ -253,7 +253,6 @@
 				state.days[i].push(days);	
 			}
 		}
-		console.log(state.days);
 	}
 
 	function loadDays() {

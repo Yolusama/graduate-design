@@ -2877,7 +2877,7 @@ if (uni.restoreGlobal) {
       }
       res2 = res2.substring(0, res2.length - 1);
     }
-    if (task.count != null) {
+    if (task.count != null && task.count > 0) {
       res2 += `;重复${task.count}次`;
     }
     if (task.deadline != null) {
@@ -6939,9 +6939,6 @@ if (uni.restoreGlobal) {
           reminderInfoModels: [],
           period: 0,
           periodUnit: 0,
-          changed: function() {
-            return this.title.length > 0 || this.description.length > 0 || this.priority != 4;
-          },
           custom: null,
           deadline: null,
           count: 0,
@@ -6962,10 +6959,8 @@ if (uni.restoreGlobal) {
           data: frequency,
           multiData: [],
           selectedOne: [],
-          defText: "不重复",
           selection: 0
         },
-        manualPopup: false,
         notifications: [],
         notifyIntervals: [],
         notifyOpt: [
@@ -6982,7 +6977,7 @@ if (uni.restoreGlobal) {
         },
         selectedDay: new Date(today.value),
         selectedTask: null,
-        mode: 0,
+        mode: -1,
         modeContent: [],
         isTaskUpdate: false,
         isTaskCancel: false,
@@ -7025,36 +7020,9 @@ if (uni.restoreGlobal) {
         state.showWay = way;
       }
       function beforeClosePopup(e2) {
-        if (e2.show || state.manualPopup)
+        if (e2.show)
           return;
-        popupClose(e2);
-      }
-      function closePopup() {
-        state.manualPopup = true;
-        popupClose({
-          show: true
-        });
-      }
-      function popupClose(e2) {
-        if (state.task.changed()) {
-          uni.showModal({
-            title: "撤销编辑内容",
-            content: "已编辑的内容未使用，是否继续编辑？",
-            confirmText: "放弃",
-            cancelText: "继续",
-            success: (res2) => {
-              if (!res2.confirm)
-                return;
-              popup.value.close();
-              reloadTaskModel();
-            }
-          });
-        } else {
-          if (e2.show) {
-            popup.value.close();
-            reloadTaskModel();
-          }
-        }
+        reloadTaskModel();
       }
       function reloadTaskModel() {
         for (let pro in state.task) {
@@ -7088,10 +7056,7 @@ if (uni.restoreGlobal) {
         state.canCreateTask = false;
         state.isTaskUpdate = false;
         state.task.repeatable = false;
-        if (state.task.changed == void 0)
-          state.task.changed = function() {
-            return this.title.length > 0 || this.description.length > 0 || this.priority != 3;
-          };
+        state.mode = -1;
       }
       function pick(event, sign) {
         const detail = event.detail;
@@ -7215,12 +7180,19 @@ if (uni.restoreGlobal) {
         state.task.periodUnit = detail.value[1] + 1;
       }
       function addReminderInfoModel(e2) {
+        const data = state.task.reminderInfoModels;
+        if (data.length == 5) {
+          uni.showToast({
+            title: "最多只能有五个提醒",
+            icon: "none"
+          });
+          return;
+        }
         const detail = e2.detail;
         const indexes = detail.value;
         const mode = indexes[1] + 1;
         const value = state.notifyOpt[0][indexes[0]];
         const instance = ReminderInfo.getInstance(mode, value, state.task.beginTime);
-        const data = state.task.reminderInfoModels;
         const func = () => {
           if (data.length == 0)
             data.push(instance);
@@ -7266,6 +7238,7 @@ if (uni.restoreGlobal) {
         const value = e2.value;
         if (state.isTaskUpdate && value == 0) {
           frequencyPopup.value.close();
+          state.task.period = 0;
           return;
         }
         if (value < state.frequency.data.length) {
@@ -7275,7 +7248,6 @@ if (uni.restoreGlobal) {
           state.frequency.defText = state.frequency.data[value].text;
         } else {
           state.task.repeatable = true;
-          state.frequency.defText = "自定义";
           state.task.period = 1;
           state.task.periodUnit = 1;
           state.defOpt.text = `每${1}日`;
@@ -7439,9 +7411,6 @@ if (uni.restoreGlobal) {
         state.startTime.time = timeWithoutSeconds(state.task.beginTime);
         state.endTime.date = getDateStr(state.task.endTime);
         state.endTime.time = timeWithoutSeconds(state.task.endTime);
-        state.task.changed = () => {
-          return state.task.title != state.selectedTask.title || state.task.description != state.selectedTask.description || state.task.priority != state.selectedTask.priority || state.task.beginTime.getTime() != state.selectedTask.beginTime.getTime() || state.task.endTime.getTime() != state.selectedTask.endTime.getTime();
-        };
         state.isTaskUpdate = true;
         state.canCreateTask = true;
         openToEdit();
@@ -7532,7 +7501,7 @@ if (uni.restoreGlobal) {
           task.state = state2;
         });
       }
-      const __returned__ = { popup, frequencyPopup, defRulePopup, detailPopup, priorityPopup, customPopup, editModePopup: editModePopup2, today, taskPageOpt, pattern: pattern2, state, openToEdit, modeChange, beforeClosePopup, closePopup, popupClose, reloadTaskModel, pick, allDay, seeTaskDetail, titleInput, editTask, multiSelect, addReminderInfoModel, changeNotifyMode, notify, takeCustom, takeCustomMode, takeCount, takeDeadline, dateChange, getData, getDataCallback, updateTask, closeDetailPopup, removeReminder, openEditOrRemoveTaskOrCancelTask, openEditUI, beginEndTimeStr, changeRepeatRule, finishOrNot, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, nextTick: vue.nextTick, get timeWithoutSeconds() {
+      const __returned__ = { popup, frequencyPopup, defRulePopup, detailPopup, priorityPopup, customPopup, editModePopup: editModePopup2, today, taskPageOpt, pattern: pattern2, state, openToEdit, modeChange, beforeClosePopup, reloadTaskModel, pick, allDay, seeTaskDetail, titleInput, editTask, multiSelect, addReminderInfoModel, changeNotifyMode, notify, takeCustom, takeCustomMode, takeCount, takeDeadline, dateChange, getData, getDataCallback, updateTask, closeDetailPopup, removeReminder, openEditOrRemoveTaskOrCancelTask, openEditUI, beginEndTimeStr, changeRepeatRule, finishOrNot, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, nextTick: vue.nextTick, get timeWithoutSeconds() {
         return timeWithoutSeconds;
       }, get priority() {
         return priority;
@@ -7740,7 +7709,7 @@ if (uni.restoreGlobal) {
                 vue.createElementVNode("view", { class: "header" }, [
                   vue.createVNode(_component_uni_icons, {
                     type: "closeempty",
-                    onClick: $setup.closePopup,
+                    onClick: _cache[0] || (_cache[0] = ($event) => $setup.popup.close()),
                     class: "close",
                     size: 25
                   }),
@@ -7773,7 +7742,7 @@ if (uni.restoreGlobal) {
                           "input",
                           {
                             type: "text",
-                            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.task.title = $event),
+                            "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => $setup.state.task.title = $event),
                             placeholder: "标题",
                             maxlength: "30",
                             onInput: $setup.titleInput
@@ -7796,7 +7765,7 @@ if (uni.restoreGlobal) {
                         vue.withDirectives(vue.createElementVNode(
                           "textarea",
                           {
-                            "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => $setup.state.task.description = $event),
+                            "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => $setup.state.task.description = $event),
                             placeholder: "内容描述"
                           },
                           null,
@@ -7838,7 +7807,7 @@ if (uni.restoreGlobal) {
                               mode: "date",
                               value: $setup.state.startTime.date,
                               start: "1970-01-01",
-                              onChange: _cache[2] || (_cache[2] = ($event) => $setup.pick($event, "begin-date")),
+                              onChange: _cache[3] || (_cache[3] = ($event) => $setup.pick($event, "begin-date")),
                               disabled: $setup.state.allday
                             }, [
                               vue.createElementVNode(
@@ -7855,7 +7824,7 @@ if (uni.restoreGlobal) {
                               value: $setup.state.startTime.time,
                               start: $setup.state.startTime.time,
                               end: "23:59",
-                              onChange: _cache[3] || (_cache[3] = ($event) => $setup.pick($event, "begin-time")),
+                              onChange: _cache[4] || (_cache[4] = ($event) => $setup.pick($event, "begin-time")),
                               disabled: $setup.state.allday
                             }, [
                               vue.createElementVNode(
@@ -7882,7 +7851,7 @@ if (uni.restoreGlobal) {
                               value: $setup.state.endTime.date,
                               start: "1970-01-01",
                               disabled: $setup.state.allday,
-                              onChange: _cache[4] || (_cache[4] = ($event) => $setup.pick($event, "end-date"))
+                              onChange: _cache[5] || (_cache[5] = ($event) => $setup.pick($event, "end-date"))
                             }, [
                               vue.createElementVNode(
                                 "text",
@@ -7898,7 +7867,7 @@ if (uni.restoreGlobal) {
                               value: $setup.state.endTime.time,
                               start: $setup.state.endTime.time,
                               end: "23:59",
-                              onChange: _cache[5] || (_cache[5] = ($event) => $setup.pick($event, "end-time")),
+                              onChange: _cache[6] || (_cache[6] = ($event) => $setup.pick($event, "end-time")),
                               disabled: $setup.state.allday
                             }, [
                               vue.createElementVNode(
@@ -7920,7 +7889,7 @@ if (uni.restoreGlobal) {
                         vue.createElementVNode("view", { class: "priority" }, [
                           vue.createElementVNode("text", null, "设置优先级"),
                           vue.createElementVNode("view", {
-                            onClick: _cache[6] || (_cache[6] = ($event) => $setup.priorityPopup.open())
+                            onClick: _cache[7] || (_cache[7] = ($event) => $setup.priorityPopup.open())
                           }, [
                             vue.createVNode(_component_uni_icons, { type: "gear" }),
                             vue.createElementVNode(
@@ -7964,10 +7933,10 @@ if (uni.restoreGlobal) {
                           vue.createElementVNode(
                             "view",
                             {
-                              onClick: _cache[7] || (_cache[7] = ($event) => $setup.frequencyPopup.open()),
+                              onClick: _cache[8] || (_cache[8] = ($event) => $setup.frequencyPopup.open()),
                               class: "def-text"
                             },
-                            vue.toDisplayString($setup.state.frequency.defText),
+                            vue.toDisplayString($setup.getRuleText($setup.state.task)),
                             1
                             /* TEXT */
                           )
@@ -8050,7 +8019,7 @@ if (uni.restoreGlobal) {
                       vue.createVNode(_component_k_radio_group, {
                         data: $setup.state.frequency.data,
                         modelValue: $setup.state.frequency.selection,
-                        "onUpdate:modelValue": _cache[8] || (_cache[8] = ($event) => $setup.state.frequency.selection = $event),
+                        "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => $setup.state.frequency.selection = $event),
                         containDef: true,
                         onOnChange: $setup.notify
                       }, null, 8, ["data", "modelValue"])
@@ -8080,7 +8049,7 @@ if (uni.restoreGlobal) {
                         }, [
                           vue.createVNode(_component_uni_icons, {
                             type: "closeempty",
-                            onClick: _cache[9] || (_cache[9] = ($event) => $setup.defRulePopup.close())
+                            onClick: _cache[10] || (_cache[10] = ($event) => $setup.defRulePopup.close())
                           }),
                           vue.createElementVNode("text", { style: { "font-weight": "600", "margin-left": "10%" } }, "自定义")
                         ]),
@@ -8121,7 +8090,7 @@ if (uni.restoreGlobal) {
                                       {
                                         class: "def-text",
                                         style: { "margin-right": "5px" },
-                                        onClick: _cache[10] || (_cache[10] = ($event) => $setup.customPopup.open())
+                                        onClick: _cache[11] || (_cache[11] = ($event) => $setup.customPopup.open())
                                       },
                                       vue.toDisplayString($setup.state.defOpt.mode),
                                       1
@@ -8307,7 +8276,7 @@ if (uni.restoreGlobal) {
                   ]),
                   vue.createElementVNode("view", {
                     class: "detail-func",
-                    onClick: _cache[11] || (_cache[11] = ($event) => {
+                    onClick: _cache[12] || (_cache[12] = ($event) => {
                       $setup.state.isTaskCancel = true;
                       $setup.openEditUI();
                     })
@@ -8320,7 +8289,7 @@ if (uni.restoreGlobal) {
                   ]),
                   vue.createElementVNode("view", {
                     class: "detail-func",
-                    onClick: _cache[12] || (_cache[12] = ($event) => {
+                    onClick: _cache[13] || (_cache[13] = ($event) => {
                       $setup.state.isTaskRemove = true;
                       $setup.openEditUI();
                     })
@@ -8354,8 +8323,8 @@ if (uni.restoreGlobal) {
               vue.createVNode(_component_k_radio_group, {
                 data: $setup.state.priority,
                 modelValue: $setup.state.task.priority,
-                "onUpdate:modelValue": _cache[13] || (_cache[13] = ($event) => $setup.state.task.priority = $event),
-                onOnChange: _cache[14] || (_cache[14] = ($event) => $setup.priorityPopup.close())
+                "onUpdate:modelValue": _cache[14] || (_cache[14] = ($event) => $setup.state.task.priority = $event),
+                onOnChange: _cache[15] || (_cache[15] = ($event) => $setup.priorityPopup.close())
               }, null, 8, ["data", "modelValue"])
             ]),
             _: 1
@@ -8377,7 +8346,7 @@ if (uni.restoreGlobal) {
               vue.createVNode(_component_k_radio_group, {
                 data: $setup.state.defOpt.data,
                 modelValue: $setup.state.defOpt.val,
-                "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $setup.state.defOpt.val = $event),
+                "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $setup.state.defOpt.val = $event),
                 onOnChange: $setup.takeCustomMode
               }, null, 8, ["data", "modelValue"])
             ]),
@@ -8400,7 +8369,7 @@ if (uni.restoreGlobal) {
               vue.createVNode(_component_k_radio_group, {
                 data: $setup.state.modeContent,
                 modelValue: $setup.state.mode,
-                "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $setup.state.mode = $event),
+                "onUpdate:modelValue": _cache[17] || (_cache[17] = ($event) => $setup.state.mode = $event),
                 onOnChange: $setup.openEditOrRemoveTaskOrCancelTask
               }, null, 8, ["data", "modelValue"])
             ]),
@@ -15998,8 +15967,11 @@ ${i3}
     setup(__props, { expose: __expose }) {
       __expose();
       const state = vue.reactive({
-        user: null
+        user: null,
+        userFeedback: ""
       });
+      const feedbackPopup = vue.ref(null);
+      const appSrc = vue.ref("https://github.com/Yolusama/graduate-design.git");
       vue.onMounted(() => {
         uni.getStorage({
           key: "user",
@@ -16034,7 +16006,12 @@ ${i3}
           url: "/pages/version"
         });
       }
-      const __returned__ = { state, logout, goToSelfInfo, showAbout, reactive: vue.reactive, onMounted: vue.onMounted, get imgSrc() {
+      function feedback() {
+      }
+      function seeAppHelp() {
+        plus.runtime.openURL(appSrc.value, (res2) => formatAppLog("log", "at pages/setting.vue:103", res2));
+      }
+      const __returned__ = { state, feedbackPopup, appSrc, logout, goToSelfInfo, showAbout, feedback, seeAppHelp, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, get imgSrc() {
         return imgSrc;
       }, get Logout() {
         return Logout;
@@ -16047,6 +16024,7 @@ ${i3}
     const _component_uni_list_item = resolveEasycom(vue.resolveDynamicComponent("uni-list-item"), __easycom_2$2);
     const _component_uni_icons = resolveEasycom(vue.resolveDynamicComponent("uni-icons"), __easycom_0$4);
     const _component_uni_list = resolveEasycom(vue.resolveDynamicComponent("uni-list"), __easycom_3$1);
+    const _component_uni_popup = resolveEasycom(vue.resolveDynamicComponent("uni-popup"), __easycom_2$1);
     return $setup.state.user != null ? (vue.openBlock(), vue.createElementBlock("view", {
       key: 0,
       id: "setting"
@@ -16077,7 +16055,10 @@ ${i3}
           }),
           vue.createVNode(_component_uni_list_item, { "show-arrow": "" }, {
             body: vue.withCtx(() => [
-              vue.createElementVNode("view", { class: "item" }, [
+              vue.createElementVNode("view", {
+                class: "item",
+                onClick: $setup.seeAppHelp
+              }, [
                 vue.createElementVNode("image", {
                   src: _imports_0$3,
                   class: "avatar"
@@ -16108,7 +16089,7 @@ ${i3}
             body: vue.withCtx(() => [
               vue.createElementVNode("view", {
                 class: "item",
-                onClick: $setup.showAbout
+                onClick: _cache[0] || (_cache[0] = ($event) => $setup.feedbackPopup.open())
               }, [
                 vue.createVNode(_component_uni_icons, {
                   type: "chat-filled",
@@ -16127,7 +16108,29 @@ ${i3}
       vue.createElementVNode("button", {
         onClick: $setup.logout,
         class: "logout"
-      }, "退出登录")
+      }, "退出登录"),
+      vue.createVNode(
+        _component_uni_popup,
+        {
+          ref: "feedbackPopup",
+          "background-color": "#fff",
+          "border-radius": "7px 7px 7px 7px"
+        },
+        {
+          default: vue.withCtx(() => [
+            vue.createElementVNode("view", { class: "feedback" }, [
+              vue.createElementVNode("textarea", {
+                rows: "5",
+                maxlength: -1
+              })
+            ])
+          ]),
+          _: 1
+          /* STABLE */
+        },
+        512
+        /* NEED_PATCH */
+      )
     ])) : vue.createCommentVNode("v-if", true);
   }
   const PagesSetting = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["render", _sfc_render$g], ["__scopeId", "data-v-ae18e86e"], ["__file", "D:/repos/html+css+js/SelfSchedule/pages/setting.vue"]]);
@@ -16237,7 +16240,6 @@ ${i3}
         downloadTask.start();
       }
       function resetCurrentVersion(version) {
-        formatAppLog("log", "at pages/version.vue:155", version);
         ResetCurrentVersion(state.userId, version, (response) => {
           const res2 = response.data;
           if (!res2.succeeded) {
@@ -26407,7 +26409,7 @@ ${i3}
       showWay: Number,
       unchangable: Boolean
     },
-    emits: ["modeChange", "dateChange"],
+    emits: ["modeChange", "onChange"],
     setup(__props, { expose: __expose, emit: __emit }) {
       __expose();
       const pros = __props;
@@ -26547,7 +26549,6 @@ ${i3}
             state.days[i2].push(days);
           }
         }
-        formatAppLog("log", "at components/KCalendar.vue:256", state.days);
       }
       function loadDays() {
         const date = state.selectedDay.getDate();
@@ -28554,11 +28555,18 @@ ${i3}
         reloadModelData();
       }
       function addReminderInfoModel(e2) {
+        const data = state.task.reminderInfoModels;
+        if (data.length == 5) {
+          uni.showToast({
+            title: "最多只能有五个提醒",
+            icon: "none"
+          });
+          return;
+        }
         const values = e2.detail.value;
         const reminder = ReminderInfo.getInstance(values[1] + 1, values[0] + 1, /* @__PURE__ */ new Date(startTime.value.date + " " + startTime.value.time));
         if (reminder.mode == 1)
           reminder.value = values[0];
-        const data = state.task.reminderInfoModels;
         if (data.length == 0)
           data.push(reminder);
         else {

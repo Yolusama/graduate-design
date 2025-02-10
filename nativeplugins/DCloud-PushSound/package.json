@@ -1,0 +1,34 @@
+{
+	"name": "DCloud-PushSound",
+	"id": "DCloud-PushSound",
+	"version": "1.0.2",
+	"description": "自定义推送铃声",
+	"_dp_type": "nativeplugin",
+	"_dp_nativeplugin": {
+		"ios": {
+			"plugins": [{
+				"type": "module",
+				"name": "DCloud-PushSound",
+				"class": "DCPushSound"
+			}],
+			"deploymentTarget": "9.0",
+			"integrateType": "library",
+			"resources": [
+				"pushsound.caf"
+			]
+		},
+		"android": {
+			"plugins": [{
+				"type": "module",
+				"name": "DCloud-PushSound",
+				"class": "io.dcloud.uniplugin.custom_push_channel.CustomNotificationChannel"
+			}],
+			"integrateType": "aar",
+			"compileOptions": {
+				"sourceCompatibility": "1.8",
+				"targetCompatibility": "1.8"
+			},
+			"minSdkVersion": "19"
+		}
+	}
+}

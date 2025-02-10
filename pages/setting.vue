@@ -9,6 +9,16 @@
 					</view>
 				</template>
 			</uni-list-item>
+			<!--#ifdef APP-PLUS-->
+			<uni-list-item show-arrow>
+				<template v-slot:body>
+					<view class="item" @click="goSetNotifyAudio">
+						<image src="../static/notify.png" class="avatar"></image>
+						<text class="item-text">设置通知音效</text>
+					</view>
+				</template>
+			</uni-list-item>
+			<!--#endif-->
 			<uni-list-item show-arrow>
 				<template v-slot:body>
 					<view class="item" @click="seeAppHelp">
@@ -134,7 +144,7 @@ import { Feedback } from '../api/User';
 		//#ifdef H5
 		window.open(appSrc.value);
 		//#endif
-		//#ifndef H5
+		//#ifdef APP-PLUS
 		plus.runtime.openURL(appSrc.value, res => console.log(res));
 		//#endif
 	}
@@ -143,6 +153,14 @@ import { Feedback } from '../api/User';
 		if (e.show) return;
 		state.userFeedback = "";
 	}
+	
+	//#ifdef APP-PLUS
+	function goSetNotifyAudio(){
+		uni.navigateTo({
+			url:"/pages/notifyAudio"
+		});
+	}
+	//#endif
 </script>
 
 <style scoped>

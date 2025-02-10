@@ -120,9 +120,9 @@
 
 	onMounted(() => {
 		if (beginDate.value == undefined)
-			beginDate.value = today.value;
+			beginDate.value = today.value; 
 		loadMonthDays();
-		state.daysFromBeginDateToNow = ((today.getTime() - beginDate.value.getTime()) / ADayMillseconds) + 1;
+		state.daysFromBeginDateToNow = ((today.value.getTime() - beginDate.value.getTime()) / ADayMillseconds) + 1;
 	});
 
 	function loadMonthDays() {

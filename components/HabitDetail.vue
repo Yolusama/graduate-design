@@ -274,7 +274,7 @@
 		margin-top: 2%;
 	}
 
-	#habit .record {
+	.record {
 		display: flex;
 		width: 100vw;
 		height: 96vw;

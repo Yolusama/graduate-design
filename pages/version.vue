@@ -5,8 +5,13 @@
 				<image :src="imgSrc(state.appInfo.icon)" class="icon"></image>
 				<text class="app-name">{{state.appInfo.name}}</text>
 			</view>
-			<text class="version-number">版本：{{state.version.number}}</text>
+			<text class="version-number" @click="showVersionDescription">版本：{{state.version.number}}</text>
 		</view>
+		<uni-popup type="center" background-color="#fff" border-radius="7px 7px 7px 7px" ref="versionIntroPopup">
+			<scroll-view style="height: 45vh;width:75vw" scroll-y>
+				<view v-html="state.version.description" class="intro"></view>
+			</scroll-view>
+		</uni-popup>
 		<!--#ifdef APP-PLUS-->
 		<uni-list style="width: 92%;margin-top: 5px;margin-bottom: 7px;">
 			<uni-list-item show-arrow title="检查更新">
@@ -63,6 +68,7 @@ import { copy } from '../module/Common';
 		},
 		userId: ""
 	});
+	const versionIntroPopup = ref(null);
 
 	onMounted(() => {
 		const user = uni.getStorageSync("user");
@@ -82,6 +88,10 @@ import { copy } from '../module/Common';
 			}
 			state.version = res.data;
 		});
+	}
+	
+	function showVersionDescription(){
+		versionIntroPopup.value.open();
 	}
 	//#ifdef APP-PLUS
 	const newVersion = ref(null);
@@ -129,7 +139,6 @@ import { copy } from '../module/Common';
 		});
 		const fileUrl = `${requestBaseUrl}/download/${newVersion.value.fileName}`;
 	    const downloadTask=plus.downloader.createDownload(fileUrl, {}, (res,status) => {
-			console.log(res,status);
 			if (status == 200) {
 				plus.runtime.install(res.filename, {force:true}, res1 => {
 					const version = {};
@@ -211,6 +220,11 @@ import { copy } from '../module/Common';
 		position: absolute;
 		bottom: 3%;
 		font-weight: 600;
+	}
+	
+	#version .intro{
+		padding: 2%;
+		font-size: 14px;
 	}
 	
 	/*#ifdef APP-PLUS*/

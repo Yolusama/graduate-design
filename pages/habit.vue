@@ -140,9 +140,9 @@
 			key: "user",
 			success: res => {
 				state.userId = res.data.uid;
+				getData();
 			}
 		})
-		getData();
 	});
 
 	function seeDetail(groupName, index) {
@@ -226,12 +226,13 @@
 					title: res.message,
 					icon: "none"
 				});
+				return;
 			}
 			habitOption.value.data = res.data.data;
 			habitOption.value.total = res.data.total;
 			dataReogrized();
 		});
-	}
+	} 
 	
 	function editorClose() {
 		delayToRun(() => state.show.editor = false, 150);

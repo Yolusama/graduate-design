@@ -106,6 +106,22 @@
         }
       }
     },
+    "nativePlugins": {
+      "DCloud-PushSound": {
+        "__plugin_info__": {
+          "name": "DCloud-PushSound",
+          "description": "自定义推送铃声",
+          "platforms": "Android,iOS",
+          "url": "",
+          "android_package_name": "",
+          "ios_bundle_id": "",
+          "isCloud": false,
+          "bought": -1,
+          "pid": "",
+          "parameters": {}
+        }
+      }
+    },
     "statusbar": {
       "immersed": "supportedDevice",
       "style": "dark",

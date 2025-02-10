@@ -477,6 +477,9 @@
 					return;
 				}
 				habit.records = res1.data;
+				for(let record of habit.records)
+					record.day = new Date(record.day);
+				
 				habit.index = index;
 				state.habit = habit;
 				state.show.habit = true;

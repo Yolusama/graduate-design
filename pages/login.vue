@@ -1,8 +1,11 @@
 <template>
 	<view id="login" v-if="!state.hasLogan">
 		<uni-forms label-position="right" :rules="rules" label-align="right">
-			<uni-forms-item label="电子邮箱" name="email" class="item">
+			<uni-forms-item label="电子邮箱" name="email" class="item" v-if="state.useCheckCode||state.isReg">
 				<uni-easyinput type="email" v-model="state.email" maxlength="25" />
+			</uni-forms-item>
+			<uni-forms-item label="账户" name="email" class="item" v-if="!state.useCheckCode||state.isReg">
+				<uni-easyinput v-model="state.account" maxlength="25" placeholder="电子邮箱/账号" />
 			</uni-forms-item>
 			<uni-forms-item name="password" label="密码" v-if="!state.useCheckCode||state.isReg" maxlength="20"
 				class="item">
@@ -29,6 +32,33 @@
 				<a @click="state.isReg = false;state.checkCodeLen=6" v-else>注册</a>
 			</view>
 		</uni-forms>
+		<uni-popup ref="bindEmailPopup" background-color="#fff" @change="popupClose">
+			<view class="bind-email">
+				<uni-nav-bar left-icon="arrow-left" @clickLeft="bindEmailPopup.close();"
+					style="width: 100%;position: absolute;top:0" :border="false"></uni-nav-bar>
+				<view>
+					<uni-forms>
+						<uni-forms-item label="电子邮箱" name="email" class="item">
+							<uni-easyinput type="email" v-model="state.email" maxlength="25" />
+						</uni-forms-item>
+						<uni-forms-item label="验证码" class="item" name="checkCode">
+							<view class="check">
+								<uni-easyinput type="text" v-model="state.checkCode" :maxlength="state.checkCodeLen"
+									class="check-code">
+								</uni-easyinput>
+								<button size="mini" class="get-check-code" @click="getCheckCode"
+									:disabled="state.hasGotCode">{{state.checkCodeText}}</button>
+							</view>
+						</uni-forms-item>
+						<view style="display: flex;justify-content: center;">
+							<button type="primary" size="mini" @click="bindEmail">确定</button>
+							<button style="color: gray;font-size: white;margin-left: 5px;" size="mini"
+								@click="bindEmailPopup.close()">取消</button>
+						</view>
+					</uni-forms>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 	<cover-image src="../static/login.gif" v-else />
 </template>
@@ -48,7 +78,8 @@
 		VerifyToken,
 		formDataAuth,
 		auth,
-		user
+		user,
+		BindEmail
 	} from "../api/User";
 	import {
 		delayToRun,
@@ -58,6 +89,7 @@
 	const state = reactive({
 		email: "",
 		password: "",
+		account: "",
 		checkCode: "",
 		useCheckCode: false,
 		isReg: false,
@@ -91,7 +123,7 @@
 		}
 
 	});
-	
+
 	onMounted(() => {
 
 	});
@@ -100,11 +132,28 @@
 		checkToken();
 	});
 
+	const bindEmailPopup = ref(null);
+
+	function popupClose(e) {
+		if (e.show) return;
+		state.checkCodeLen = 4;
+		state.email = "";
+		state.checkCode = "";
+		state.checkCodeText = "获取验证码";
+	}
+
 	function login() {
 		if (!state.useCheckCode)
-			Login(state.email, state.password, afterLogin);
+			Login(state.account, state.password, afterLogin);
 		else
-			CheckCodeLogin(state.email, state.checkCode, afterLogin);
+			CheckCodeLogin(state.account, state.checkCode, afterLogin);
+	}
+
+	function setDataAndGoIndex(data) {
+		uni.setStorageSync("user", data);
+		uni.switchTab({
+			url: "/pages/index",
+		});
 	}
 
 	function afterLogin(res) {
@@ -115,29 +164,44 @@
 			});
 			return;
 		}
-		loading(res.data.message, () => {
-			const data = res.data.data;
-			const toStore = {};
-			toStore.uid = data.id;
-			toStore.token = data.token;
-			toStore.avatar = data.avatar;
-			toStore.nickname = data.nickname;
-			toStore.email = data.email;
-			toStore.role = data.role;
-			auth.token = data.token;
-			formDataAuth.token = data.token;
-			uni.setStorage({
-				key: "user",
-				data: toStore,
-				success: function() {
-					uni.switchTab({
-						url: "/pages/index"
-					}); 
+		const message = res.data.message;
+		const data = res.data.data;
+		const toStore = {};
+		toStore.uid = data.id;
+		toStore.token = data.token;
+		toStore.avatar = data.avatar;
+		toStore.nickname = data.nickname;
+		toStore.email = data.email;
+		toStore.role = data.role;
+		auth.token = data.token;
+		formDataAuth.token = data.token;
+		if (toStore.email == null) {
+			loading("未绑定电子邮箱，将前往绑定电子邮箱界面", () => {
+				bindEmailPopup.value.open();
+				state.checkCodeLen = 5;
+			}, 750);
+		} else
+			loading(message, () => {
+				setDataAndGoIndex(toStore);
+			}, 2000);
+	}
+
+
+	function bindEmail() {
+		loading("绑定邮箱中...", () => {
+			BindEmail(state.email, state.account, state.checkCode, response => {
+				const res = response.data;
+				if (!res.succeeded) {
+					uni.showToast({
+						title: res.message,
+						icon: "none"
+					});
+					return;
 				}
+				bindEmailPopup.value.close();
+				Login(state.account, state.password, afterLogin);
 			});
 		}, 2000);
-
-
 	}
 
 	function checkToken() {
@@ -192,9 +256,9 @@
 
 	function register() {
 		Register(state.email, state.password, state.checkCode, res => {
-			console.log(res.data);
 			uni.showToast({
-				title: res.data.message
+				title: res.data.message,
+				icon: "none"
 			});
 			state.isReg = false;
 		});
@@ -256,5 +320,18 @@
 		height: 35px;
 		line-height: 35px;
 		margin-left: 4px;
+	}
+
+	#login .bind-email {
+		position: relative;
+		display: flex;
+		flex-flow: column nowrap;
+		align-items: center;
+		justify-content: center;
+		width: 100vw;
+		height: 100vh;
+		/*#ifndef H5*/
+		padding-top: 3vh;
+		/*#endif*/
 	}
 </style>

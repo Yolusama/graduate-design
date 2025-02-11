@@ -1,9 +1,9 @@
 import { Get,Patch,Post,Put } from "../module/Request";
 
-export function Login(email,password,successCallback,failCallback)
+export function Login(account,password,successCallback,failCallback)
 {
 	Post("/Api/User/Login",{},{
-		email:email,
+		account:account,
 		password:password
 	},successCallback,failCallback);
 }
@@ -39,6 +39,10 @@ export function Feedback(email,content,authoriztion,successCallback){
 		email:email,
 		content:content
 	},successCallback);
+}
+
+export function BindEmail(email,account,checkCode,successCallback){
+	Put(`/Api/User/BindEmail/${checkCode}?email=${email}&account=${account}`,{},{},successCallback);
 }
 
 export const user =  uni.getStorageSync("user");

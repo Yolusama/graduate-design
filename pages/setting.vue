@@ -43,6 +43,15 @@
 					</view>
 				</template>
 			</uni-list-item>
+			<!--
+			<uni-list-item show-arrow>
+				<template v-slot:body>
+					<view class="item" @click="backup">
+						<uni-icons type="chat-filledcloud-download" :size="32"></uni-icons>
+						<text class="item-text">数据备份</text>
+					</view>
+				</template>
+			</uni-list-item>-->
 		</uni-list>
 		<button @click="logout" class="logout">退出登录</button>
 		<uni-popup ref="feedbackPopup" background-color="#fff" border-radius="7px 7px 7px 7px"

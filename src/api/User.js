@@ -1,4 +1,4 @@
-import { authorization, Get, Patch, Post } from "./Api";
+import { authorization, Get, Patch, Post, Put } from "./Api";
 
 const userType = [];
 userType[2] = "普通用户";
@@ -40,4 +40,21 @@ export async function ChangeStatus(userId,status,successCallback) {
 
 export async function Logout(userId,email,successCallback) {
     await Post(`/Index/Logout/${userId}?cancelAccount=false&email=${email}`,authorization(),{},successCallback);
+}
+
+export async function AddUser(user,successCallback) {
+    await Put("/Admin/AddUser",authorization(),user,successCallback);
+}
+
+export async function UpdateUser(user,successCallback) {
+    await Patch("/Admin/UpdateUser",authorization(),user,successCallback);
+}
+
+export async function UploadAvatar(userId,avatar,file,successCallback) {
+    const data = new FormData();
+    data.append("userId",userId);
+    data.append("avatar",avatar);
+    data.append("file",file);
+
+    await Post("/Admin/UploadAvatar",authorization(true),data,successCallback);
 }

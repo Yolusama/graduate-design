@@ -22,12 +22,14 @@
          <el-button type="primary" @click="getData" style="margin-left:4px">
                <el-icon><Search /></el-icon>
             </el-button>
+            <el-button plain type="primary" @click="state.show=true">添加用户</el-button>
     </header>
     <el-table :data="pagination.data" border>
-      <el-table-column label="uid" prop="id" width="130"> </el-table-column>
+      <el-table-column label="uid" prop="id" width="150"> </el-table-column>
+      <el-table-column label="账号" prop="account" width="110"> </el-table-column>
       <el-table-column label="用户信息" width="220">
         <template #default="scope">
-          <div class="user-info">
+          <div class="user-info" @click="toUpdate(scope.$index)">
             <el-image :src="imgSrc(scope.row.avatar)" style="border-radius: 50%;"> </el-image>
             <span class="name">{{ scope.row.nickname }}</span>
           </div>
@@ -79,6 +81,11 @@
       @size-change="getData"
       @current-change="getData"
     />
+
+    <el-dialog v-model="state.show" :title="state.user==null?'添加用户':'更新用户'" @close="state.user=null;">
+       <user-editor :user="state.user" @created="userCreated" @updated="userUpdated" @close="state.show=false;state.user=null;"
+       v-if="state.show"  />
+    </el-dialog>
   </div>
 </template>
 
@@ -92,6 +99,8 @@ const state = reactive({
   queryKey: "",
   status: "",
   role: "",
+  show:false,
+  user:null
 });
 const pagination = ref(new PageOption(1, 10, 0, [10, 20, 30]));
 
@@ -129,6 +138,25 @@ async function changeStatus(user,status) {
   await ChangeStatus(user.id,status,()=>{
     user.status = status;
   });  
+}
+
+function toUpdate(index){
+   const user = pagination.value.data[index];
+   user.index = index;
+   state.user = user;
+   state.show = true;
+}
+
+function userCreated(e){
+   const user = e.item;
+   if(pagination.value.data.length<pagination.value.size)
+      pagination.value.data.push(user);
+}
+
+function userUpdated(e){
+  const index = e.index;
+  const user = e.item;
+  pagination.value.data[index] = user;
 }
 </script>
 

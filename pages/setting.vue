@@ -57,7 +57,8 @@
 					width: 100%;"></textarea>
 				</view>
 				<view style="display: flex;width: 65%;justify-content: center;">
-					<button size="mini" type="primary" @click="feedback">发送</button>
+					<button size="mini" type="primary" @click="feedback" 
+					:disabled="state.userFeedback.trim().length==0">发送</button>
 					<button @click="feedbackPopup.close()" size="mini" style="background-color: gray;color: white;">
 						取消</button>
 				</view>

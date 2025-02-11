@@ -1,13 +1,12 @@
 <template>
 	<view id="notify-audio">
-		<uni-title type="h1" title="自定义音效无法完成,uniapp对上传文件的支持不足"></uni-title>
-		<view @click="uploadAudio">
-			<uni-icons type="plusempty"></uni-icons>
-			<text>上传本地音频文件（大于30s,可用)</text>
-		</view>
+		<uni-title type="h1" title="自定义音效无法完成,uniapp对上传文件与系统原生api调用的支持不足"></uni-title>
 		<scroll-view scroll-y>
-			<uni-data-checkbox mode="list" :localdata="state.audios" v-model="state.selectedIndex">
-			</uni-data-checkbox>
+			<view>
+				<uni-title type="h3" title="选择铃声"></uni-title>
+				<uni-data-checkbox mode="list" :localdata="state.audios" v-model="state.selectedIndex">
+				</uni-data-checkbox>
+			</view>
 		</scroll-view>
 	</view>
 </template>
@@ -32,22 +31,13 @@
 		else
 			state.selectedIndex = currentAudio;
 	});
-
-	function uploadAudio() {
-		uni.chooseAudio({
-			count: 1, // 选择文件的个数 
-			extension:[".mp3"],
-			success: (res) => {
-				const file = res.tempFiles[0];
-				console.log('选中的音频文件：', file);
-			},
-			fail: (err) => {
-				console.log('选择文件失败', err);
-			}
-		});
-	}
+	
+	
 </script>
 
 <style scoped>
-
+  #notify-audio{
+	  position: relative;
+	  width: 100vw;
+	}
 </style>

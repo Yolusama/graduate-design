@@ -16147,7 +16147,7 @@ ${i3}
         });
       }
       function seeAppHelp() {
-        plus.runtime.openURL(appSrc.value, (res2) => formatAppLog("log", "at pages/setting.vue:148", res2));
+        plus.runtime.openURL(appSrc.value, (res2) => formatAppLog("log", "at pages/setting.vue:149", res2));
       }
       function beforePopupClose(e2) {
         if (e2.show)
@@ -16318,8 +16318,9 @@ ${i3}
                 vue.createElementVNode("button", {
                   size: "mini",
                   type: "primary",
-                  onClick: $setup.feedback
-                }, "发送"),
+                  onClick: $setup.feedback,
+                  disabled: $setup.state.userFeedback.trim().length == 0
+                }, "发送", 8, ["disabled"]),
                 vue.createElementVNode("button", {
                   onClick: _cache[3] || (_cache[3] = ($event) => $setup.feedbackPopup.close()),
                   size: "mini",
@@ -16627,21 +16628,7 @@ ${i3}
         else
           state.selectedIndex = currentAudio;
       });
-      function uploadAudio() {
-        uni.chooseAudio({
-          count: 1,
-          // 选择文件的个数 
-          extension: [".mp3"],
-          success: (res2) => {
-            const file = res2.tempFiles[0];
-            formatAppLog("log", "at pages/notifyAudio.vue:42", "选中的音频文件：", file);
-          },
-          fail: (err) => {
-            formatAppLog("log", "at pages/notifyAudio.vue:45", "选择文件失败", err);
-          }
-        });
-      }
-      const __returned__ = { state, uploadAudio, reactive: vue.reactive, onMounted: vue.onMounted, get ValueText() {
+      const __returned__ = { state, reactive: vue.reactive, onMounted: vue.onMounted, get ValueText() {
         return ValueText;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
@@ -16650,28 +16637,29 @@ ${i3}
   };
   function _sfc_render$e(_ctx, _cache, $props, $setup, $data, $options) {
     const _component_uni_title = resolveEasycom(vue.resolveDynamicComponent("uni-title"), __easycom_7);
-    const _component_uni_icons = resolveEasycom(vue.resolveDynamicComponent("uni-icons"), __easycom_0$4);
     const _component_uni_data_checkbox = resolveEasycom(vue.resolveDynamicComponent("uni-data-checkbox"), __easycom_5);
     return vue.openBlock(), vue.createElementBlock("view", { id: "notify-audio" }, [
       vue.createVNode(_component_uni_title, {
         type: "h1",
-        title: "自定义音效无法完成,uniapp对上传文件的支持不足"
+        title: "自定义音效无法完成,uniapp对上传文件与系统原生api调用的支持不足"
       }),
-      vue.createElementVNode("view", { onClick: $setup.uploadAudio }, [
-        vue.createVNode(_component_uni_icons, { type: "plusempty" }),
-        vue.createElementVNode("text", null, "上传本地音频文件（大于30s,可用)")
-      ]),
       vue.createElementVNode("scroll-view", { "scroll-y": "" }, [
-        vue.createVNode(_component_uni_data_checkbox, {
-          mode: "list",
-          localdata: $setup.state.audios,
-          modelValue: $setup.state.selectedIndex,
-          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.selectedIndex = $event)
-        }, null, 8, ["localdata", "modelValue"])
+        vue.createElementVNode("view", null, [
+          vue.createVNode(_component_uni_title, {
+            type: "h3",
+            title: "选择铃声"
+          }),
+          vue.createVNode(_component_uni_data_checkbox, {
+            mode: "list",
+            localdata: $setup.state.audios,
+            modelValue: $setup.state.selectedIndex,
+            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.selectedIndex = $event)
+          }, null, 8, ["localdata", "modelValue"])
+        ])
       ])
     ]);
   }
-  const PagesNotifyAudio = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["render", _sfc_render$e], ["__file", "D:/repos/html+css+js/SelfSchedule/pages/notifyAudio.vue"]]);
+  const PagesNotifyAudio = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["render", _sfc_render$e], ["__scopeId", "data-v-b5a97eb4"], ["__file", "D:/repos/html+css+js/SelfSchedule/pages/notifyAudio.vue"]]);
   __definePage("pages/login", PagesLogin);
   __definePage("pages/index", PagesIndex);
   __definePage("pages/task", PagesTask);

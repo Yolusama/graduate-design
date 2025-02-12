@@ -26,7 +26,7 @@
     </header>
     <el-table :data="pagination.data" border>
       <el-table-column label="uid" prop="id" width="150"> </el-table-column>
-      <el-table-column label="账号" prop="account" width="110"> </el-table-column>
+      <el-table-column label="账号" prop="account" width="120"> </el-table-column>
       <el-table-column label="用户信息" width="220">
         <template #default="scope">
           <div class="user-info" @click="toUpdate(scope.$index)">
@@ -83,7 +83,8 @@
     />
 
     <el-dialog v-model="state.show" :title="state.user==null?'添加用户':'更新用户'" @close="state.user=null;">
-       <user-editor :user="state.user" @created="userCreated" @updated="userUpdated" @close="state.show=false;state.user=null;"
+       <user-editor :user="state.user" @created="userCreated" @updated="userUpdated" :isUpdate="state.user!=null"
+       @close="state.show=false;state.user=null;"
        v-if="state.show"  />
     </el-dialog>
   </div>
@@ -102,7 +103,7 @@ const state = reactive({
   show:false,
   user:null
 });
-const pagination = ref(new PageOption(1, 10, 0, [10, 20, 30]));
+const pagination = ref(new PageOption(1, 8, 0, [8, 16, 24]));
 
 function tagType(type) {
   switch (type) {
@@ -149,6 +150,7 @@ function toUpdate(index){
 
 function userCreated(e){
    const user = e.item;
+   console.log(e);
    if(pagination.value.data.length<pagination.value.size)
       pagination.value.data.push(user);
 }

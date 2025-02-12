@@ -31,8 +31,8 @@
 </template>
 
 <script setup>
-import { AddUser, getUserType, UpdateUser } from '@/api/User';
-import { DefaultAvatar, previewOpenFile } from '@/modules/Common';
+import { AddUser, getUserType, UpdateUser, UploadAvatar } from '@/api/User';
+import { copy, DefaultAvatar, LoadingOperate, previewOpenFile } from '@/modules/Common';
 import { imgSrc } from '@/modules/Request';
 import { onMounted, reactive, ref, defineEmits, defineProps } from 'vue';
 
@@ -73,13 +73,50 @@ function selectFile(e) {
 
 async function editUser() {
     if (!state.isUpdate) {
-        AddUser(state.user, state.selectedFile, res => {
-            emits("created", {item:res});
+        AddUser(state.user, res => {
+            state.user = res.data;
+            if (state.selectedFile != null)
+                UploadAvatar(state.user.id, state.user.avatar, state.selectedFile, res1 => {
+                    state.user.avatar = res1.data;
+                    const user = {};
+                    copy(state.user, user);
+                    LoadingOperate(true, "创建用户中...", "rgb(0,0,0,.5)", () => {
+                        emits("created", { item: user });
+                        emits("close");
+                    }, 1500);
+
+                });
+            else {
+                LoadingOperate(true, "创建用户中...", "rgb(0,0,0,.5)", () => {
+                    const user = {};
+                    copy(state.user, user);
+                    emits("created", { item: user });
+                    emits("close");
+                }, 1500);
+            }
         });
     }
     else {
-        UpdateUser(state.user, state.selectedFile, () => {
-            emits("updated", { index: state.user.index, item: state.user });
+        UpdateUser(state.user, () => {
+            if (state.selectedFile != null)
+                UploadAvatar(state.user.id, state.user.avatar, state.selectedFile, res => {
+                    state.user.avatar = res.data;
+                    const user = {};
+                    copy(state.user, user);
+                    LoadingOperate(true, "更新用户信息...", "rgb(0,0,0,.5)", () => {
+                        emits("updated", { index: state.user.index, item: user });
+                        emits("close");
+                    }, 1500);
+
+                });
+            else {
+                const user = {};
+                copy(state.user, user);
+                LoadingOperate(true, "更新用户信息...", "rgb(0,0,0,.5)", () => {
+                    emits("updated", { index: state.user.index, item: user });
+                    emits("close");
+                }, 1500);
+            }
         });
     }
 }
@@ -114,7 +151,7 @@ async function editUser() {
     border-radius: 50%;
 }
 
-.user-editor .btns{
+.user-editor .btns {
     display: flex;
     width: 50%;
     justify-content: center;

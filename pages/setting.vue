@@ -100,12 +100,13 @@ import { Feedback } from '../api/User';
 			key: "user",
 			success: res => {
 				state.user = res.data;
+				
 			}
 		});
 	});
 
 	function logout() {
-		Logout(false, state.user.userId, state.user.email, response => {
+		Logout(false, state.user.uid, state.user.email, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({

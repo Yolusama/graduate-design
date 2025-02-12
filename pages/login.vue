@@ -8,8 +8,8 @@
 				<uni-easyinput v-model="state.account" maxlength="25" placeholder="电子邮箱/账号" />
 			</uni-forms-item>
 			<uni-forms-item name="password" label="密码" v-if="!state.useCheckCode||state.isReg" maxlength="20"
-				class="item">
-				<uni-easyinput type="password" v-model="state.password" />
+				class="item"> 
+				<uni-easyinput type="password" v-model="state.password"  placeholder="非邮箱注册的默认密码为账号前六位"/>
 			</uni-forms-item>
 			<uni-forms-item label="验证码" class="item" name="checkCode" v-if="state.useCheckCode||state.isReg">
 				<view class="check">
@@ -146,7 +146,7 @@
 		if (!state.useCheckCode)
 			Login(state.account, state.password, afterLogin);
 		else
-			CheckCodeLogin(state.account, state.checkCode, afterLogin);
+			CheckCodeLogin(state.email, state.checkCode, afterLogin);
 	}
 
 	function setDataAndGoIndex(data) {

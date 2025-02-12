@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.HabitMapper">
+    <select id="getHabits" resultType="SelfSchedule.Entity.VO.HabitVO">
+        select h.id as habitId,h.userId,h.name,h.createTime,h.beginDate,h.description,h.thumb,
+               o.aimDays,o.persistDays,o.continuousDays,o.mostDays,f.days,f.weekPersistDays,f.period,
+               g.name as groupName,g.id as groupId,g.code as groupCode
+            from Habit h join HabitOption o on h.id = o.habitId
+                join HabitGroup g on g.id = h.groupId
+              left join HabitFrequency f on h.id = f.habitId
+               where h.deleteFlag = #{recycled} and h.userId = #{userId}
+    </select>
+</mapper>

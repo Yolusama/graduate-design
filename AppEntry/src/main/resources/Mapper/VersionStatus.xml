@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.VersionStatusMapper">
+
+    <select id="getLatestVersion" resultType="SelfSchedule.Entity.VersionStatus">
+        select v.id,v.number,v.publishDate,v.description,v.createTime,v.type,v.fileName,v.adminId
+          from VersionStatus v
+        <where>
+            <if test="type!=null">
+               v.type = #{type}
+            </if>
+        </where>
+        order by v.publishDate desc limit 1
+    </select>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.HabitReminderMapper">
+    <insert id="batchInsert" parameterType="list">
+        insert into HabitReminder values
+        <foreach collection="reminders" item="reminder" separator="," >
+            (null,#{reminder.habitId},#{reminder.time},null)
+        </foreach>
+    </insert>
+    <select id="getUserReminders" resultType="SelfSchedule.Entity.VO.HabitReminderInfoVO">
+        select r.habitId,r.time,h.name as habitName,h.description as habitDescription,h.beginDate
+            as habitBeginDate,h.thumb as habitThumb
+        from HabitReminder r
+            join Habit h on h.id = r.habitId where h.userId = #{userId}
+    </select>
+</mapper>

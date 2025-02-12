@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.TaskReminderMapper">
+    <insert id="batchInsert" parameterType="list">
+     insert into TaskReminder values
+       <foreach collection="reminders" item="reminder" separator="," >
+         (null,#{reminder.taskId},#{reminder.timing},#{reminder.mode},#{reminder.value})
+       </foreach>
+   </insert>
+
+    <select id="getCurrentReminders" resultType="SelfSchedule.Entity.VO.TaskReminderInfoVO">
+        select r.taskId,r.mode,r.value,r.timing,t.priority as taskPriority,t.title as taskTitle,t.description as taskDescription from TaskReminder r
+            join Task t on r.taskId = t.id where t.userId = #{userId} and (r.timing&gt;=#{leftBound} and r.timing&lt;#{rightBound})
+               and t.state = 2 order by t.priority
+    </select>
+</mapper>

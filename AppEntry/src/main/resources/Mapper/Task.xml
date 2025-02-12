@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.TaskMapper">
+    <select id="getTasks" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
+        select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
+              t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
+                 join TaskInstance i on i.instanceId = t.id and i.instanceId = i.taskId
+                 left join TaskRepeatRule r on t.id = r.taskId
+                  <where>
+                      t.userId=#{userId}  and ((
+                      ((t.beginTime&gt;=#{leftBound} and t.beginTime&lt;#{rightBound}) or
+                      (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound})) or (t.beginTime&lt;=#{time} and t.endTime&gt;#{time})
+                      and t.repeatable=0) or t.repeatable=1) and i.flag = 0
+                      <if test="labelId!=null">
+                          and  t.labelId = #{labelId}
+                      </if>
+                  </where>
+                   order by t.priority
+    </select>
+
+    <select id="getTask" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
+        select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
+              t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId,i.flag as deleteFlag from Task t
+                                   join TaskInstance i on i.instanceId = t.id
+                                left join TaskRepeatRule r on t.id = r.taskId
+                   where t.userId=#{userId} and (
+                       (t.beginTime&gt;=#{leftBound} and t.beginTime&lt;#{rightBound}) or
+                       (t.endTime&gt;=#{leftBound} and t.endTime&lt;#{rightBound}) or (t.beginTime&lt;=#{time} and t.endTime&gt;#{time})
+                       ) and (t.id in (select instanceId from TaskInstance where taskId=#{taskId}))
+    </select>
+
+    <select id="getTasksWithState" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
+        select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
+               t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
+                                 join TaskInstance i on i.instanceId = t.id and i.flag = 0
+                            left join TaskRepeatRule r on t.id = r.taskId
+                where t.state = #{state} and userId=#{userId} order by t.priority
+    </select>
+
+    <select id="getRecycledTasks" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
+        select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
+               t.labelId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
+                          join TaskInstance i on i.instanceId = t.id and i.instanceId = i.taskId
+                     left join TaskRepeatRule r on t.id = r.taskId
+        where i.flag = 1 and userId=#{userId} and t.state &lt;= 2 order by t.priority
+    </select>
+
+    <select id="getTaskCount" resultType="java.lang.Long">
+        select count(1) from Task t join TaskInstance i on t.id = i.instanceId and i.flag = 0
+                   where  t.userId = #{userId} and t.state = #{state}
+
+    </select>
+
+    <select id="getDurationTaskCounts" resultType="java.lang.Long">
+        select count(1) from Task t join TaskInstance i on t.id = i.instanceId and i.flag = 0
+        where  t.userId = #{userId} and t.state = 1 and (t.finishTime&gt;=#{leftBound} and t.finishTime&lt;#{rightBound})
+    </select>
+</mapper>

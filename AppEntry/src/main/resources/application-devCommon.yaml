@@ -1,0 +1,20 @@
+jwt:
+  secretKey: MineCraft&LOL&Naruto@game12306
+  audience: Audience
+  issuer: Issuer
+
+email:
+  host: 2504319659@qq.com
+  authorizationCode: oigluerlhjqcebcj
+
+resource:
+   img:
+     pattern: /img/**
+     path: D:\repos\scResource\img\
+     location: file:D:/repos/scResource/img/
+   download:
+     pattern: /download/**
+     path: D:\repos\scResource\download\
+     location: file:D:/repos/scResource/download/
+   feedback:
+     path: D:\repos\scResource\feedback\

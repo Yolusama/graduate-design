@@ -31,7 +31,7 @@
 									<text>开始日期</text>
 								</view>
 
-								<picker mode="date" @change="selectBeginDate">
+								<picker mode="date" @change="selectBeginDate" :disabled="state.isHabitUpdate">
 									{{getDateStr(state.habit.beginDate)}}
 								</picker>
 							</view>
@@ -262,8 +262,7 @@
 		groupName: "",
 		groupAdd: false,
 		groupCode: 1,
-		selectedDay:today.value,
-		 
+		selectedDay: today.value,
 	});
 
 	onMounted(() => {
@@ -272,7 +271,18 @@
 		state.habit.recordDay = onlyDate(state.selectedDay);
 		state.thumbShow = imgSrc(state.habit.thumb);
 		if (habit.value != undefined && habit.value != null)
-			copy(habit.value, state.habit);
+			{
+				copy(habit.value, state.habit);
+				state.thumbShow = imgSrc(habit.value.thumb);
+				if(state.habit.days!=null)
+				   state.frequency.selcection = 0;
+				if(state.habit.weekPersistDays!=null)
+				   state.frequency.selcection = 1;
+				if(state.habit.period!=null)
+				   state.frequency.selcection = 2;
+				resetSomeData();   
+			}
+		if(!state.isHabitUpdate)
 		fillWeekdays();
 		for (let day of weekdays) {
 			state.weekDays.push({
@@ -308,23 +318,6 @@
 		state.frequency.selcection = 0;
 		state.frequency.selcected = [0, 1, 2, 3, 4, 5, 6];
 		fillWeekdays();
-	}
-
-	function toEdit() {
-		copy(state.selectedHabit, state.habit);
-		state.groupCode = state.selectedHabit.groupCode;
-		state.isHabitUpdate = true;
-		if (state.selectedHabit.days != null) {
-			state.frequency.selcection = 0;
-			state.frequency.selected = [];
-			for (let pro in state.selectedHabit.days)
-				state.frequency.selected.push(state.selectedHabit.days[pro]);
-		}
-		if (state.selectedHabit.weekPersistDays != null)
-			state.frequency.selcection = 1;
-		if (state.selectedHabit.interval != null)
-			state.frequency.selcection = 2;
-		popup.value.open();
 	}
 
 	function habitNameInput(current) {
@@ -417,14 +410,17 @@
 	function afterUpdating(data) {
 		data.beginDate = new Date(data.beginDate);
 		const index = state.habit.index;
+		const oldGroupName = state.groups.filter(g => g.id == state.habit
+			.oldGroupId)[0].name;
 		state.habit = data;
-		const groupName = state.groups.filter(g => g.id == state.habit
+		const newGroupName = state.groups.filter(g => g.id == state.habit
 			.groupId)[0].name;
 		const habit = {};
 		copy(state.habit, habit);
 		emits("updated", {
 			index: index,
-			groupName: groupName,
+			oldGroupName: oldGroupName,
+			newGroupName: newGroupName,
 			item: habit
 		});
 		loading("", () => {
@@ -437,6 +433,9 @@
 	}
 
 	function takeGroup(group) {
+		if (state.isHabitUpdate) {
+			state.habit.oldGroupId = state.habit.groupId;
+		}
 		state.habit.groupId = group.id;
 		state.groupCode = group.code;
 	}
@@ -452,7 +451,12 @@
 				return;
 			}
 			state.groups = res.data;
-			state.habit.groupId = state.groups[0].id;
+			if (state.isHabitUpdate)
+				state.groupCode = state.groups.filter(g=>g.id==state.habit.groupId)[0].code;
+			else {
+				state.habit.groupId = state.groups[0].id;
+				state.groupCode = state.groups[0].code;
+			}
 		});
 	}
 
@@ -471,12 +475,12 @@
 	}
 
 	function popupClose(e) {
-		if (e.show)return;
+		if (e.show) return;
 		emits("close");
 		reloadHabitModel();
 	}
-	
-	function closePopup(){
+
+	function closePopup() {
 		popup.value.close();
 	}
 
@@ -523,10 +527,11 @@
 
 	function thumbPopupClose(e) {
 		if (e.show || !state.thumbChangeCancelled) return;
+		state.selectedImgFile = null;
+		if(state.isHabitUpdate)return;
 		state.habit.thumb = "habit.png";
 		state.habit.description = "";
 		state.thumbShow = imgSrc(state.habit.thumb);
-		state.selectedImgFile = null;
 	}
 
 	function selectAsThumb(thumb) {
@@ -552,17 +557,17 @@
 				state.frequency.selected = [0, 1, 2, 3, 4, 5, 6];
 			} else {
 				state.frequency.selected = [];
-				for (let pro in state.selectedHabit.days)
-					state.frequency.selected.push(state.selectedHabit.days[pro]);
+				for (let pro in habit.value.days)
+					state.frequency.selected.push(habit.value.days[pro]);
 			}
 			state.habit.weekPersistDays = null;
 			state.habit.period = null;
 		} else if (state.frequency.selcection == 1) {
-			if (state.isHabitUpdate) state.habit.weekPersistDays = state.selectedHabit.weekPersistDays;
+			if (state.isHabitUpdate) state.habit.weekPersistDays = habit.value.weekPersistDays;
 			state.habit.days = null;
 			state.habit.period = null;
 		} else {
-			if (state.isHabitUpdate) state.habit.period = state.selectedHabit.period;
+			if (state.isHabitUpdate) state.habit.period =habit.value.period;
 			state.habit.days = null;
 			state.habit.weekPersistDays = null;
 		}
@@ -776,5 +781,13 @@
 		border-radius: 50%;
 		margin-right: 8px;
 		margin-bottom: 4px;
+	}
+	
+	.thumb-content .func-text {
+		font-size: 14px;
+		color: rgb(0, 75, 235);
+		display: flex;
+		justify-content: flex-end;
+		padding-right: 3%;
 	}
 </style>

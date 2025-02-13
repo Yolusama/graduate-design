@@ -355,7 +355,7 @@
 					class: "date",
 					record: {
 						index: index1,
-						result: index >= 0
+						result: index1 >= 0
 					}
 				};
 				if (data.record.result)
@@ -406,8 +406,8 @@
 				if(count == 0)
 				  return 0;
 			}
-		
-		return ((persistDays.value / count).toFixed(2)) * 100;
+		if(persistDays.value==0) return 0;
+		return ((persistDays.value / count)* 100).toFixed(2);
 	}
 </script>
 

@@ -246,8 +246,8 @@
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
 			@close="habitDetailClose" @removed="habitRemoved"></habit-detail>
-		<uni-fab :pattern="pattern" horizontal="right" vertical="bottom" :pop-menu="false" @fabClick="openToEdit"
-			v-if="!isStateLabel(state.currentLabel.labelId)" />
+		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false" @fabClick="openToEdit"
+			v-if="!isStateLabel(state.currentLabel.labelId)" @longpress="fabPosition.left=!fabPosition.left" />
 	</view>
 </template>
 
@@ -300,6 +300,13 @@
 		backgroundColor: '#fff',
 		buttonColor: '#007AFF',
 		iconColor: '#fff'
+	});
+	
+	const fabPosition = ref({
+		left:false,
+		value:function(){
+			return this.left? "left":"right";
+		}
 	});
 
 	const today = ref(onlyDate(new Date()));
@@ -997,4 +1004,5 @@
 		margin-left: 1%;
 		margin-right: 1%;
 	}
+	
 </style>

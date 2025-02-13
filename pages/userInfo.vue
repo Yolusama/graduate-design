@@ -173,6 +173,12 @@
 						完成率
 					</uni-th>
 					<uni-th>
+						最多连续
+					</uni-th>
+					<uni-th>
+						共坚持
+					</uni-th>
+					<uni-th>
 						是否达标
 					</uni-th>
 					<uni-tr v-for="(habit,index) in habitPageoption.data" :key="index">
@@ -184,6 +190,12 @@
 						</uni-td>
 						<uni-td>
 							<text style="font-weight: 600;color:black">{{getFinishRate(habit)}}%</text>
+						</uni-td>
+						<uni-td>
+							<text>{{habit.mostDays}}天</text>
+						</uni-td>
+						<uni-td>
+							<text>{{habit.persistDays}}天</text>
 						</uni-td>
 						<uni-td>
 							<text v-if="habit.aimDays>0">{{habit.persistDays>=habit.aimDays?"是":"否"}}</text>
@@ -568,7 +580,7 @@
 		if (count == 0)
 			return 0;
 
-		return ((persistDays / count).toFixed(2)) * 100;
+		return ((persistDays / count)*100).toFixed(2);
 	}
 
 	function getTaskCountOption() {

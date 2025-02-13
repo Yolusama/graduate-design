@@ -14,8 +14,8 @@
 			</k-calendar>
 			<scroll-view class="content" :scroll-y="true">
 				<uni-collapse class="habit" v-for="(data,groupName) in state.data" :key="groupName" accordion="true"
-				v-model="state.model[groupName]">
-					<uni-collapse-item title-border="none" :show-animation="false">
+					v-model="state.model[groupName]"> 
+					<uni-collapse-item title-border="none" :show-animation="false" v-if="data.length>0">
 						<template v-slot:title>
 							<view style="display:flex;align-items: center;justify-content: space-between;">
 								<text class="title-text">{{groupName}}</text>
@@ -28,8 +28,10 @@
 								<uni-swipe-action>
 									<uni-swipe-action-item :disabled="habit.finished">
 										<template v-slot:right>
-											<view class="finishBtn" @click.stop="
+											<view style="display: flex;align-items: center;">
+												<view class="finishBtn" @click.stop="
 											state.selectedHabit=habit;finishHabit({finished:true})">完成</view>
+											</view>
 										</template>
 										<view style="display: flex;justify-content: space-between;"
 											@click="seeDetail(groupName,index)">
@@ -81,7 +83,8 @@
 			<habit-detail :habit="state.selectedHabit" ref="detail" @finished="habitFinished" v-if="state.show.detail"
 				@updated="habitUpdated" @close="detailClose" @removed="habitRemoved">
 			</habit-detail>
-			<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" horizontal="right" @fabClick="openToEdit" />
+			<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" :horizontal="fabPosition.value()"
+				@fabClick="openToEdit" @longpress="fabPosition.left=!fabPosition.left" />
 	</view>
 </template>
 
@@ -121,6 +124,12 @@
 		buttonColor: "#007AFF",
 		iconColor: '#fff'
 	});
+	const fabPosition = ref({
+		left: false,
+		value: function() {
+			return this.left ? "left" : "right";
+		}
+	})
 	const state = reactive({
 		habit: null,
 		selectedHabit: null,
@@ -132,7 +141,7 @@
 			editor: false
 		},
 		selectedDay: onlyDate(today.value),
-		model:{}
+		model: {}
 	});
 
 	onMounted(() => {
@@ -202,7 +211,20 @@
 	function habitUpdated(e) {
 		const index = e.index;
 		const data = e.item;
-		state.data[e.groupName][index] = data;
+		const oldGroupName = e.oldGroupName;
+		const newGroupName = e.newGroupName;
+		if(state.data[newGroupName]==undefined)
+		{
+			state.model[newGroupName] = "0";
+			state.data[newGroupName]=[data];
+		}
+		else
+		   if(oldGroupName==newGroupName)
+		     state.data[oldGroupName][index] = data;
+		   else{
+			   state.data[oldGroupName].splice(index,1);
+			   state.data[newGroupName].push(data);
+		   }	 
 		uni.removeStorageSync(HabitReminderKey);
 	}
 
@@ -232,8 +254,8 @@
 			habitOption.value.total = res.data.total;
 			dataReogrized();
 		});
-	} 
-	
+	}
+
 	function editorClose() {
 		delayToRun(() => state.show.editor = false, 150);
 	}
@@ -316,8 +338,8 @@
 				state.data[groupName] = [datum];
 			}
 		}
-		for(let pro in state.data)
-		   state.model[pro] = "0";
+		for (let pro in state.data)
+			state.model[pro] = "0";
 	}
 
 	function dateChange(date) {
@@ -427,5 +449,6 @@
 		justify-content: center;
 		border-radius: 7px;
 		width: 60px;
+		height: 40px;
 	}
 </style>

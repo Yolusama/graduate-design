@@ -1900,6 +1900,7 @@
 .task-edit[data-v-8922942d] {
 		position: relative;
 		height: 35vh;
+		padding: 1%;
 }
 .task-edit .label-text[data-v-8922942d]{
 		height: 20px;
@@ -2333,6 +2334,13 @@
 		border-radius: 50%;
 		margin-right: 8px;
 		margin-bottom: 4px;
+}
+.thumb-content .func-text[data-v-13fa922c] {
+		font-size: 14px;
+		color: rgb(0, 75, 235);
+		display: flex;
+		justify-content: flex-end;
+		padding-right: 3%;
 }
 
 

@@ -41,8 +41,8 @@
 		</view>
 		<task-editor ref="quadrantTaskEditor" :task="state.selectedTask" @close="beforeEditorClose"  :isTaskUpdate="state.selectedTask!=null"
 		v-if="state.show" @created="taskCreated" @updated="taskUpdated" @removed="taskRemoved"></task-editor>
-		<uni-fab :pattern="pattern" horizontal="right" vertical="bottom" :pop-menu="false"
-			@fabClick="openToEdit" />
+		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false"
+			@fabClick="openToEdit" @longpress="fabPosition.left=!fabPosition.left"/>
 	</view>
 </template>
 
@@ -88,6 +88,12 @@
 	const quadrant4 = ref(null)
 
 	const today = ref(new Date());
+	const fabPosition = ref({
+		left:false,
+		value:function(){
+			return this.left? "left":"right";
+		}
+	})
 
 	const state = reactive({
 		selectedDay: new Date(),

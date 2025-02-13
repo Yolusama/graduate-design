@@ -294,7 +294,8 @@
 		</k-radio-group>
 	</uni-popup>
 
-	<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" horizontal="right" @fabClick="openToEdit" />
+	<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" :horizontal="fabPosition.value()" @fabClick="openToEdit" 
+	@longpress="fabPosition.left=!fabPosition.left"/>
 </template>
 
 <script setup>
@@ -359,6 +360,12 @@
 		buttonColor: "#007AFF",
 		iconColor: '#fff'
 	});
+	const fabPosition = ref({
+		left:false,
+		value:function(){
+			return this.left? "left":"right";
+		}
+	})
 	const state = reactive({
 		showWay: CalendarDisplayWay.week,
 		canCreateTask: false,

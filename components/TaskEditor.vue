@@ -279,8 +279,15 @@ import { CreateOrGetLabel } from '../api/Index';
 
 		state.notifyOpt[0] = remindModeValues(1);
 		if(task.value!=undefined&&task.value!=null)
-			copy(task.value,state.task);
-		resetBeginEndTime();
+			{
+				copy(task.value,state.task);
+				startTime.value.date = getDateStr(task.value.beginTime);
+				startTime.value.time = timeWithoutSeconds(task.value.beginTime);
+				endTime.value.date = getDateStr(task.value.endTime);
+				endTime.value.time = timeWithoutSeconds(task.value.endTime);
+			}
+		if(!state.isTaskUpdate)
+		   resetBeginEndTime();
 		if(state.hasLabelSetter&&label.value!=undefined)
 		    if(isBaseDayLabel(label.value.labelId))
 			   state.task.labelId = label.value.labelId;
@@ -588,6 +595,7 @@ import { CreateOrGetLabel } from '../api/Index';
 	.task-edit {
 		position: relative;
 		height: 35vh;
+		padding: 1%;
 	}
 	
 	.task-edit .label-text{

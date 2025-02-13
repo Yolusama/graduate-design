@@ -274,7 +274,7 @@
 		/*#ifdef H5*/
 		top: 20vh;
 		/*#endif*/
-		width: 80%;
+		width: 90%;
 		margin: 0 auto;
 		height: 100%;
 	}

@@ -122,7 +122,7 @@
 		if (beginDate.value == undefined)
 			beginDate.value = today.value; 
 		loadMonthDays();
-		state.daysFromBeginDateToNow = ((today.value.getTime() - beginDate.value.getTime()) / ADayMillseconds) + 1;
+		state.daysFromBeginDateToNow = (today.value.getTime() - beginDate.value.getTime()) / ADayMillseconds;
 	});
 
 	function loadMonthDays() {
@@ -407,7 +407,7 @@
 				  return 0;
 			}
 		if(persistDays.value==0) return 0;
-		return ((persistDays.value / count)* 100).toFixed(2);
+		return parseFloat((persistDays.value / count).toFixed(2))*100;
 	}
 </script>
 

@@ -15434,8 +15434,9 @@ ${i3}
         const daysFromBeginDateToNow = (today.value.getTime() - beginDate.getTime()) / ADayMillseconds;
         var count = 0;
         if (frequency2.value.days != null) {
-          for (let i2 = 0; i2 < state.daysFromBeginDateToNow; i2++) {
-            const date = new Date(new Date(beginDate).setDate(beginDate.getDate() + i2));
+          for (let i2 = 0; i2 <= daysFromBeginDateToNow; i2++) {
+            const date = new Date(beginDate);
+            date.setDate(date.getDate() + i2);
             for (let pro in frequency2.value.days) {
               if (frequency2.value.days[pro] == date.getDay()) {
                 count++;
@@ -15459,7 +15460,7 @@ ${i3}
         }
         if (count == 0)
           return 0;
-        return (persistDays2 / count * 100).toFixed(2);
+        return parseFloat((persistDays2 / count).toFixed(2)) * 100;
       }
       function getTaskCountOption() {
         GetFinishedTaskCount(state.user.userId, (response) => {
@@ -28388,7 +28389,7 @@ ${i3}
         if (beginDate.value == void 0)
           beginDate.value = today.value;
         loadMonthDays();
-        state.daysFromBeginDateToNow = (today.value.getTime() - beginDate.value.getTime()) / ADayMillseconds + 1;
+        state.daysFromBeginDateToNow = (today.value.getTime() - beginDate.value.getTime()) / ADayMillseconds;
       });
       function loadMonthDays() {
         const date = new Date(current.value);
@@ -28661,7 +28662,7 @@ ${i3}
         }
         if (persistDays2.value == 0)
           return 0;
-        return (persistDays2.value / count * 100).toFixed(2);
+        return parseFloat((persistDays2.value / count).toFixed(2)) * 100;
       }
       const __returned__ = { pros, emits, today, state, records, beginDate, habitId, current, continuousDays, mostDays, persistDays: persistDays2, frequency: frequency2, loadMonthDays, select, toTransform, backTransform, transformed, selectDate, transformLeft, transformRight, changeMonthDays, getFinishRate, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get onlyDate() {
         return onlyDate;

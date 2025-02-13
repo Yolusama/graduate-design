@@ -550,8 +550,9 @@
 		const daysFromBeginDateToNow = (today.value.getTime() - beginDate.getTime()) / ADayMillseconds;
 		var count = 0;
 		if (frequency.value.days != null) {
-			for (let i = 0; i < state.daysFromBeginDateToNow; i++) {
-				const date = new Date(new Date(beginDate).setDate(beginDate.getDate() + i));
+			for (let i = 0; i <=  daysFromBeginDateToNow; i++) {
+				const date = new Date(beginDate);
+				date.setDate(date.getDate()+i);
 				for (let pro in frequency.value.days) {
 					if (frequency.value.days[pro] == date.getDay()) {
 						count++;
@@ -580,7 +581,7 @@
 		if (count == 0)
 			return 0;
 
-		return ((persistDays / count)*100).toFixed(2);
+		return parseFloat((persistDays / count).toFixed(2))*100;
 	}
 
 	function getTaskCountOption() {

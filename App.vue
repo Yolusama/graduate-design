@@ -5,13 +5,14 @@
 		ref
 	} from 'vue';
 	import {
-		Get
+		Get, audioSrc
 	} from './module/Request';
 	import {
 		FinishTask,
 		GetCurrentTaskReminders
 	} from './api/Task';
 	import {
+		CurrentAudioKey,
 		HabitReminderKey,
 		TaskReminderKey,
 		getDateStr,
@@ -19,6 +20,7 @@
 		notifyHabitWithModal,
 		notifyTask,
 		notifyTaskWithModal,
+		playNotifyAudio,
 	} from './module/Common';
 	import {
 		GetCurrentHabitReminders
@@ -37,6 +39,7 @@
 		key_HR: HabitReminderKey,
 		userId: ""
 	});
+
 	//#ifdef APP-PLUS
 	const isBackGround = ref(false);
 	//#endif
@@ -74,6 +77,7 @@
 				url: reminder.route,
 				success: res => {
 					plus.push.remove(msg);
+					playAudio();
 					if (reminder.isTaskReminder)
 						notifyTaskWithModal(reminder, notifyTaskCallback);
 					else if(reminder.isHabitReminder)
@@ -136,10 +140,10 @@
 				reminder.timing = new Date(reminder.timing);
 				if (!reminder.worked && today.getTime() == reminder.timing.getTime()) {
 					//#ifdef H5
-					notifyTask(reminder, notifyTaskCallback);
+					notifyTask(reminder, notifyTaskCallback,playAudio);
 					//#endif
 					//#ifdef APP-PLUS
-					notifyTask(isBackGround.value, reminder, notifyTaskCallback);
+					notifyTask(isBackGround.value, reminder, notifyTaskCallback,playAudio);
 					//#endif
 				}
 			}
@@ -157,10 +161,11 @@
 						data:reminders,
 						success:res=>{ 
 							//#ifdef H5
-							notifyHabit(reminder);
+							if(state.audio.value!=0) playNotifyAudio(audioSrc(state.audio.fileName));
+							notifyHabit(reminder,playAudio);
 							//#endif
 							//#ifdef APP-PLUS
-							notifyHabit(isBackGround.value, reminder);
+							notifyHabit(isBackGround.value, reminder,playAudio);
 							//#endif
 						} 
 					});
@@ -198,6 +203,12 @@
 			reminder.worked = true;
 			FinishTask(reminder.taskId);
 		}
+	}
+	
+	function playAudio(){
+		const audio = uni.getStorageSync(CurrentAudioKey);
+		if(audio.value==0)return;
+		playNotifyAudio(audioSrc(audio.fileName));
 	}
 </script>
 

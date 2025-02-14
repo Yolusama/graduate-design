@@ -377,7 +377,7 @@
 	function getFinishRate() {
 		var count = 0;
 		if (frequency.value.days != null) {
-			for (let i = 0; i < state.daysFromBeginDateToNow; i++) {
+			for (let i = 0; i <= state.daysFromBeginDateToNow; i++) {
 				const date = new Date(new Date(beginDate.value).setDate(beginDate.value.getDate() + i));
 				for (let pro in frequency.value.days) {
 					if (frequency.value.days[pro] == date.getDay()) {

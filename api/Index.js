@@ -58,5 +58,9 @@ export function RemoveOrRecoverHabit(habitId,isRemove,successCallback){
 	Patch(`/Api/Index/RemoveOrRecoverHabit/${habitId}?isRemove=${isRemove}`,auth,{},successCallback);
 }
 
+export function GetNotifyAudios(successCallback){
+	Get("/Api/Common/GetNotifyAudios",auth,successCallback);
+}
+
 export const IdOfLableNamed = 4;
 export const IdOfBin = 8;

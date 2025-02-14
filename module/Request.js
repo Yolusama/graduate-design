@@ -74,7 +74,11 @@ const defaultFailBack = res=>console.log(res);
 }*/
 
 export function imgSrc(source){
-	return `${request.baseUrl}/img/${source}`;
+	return `${baseUrl}/img/${source}`;
+}
+
+export function audioSrc(source){
+	return `${baseUrl}/notify/${source}`;
 }
 
 export function Request(url,methodType,headers,body,successCallback,failCallback=defaultFailBack)

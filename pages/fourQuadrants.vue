@@ -18,7 +18,9 @@
 					:style="task.style.length>0?'':'position:relative'">
 						<view class="task" @click="toUpdate(index1,getQuadrant(index))" @longpress="toDragTaskContent($event,task)" 
 						@touchmove="draggingTaskContent($event,task)"
-							 @touchend="taskContentDragged($event,task,index1)" @touchcancel="cancelDragging(task)" :style="task.style">		
+							 @touchend="taskContentDragged($event,task,index1)" @touchcancel="cancelDragging(task)"
+							  :style="task.style">
+							<view class="mask" v-if="task.state==TaskState.abondoned"></view>
 							<checkbox-group @change="finishOrNot(task)">
 								<checkbox :checked="task.state==TaskState.finished" style="transform:scale(0.5)" />
 							</checkbox-group>
@@ -454,6 +456,7 @@
 		align-items: center;
 		width:44vw;
 		border-radius: 6px;
+		z-index: 1;
 	}
 	
 	#four-quadrants .task .task-text{
@@ -594,5 +597,13 @@
 		width: 100%;
 		text-align: center;
 		font-size: 14px;
+	}
+	
+	#four-quadrants .mask{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		background-color: rgb(25,35,25,.5);
 	}
 </style>

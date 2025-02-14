@@ -349,8 +349,9 @@ export function notifyHabitWithModal(reminder) {
 }
 
 //#ifdef APP-PLUS
-export function notifyTask(isbackGround,reminder, finishCallback) {
+export function notifyTask(isbackGround,reminder, finishCallback,audioPlayCallback) {
 	if(!isbackGround){
+		audioPlayCallback();
 		notifyTaskWithModal(reminder,finishCallback);
 		return;
 	}
@@ -360,7 +361,8 @@ export function notifyTask(isbackGround,reminder, finishCallback) {
 	payload.route = "/pages/task";
 	plus.push.createMessage(reminder.taskDescription, payload, {
 		title: `任务：${reminder.taskTitle}        --${priority[reminder.taskPriority-1].text}`,
-		when: new Date()
+		when: new Date(),
+		sound:"system"
 	});
 	/* uni.createPushMessage({
 	   	title:`任务：${reminder.taskTitle}        --${priority[reminder.taskPriority-1].text}`,
@@ -377,14 +379,16 @@ export function notifyTask(isbackGround,reminder, finishCallback) {
 
 
 //#ifdef H5
-export function notifyTask(reminder, finishCallback) {
+export function notifyTask(reminder, finishCallback,audioPlayCallback) {
+	audioPlayCallback();
 	notifyTaskWithModal(reminder, finishCallback);
 }
 //#endif
 
 //#ifdef APP-PLUS
-export function notifyHabit(isBackground,reminder){
+export function notifyHabit(isBackground,reminder,audioPlayCallback){
 	if(!isBackground){
+		audioPlayCallback();
 		notifyHabitWithModal(reminder);
 		return;
 	}
@@ -393,7 +397,8 @@ export function notifyHabit(isBackground,reminder){
 	payload.route = "/pages/habit";
 	plus.push.createMessage(reminder.habitDescription, payload, {
 		title: `习惯：${reminder.habitName}`,
-		when: new Date()
+		when: new Date(),
+		sound: "system"
 	});
 	/*uni.createPushMessage({
 	   	title:reminder.habitName,
@@ -410,7 +415,8 @@ export function notifyHabit(isBackground,reminder){
 //#endif 
 
 //#ifdef H5
-export function notifyHabit(reminder) {
+export function notifyHabit(reminder,audioPlayCallback) {
+	audioPlayCallback();
 	notifyHabitWithModal(reminder);
 }
 //#endif
@@ -433,3 +439,12 @@ export function isStateLabel(labelId){
 }
 
 export const AWeek = 7;
+export const CurrentAudioKey = "current-notify-audio";
+
+export function playNotifyAudio(audio){
+	const context = uni.createInnerAudioContext();
+	context.src = audio;
+	context.play();
+	
+	context.onEnded(result=>context.destroy());
+}

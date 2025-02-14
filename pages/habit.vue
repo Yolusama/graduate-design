@@ -161,6 +161,7 @@
 			.getTime())
 			return;
 		state.selectedHabit.index = index;
+		state.selectedHabit.oldGroupId = state.selectedHabit.groupId;
 		state.thumbShow = imgSrc(state.selectedHabit.thumb);
 		GetHabitReminders(state.selectedHabit.habitId, response => {
 			const res = response.data;

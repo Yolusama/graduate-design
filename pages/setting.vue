@@ -9,7 +9,6 @@
 					</view>
 				</template>
 			</uni-list-item>
-			<!--#ifdef APP-PLUS-->
 			<uni-list-item show-arrow>
 				<template v-slot:body>
 					<view class="item" @click="goSetNotifyAudio">
@@ -18,7 +17,6 @@
 					</view>
 				</template>
 			</uni-list-item>
-			<!--#endif-->
 			<uni-list-item show-arrow>
 				<template v-slot:body>
 					<view class="item" @click="seeAppHelp">
@@ -165,13 +163,11 @@ import { Feedback } from '../api/User';
 		state.userFeedback = "";
 	}
 	
-	//#ifdef APP-PLUS
 	function goSetNotifyAudio(){
 		uni.navigateTo({
 			url:"/pages/notifyAudio"
 		});
 	}
-	//#endif
 </script>
 
 <style scoped>

@@ -1902,7 +1902,7 @@
 		height: 35vh;
 		padding: 1%;
 }
-.task-edit .label-text[data-v-8922942d]{
+.task-edit .label-text[data-v-8922942d] {
 		height: 20px;
 		line-height: 20px;
 		padding: 4px;
@@ -1912,7 +1912,7 @@
 		text-overflow: ellipsis;
 		text-wrap: nowrap;
 		margin-left: 3px;
-		background-color: rgb(0,235,75);
+		background-color: rgb(0, 235, 75);
 		color: white;
 		border-radius: 7px;
 		font-size: 13px;

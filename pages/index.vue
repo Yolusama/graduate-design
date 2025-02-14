@@ -182,7 +182,7 @@
 								<view style="display: flex;justify-content: center;padding-right: 1%;
 									position: relative;z-index: 0;margin-top: 1%;border-radius: 5px;">
 									<view class="mask" v-if="showMask(task)"></view>
-									<view @click="openTaskEditor(task)" class="task">
+									<view @click="openTaskEditor(index)" class="task">
 										<checkbox-group @change="finishTaskOrNot(index)"
 											v-if="state.currentLabel.labelId!=IdOfBin">
 											<checkbox :checked="task.state==TaskState.finished"
@@ -222,7 +222,7 @@
 						</view>
 					</template>
 					<view style="display: flex;justify-content: center;padding-right: 1%;border-radius: 5px;">
-						<view @click="openTaskEditor(task)" class="task">
+						<view @click="openTaskEditor(index)" class="task">
 							<checkbox-group @change="finishTaskOrNot(index)">
 								<checkbox :checked="task.state==TaskState.finished" style="transform: scale(70%);">
 								</checkbox>
@@ -281,7 +281,11 @@
 		loading,
 		isStateLabel,
 		dateGE,
-		isBaseLabel
+		isBaseLabel,
+		TaskReminderKey,
+		HabitReminderKey,
+		CurrentAudioKey,
+		ValueText
 	} from '../module/Common';
 	import {
 		imgSrc
@@ -363,6 +367,13 @@
 
 		getLabels();
 		checkYesterdayTask();
+		
+		const audio = uni.getStorageSync(CurrentAudioKey);
+		if(audio==""||audio==null)
+		{
+			audio = new ValueText(0,"无");
+			uni.setStorageSync(CurrentAudioKey,audio);
+		}
 	});
 
 	function checkYesterdayTask() {
@@ -380,9 +391,11 @@
 		});
 	}
 
-	function openTaskEditor(task) {
+	function openTaskEditor(index) {
 		if (isStateLabel(state.currentLabel.labelId)) return;
+		const task = state.data["task"][index];
 		state.task = task;
+		state.task.index = index;
 		GetTaskReminders(task.instanceId, response => {
 			const res = response.data;
 			if (!res.succeeded) {
@@ -393,6 +406,8 @@
 				return;
 			}
 			task.reminderInfoModels = res.data;
+			for(let reminder of task.reminderInfoModels)
+			   reminder.timing = new Date(reminder.timing);
 			openToEdit();
 		});
 	}
@@ -449,6 +464,7 @@
 			state.labels.push(e.label);
 		if (item.labelId == state.currentLabel.labelId)
 			state.data["task"].push(item);
+		uni.removeStorageSync(TaskReminderKey);	
 	}
 
 	function taskUpdated(e) {
@@ -456,10 +472,12 @@
 		const item = e.item;
 
 		state.data["task"][index] = item;
+		uni.removeStorageSync(TaskReminderKey);	
 	}
 
 	function taskRemoved(e) {
 		state.data["task"].splice(e.index, 1);
+		uni.removeStorageSync(TaskReminderKey);	
 	}
 
 	function seeHabitDetail(index) {
@@ -473,7 +491,10 @@
 				});
 				return;
 			}
+			habit.oldGroupId = habit.groupId;
 			habit.reminderModels = res.data;
+			for(let reminder of habit.reminderModels)
+			   reminder.toDelete = false;
 			GetHabitRecords(habit.habitId, response1 => {
 				const res1 = response1.data;
 				if (!res1.succeeded) {
@@ -546,10 +567,12 @@
 		const item = e.item;
 
 		state.data["habit"][index] = item;
+		uni.removeStorageSync(HabitReminderKey);
 	}
 
 	function habitRemoved(e) {
 		state.data["habit"].splice(e.index, 1);
+		uni.removeStorageSync(HabitReminderKey);
 	}
 
 	function hideOrShowLabel(index, isList, display) {

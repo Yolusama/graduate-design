@@ -370,7 +370,7 @@
 				if (state.selectedImgFile == null)
 					afterUpdating(res.data);
 				else {
-					UploadThumb(state.selectedImgFile, state.selectedHabit.habitId, state.habit.thumb,
+					UploadThumb(state.selectedImgFile, state.habit.habitId, state.habit.thumb,
 						response1 => {
 							const res1 = JSON.parse(response1.data);
 							if (!res1.succeeded) {
@@ -412,9 +412,9 @@
 		const index = state.habit.index;
 		const oldGroupName = state.groups.filter(g => g.id == state.habit
 			.oldGroupId)[0].name;
-		state.habit = data;
 		const newGroupName = state.groups.filter(g => g.id == state.habit
 			.groupId)[0].name;
+		state.habit.reminderModels = data.reminderModels;
 		const habit = {};
 		copy(state.habit, habit);
 		emits("updated", {
@@ -433,9 +433,6 @@
 	}
 
 	function takeGroup(group) {
-		if (state.isHabitUpdate) {
-			state.habit.oldGroupId = state.habit.groupId;
-		}
 		state.habit.groupId = group.id;
 		state.groupCode = group.code;
 	}
@@ -498,7 +495,7 @@
 
 	function editReminderTime(e) {
 		const value = e.detail.value;
-		const habitId = state.isHabitUpdate ? state.selectedHabit.habitId : null;
+		const habitId = state.isHabitUpdate ? state.habit.habitId : null;
 		const data = state.habit.reminderModels;
 		if (data.length == 0)
 			data.push(new HabitReminder(value, habitId));

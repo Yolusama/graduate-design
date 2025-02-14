@@ -10,13 +10,14 @@
 					class="image" />
 				<image src="../static/plane-filled.png" v-if="state.isTaskUpdate||state.canCreateTask" :size="18"
 					class="image" @click="editTask" />
-				<image :src="imgSrc(DefaultLabelIcon)" v-if="state.hasLabelSetter" @click="takeLabel" class="image"></image>
-				<text class="label-text" v-if="state.hasLabelSetter&&label!=undefined&&!isBaseLabel(label.labelId)" 
-				:style="label!=undefined&&label.isList?'background-color:cyan':''">
-				{{label.labelName}}
+				<image :src="imgSrc(DefaultLabelIcon)" v-if="state.hasLabelSetter" @click="takeLabel" class="image">
+				</image>
+				<text class="label-text" v-if="state.hasLabelSetter&&label!=undefined&&!isBaseLabel(label.labelId)"
+					:style="label!=undefined&&label.isList?'background-color:cyan':''">
+					{{label.labelName}}
 				</text>
 				<uni-icons type="close" color="red" :size="18" v-if="state.isTaskUpdate" style="margin-left: 2%;"
-				@click="removeTask"></uni-icons>
+					@click="removeTask"></uni-icons>
 			</view>
 			<uni-easyinput v-model="state.task.title" placeholder="标题" focus style="margin-bottom: 2px;margin-top: 3px;"
 				@input="titleInput"></uni-easyinput>
@@ -183,7 +184,9 @@
 		isBaseLabel
 	} from '../module/Common';
 	import {
-		CreateTask, RemoveTask,
+		CreateTask,
+		RemoveTask,
+		FreshReminderTiming
 	} from "../api/Task"
 	import {
 		UpdateTask
@@ -191,25 +194,29 @@
 	import {
 		user
 	} from '../api/User';
-	import { imgSrc } from '../module/Request';
-import { CreateOrGetLabel } from '../api/Index';
+	import {
+		imgSrc
+	} from '../module/Request';
+	import {
+		CreateOrGetLabel
+	} from '../api/Index';
 
-	
+
 	const pros = defineProps({
-		task:Object,
-		isTaskUpdate:Boolean,
-		label:Object,
-		labelSet:Boolean
+		task: Object,
+		isTaskUpdate: Boolean,
+		label: Object,
+		labelSet: Boolean
 	});
-    const task = ref(pros.task);
+	const task = ref(pros.task);
 	const label = ref(pros.label);
 	const popup = ref(null);
 	const timePopup = ref(null);
 	const priorityPopup = ref(null);
 	const defRulePopup = ref(null);
 	const customPopup = ref(null);
-	
-	const emits = defineEmits(["close","created","updated","removed"]);
+
+	const emits = defineEmits(["close", "created", "updated", "removed"]);
 	const startTime = ref({
 		date: "",
 		time: ""
@@ -261,7 +268,7 @@ import { CreateOrGetLabel } from '../api/Index';
 		weekdays: weekdays,
 		canCreateTask: false,
 		isTaskUpdate: pros.isTaskUpdate,
-		hasLabelSetter:pros.labelSet
+		hasLabelSetter: pros.labelSet
 	});
 
 	onMounted(() => {
@@ -278,21 +285,20 @@ import { CreateOrGetLabel } from '../api/Index';
 			state.frequency.multiData[2].push(i);
 
 		state.notifyOpt[0] = remindModeValues(1);
-		if(task.value!=undefined&&task.value!=null)
-			{
-				copy(task.value,state.task);
-				startTime.value.date = getDateStr(task.value.beginTime);
-				startTime.value.time = timeWithoutSeconds(task.value.beginTime);
-				endTime.value.date = getDateStr(task.value.endTime);
-				endTime.value.time = timeWithoutSeconds(task.value.endTime);
-			}
-		if(!state.isTaskUpdate)
-		   resetBeginEndTime();
-		if(state.hasLabelSetter&&label.value!=undefined)
-		    if(isBaseDayLabel(label.value.labelId))
-			   state.task.labelId = label.value.labelId;
+		if (task.value != undefined && task.value != null) {
+			copy(task.value, state.task);
+			startTime.value.date = getDateStr(task.value.beginTime);
+			startTime.value.time = timeWithoutSeconds(task.value.beginTime);
+			endTime.value.date = getDateStr(task.value.endTime);
+			endTime.value.time = timeWithoutSeconds(task.value.endTime);
+		}
+		if (!state.isTaskUpdate)
+			resetBeginEndTime();
+		if (state.hasLabelSetter && label.value != undefined)
+			if (isBaseDayLabel(label.value.labelId))
+				state.task.labelId = label.value.labelId;
 	});
-	
+
 	function reloadModelData() {
 		state.task = {
 			title: "",
@@ -318,17 +324,19 @@ import { CreateOrGetLabel } from '../api/Index';
 	}
 
 	function beforeEditorClose(e) {
-		if (e.show){return;}
+		if (e.show) {
+			return;
+		}
 		emits("close");
 		reloadModelData();
 	}
 
 	function addReminderInfoModel(e) {
 		const data = state.task.reminderInfoModels;
-		if(data.length == 5){
+		if (data.length == 5) {
 			uni.showToast({
-				title:"最多只能有五个提醒",
-				icon:"none"
+				title: "最多只能有五个提醒",
+				icon: "none"
 			});
 			return;
 		}
@@ -337,7 +345,7 @@ import { CreateOrGetLabel } from '../api/Index';
 			startTime.value.time));
 		if (reminder.mode == 1)
 			reminder.value = values[0];
-	
+
 		if (data.length == 0)
 			data.push(reminder);
 		else {
@@ -473,8 +481,8 @@ import { CreateOrGetLabel } from '../api/Index';
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
 		if (!state.isTaskUpdate) {
-			if(label.value!=undefined&&state.hasLabelSetter&&!isBaseLabel(label.value.labelId))
-			   state.task.labelId = label.value.labelId;
+			if (label.value != undefined && state.hasLabelSetter && !isBaseLabel(label.value.labelId))
+				state.task.labelId = label.value.labelId;
 			CreateTask(state.task, response => {
 				const res = response.data;
 				if (!res.succeeded) {
@@ -490,15 +498,20 @@ import { CreateOrGetLabel } from '../api/Index';
 					const task = {};
 					task.style = "";
 					copy(state.task, task);
-					const arg = state.hasLabelSetter?{item:task,label:label.value}:{item:task};
-					emits("created",arg);
+					const arg = state.hasLabelSetter ? {
+						item: task,
+						label: label.value
+					} : {
+						item: task
+					};
+					emits("created", arg);
 					popup.value.close();
 				}, 750);
 			});
 		} else {
-			if(state.task.title.length==0)
-			   state.task.title = "无标题";
-			UpdateTask(state.task, response => {
+			if (state.task.title.length == 0)
+				state.task.title = "无标题";
+			FreshReminderTiming(state.task.instanceId, state.task.beginTime, response => {
 				const res = response.data;
 				if (!res.succeeded) {
 					uni.showToast({
@@ -507,17 +520,30 @@ import { CreateOrGetLabel } from '../api/Index';
 					});
 					return;
 				}
-				loading("", () => {
-					emits("updated",{index:state.task.index,item:state.task});
-					popup.value.close();
-				}, 550);
-
+				UpdateTask(state.task, response1 => {
+					const res1 = response1.data;
+					if (!res.succeeded) {
+						uni.showToast({
+							title: res1.message,
+							icon: "none"
+						});
+						return;
+					}
+					loading("", () => {
+						emits("updated", {
+							index: state.task.index,
+							item: state.task
+						});
+						popup.value.close();
+					}, 550);
+				
+				});
 			});
 		}
 	}
-	
-	function removeTask(){
-		RemoveTask(state.task,1,response=>{
+
+	function removeTask() {
+		RemoveTask(state.task, 1, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -526,8 +552,11 @@ import { CreateOrGetLabel } from '../api/Index';
 				});
 				return;
 			}
-			loading("",()=>{
-				emits("removed",{index:state.task.index,priority:state.task.priority});
+			loading("", () => {
+				emits("removed", {
+					index: state.task.index,
+					priority: state.task.priority
+				});
 				popup.value.close();
 			});
 		});
@@ -539,45 +568,45 @@ import { CreateOrGetLabel } from '../api/Index';
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
 	}
-	
-	function openEditMode(){
+
+	function openEditMode() {
 		editModePopup.value.open();
 	}
-	
-	function takeLabel(){
+
+	function takeLabel() {
 		uni.showModal({
-			title:"选择标签",
-			editable:true,
-			placeholderText:"标签名",
-			confirmText:"确定",
-			cancelText:"取消",
-			success:res=>{
-				if(res.cancel)return;
-				if(res.confirm){
+			title: "选择标签",
+			editable: true,
+			placeholderText: "标签名",
+			confirmText: "确定",
+			cancelText: "取消",
+			success: res => {
+				if (res.cancel) return;
+				if (res.confirm) {
 					const user = uni.getStorageSync("user");
 					const labelName = res.content;
-					CreateOrGetLabel(labelName,user.uid,response=>{
+					CreateOrGetLabel(labelName, user.uid, response => {
 						const res = response.data;
-						if(!res.succeeded){
+						if (!res.succeeded) {
 							uni.showToast({
-								title:res.message,
-								icon:"none"
+								title: res.message,
+								icon: "none"
 							});
 							return;
 						}
-					    label.value = res.data;
+						label.value = res.data;
 					});
 				}
 			}
 		});
 	}
-		
-	function open(){
+
+	function open() {
 		popup.value.open();
 	}
-		
+
 	defineExpose({
-		open 
+		open
 	});
 </script>
 
@@ -597,8 +626,8 @@ import { CreateOrGetLabel } from '../api/Index';
 		height: 35vh;
 		padding: 1%;
 	}
-	
-	.task-edit .label-text{
+
+	.task-edit .label-text {
 		height: 20px;
 		line-height: 20px;
 		padding: 4px;
@@ -608,7 +637,7 @@ import { CreateOrGetLabel } from '../api/Index';
 		text-overflow: ellipsis;
 		text-wrap: nowrap;
 		margin-left: 3px;
-		background-color: rgb(0,235,75);
+		background-color: rgb(0, 235, 75);
 		color: white;
 		border-radius: 7px;
 		font-size: 13px;

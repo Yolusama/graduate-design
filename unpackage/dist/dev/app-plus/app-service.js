@@ -3661,7 +3661,10 @@ if (uni.restoreGlobal) {
   const requestBaseUrl = baseUrl;
   const defaultFailBack = (res2) => formatAppLog("log", "at module/Request.js:68", res2);
   function imgSrc(source) {
-    return `${request.baseUrl}/img/${source}`;
+    return `${baseUrl}/img/${source}`;
+  }
+  function audioSrc(source) {
+    return `${baseUrl}/notify/${source}`;
   }
   function Get(url, headers, successCallback, failCallback = defaultFailBack) {
     return request.get(url, headers, successCallback, failCallback != void 0 ? failCallback : null);
@@ -4054,8 +4057,9 @@ if (uni.restoreGlobal) {
       habitId: reminder.habitId
     });
   }
-  function notifyTask(isbackGround, reminder, finishCallback) {
+  function notifyTask(isbackGround, reminder, finishCallback, audioPlayCallback) {
     if (!isbackGround) {
+      audioPlayCallback();
       notifyTaskWithModal(reminder, finishCallback);
       return;
     }
@@ -4065,11 +4069,13 @@ if (uni.restoreGlobal) {
     payload.route = "/pages/task";
     plus.push.createMessage(reminder.taskDescription, payload, {
       title: `任务：${reminder.taskTitle}        --${priority[reminder.taskPriority - 1].text}`,
-      when: /* @__PURE__ */ new Date()
+      when: /* @__PURE__ */ new Date(),
+      sound: "system"
     });
   }
-  function notifyHabit(isBackground, reminder) {
+  function notifyHabit(isBackground, reminder, audioPlayCallback) {
     if (!isBackground) {
+      audioPlayCallback();
       notifyHabitWithModal(reminder);
       return;
     }
@@ -4078,7 +4084,8 @@ if (uni.restoreGlobal) {
     payload.route = "/pages/habit";
     plus.push.createMessage(reminder.habitDescription, payload, {
       title: `习惯：${reminder.habitName}`,
-      when: /* @__PURE__ */ new Date()
+      when: /* @__PURE__ */ new Date(),
+      sound: "system"
     });
   }
   const TaskReminderKey = "task-reminders";
@@ -4095,6 +4102,13 @@ if (uni.restoreGlobal) {
     return [5, 6, 7, 8].findIndex((l2) => l2 == labelId) >= 0;
   }
   const AWeek = 7;
+  const CurrentAudioKey = "current-notify-audio";
+  function playNotifyAudio(audio) {
+    const context = uni.createInnerAudioContext();
+    context.src = audio;
+    context.play();
+    context.onEnded((result) => context.destroy());
+  }
   const _imports_0$4 = "/static/login.gif";
   const _sfc_main$G = {
     __name: "login",
@@ -6090,6 +6104,9 @@ if (uni.restoreGlobal) {
   function RemoveOrRecoverHabit(habitId, isRemove, successCallback) {
     Patch(`/Api/Index/RemoveOrRecoverHabit/${habitId}?isRemove=${isRemove}`, auth, {}, successCallback);
   }
+  function GetNotifyAudios(successCallback) {
+    Get("/Api/Common/GetNotifyAudios", auth, successCallback);
+  }
   const IdOfLableNamed = 4;
   const IdOfBin = 8;
   function GetDefaultThumbs(successCallback) {
@@ -6218,6 +6235,11 @@ if (uni.restoreGlobal) {
         getData(label.labelId);
         getLabels();
         checkYesterdayTask();
+        const audio = uni.getStorageSync(CurrentAudioKey);
+        if (audio == "" || audio == null) {
+          audio = new ValueText(0, "无");
+          uni.setStorageSync(CurrentAudioKey, audio);
+        }
       });
       function checkYesterdayTask() {
         const today2 = /* @__PURE__ */ new Date();
@@ -6233,10 +6255,12 @@ if (uni.restoreGlobal) {
           }
         });
       }
-      function openTaskEditor(task) {
+      function openTaskEditor(index) {
         if (isStateLabel(state.currentLabel.labelId))
           return;
+        const task = state.data["task"][index];
         state.task = task;
+        state.task.index = index;
         GetTaskReminders(task.instanceId, (response) => {
           const res2 = response.data;
           if (!res2.succeeded) {
@@ -6247,6 +6271,8 @@ if (uni.restoreGlobal) {
             return;
           }
           task.reminderInfoModels = res2.data;
+          for (let reminder of task.reminderInfoModels)
+            reminder.timing = new Date(reminder.timing);
           openToEdit();
         });
       }
@@ -6297,14 +6323,17 @@ if (uni.restoreGlobal) {
           state.labels.push(e2.label);
         if (item.labelId == state.currentLabel.labelId)
           state.data["task"].push(item);
+        uni.removeStorageSync(TaskReminderKey);
       }
       function taskUpdated(e2) {
         const index = e2.index;
         const item = e2.item;
         state.data["task"][index] = item;
+        uni.removeStorageSync(TaskReminderKey);
       }
       function taskRemoved(e2) {
         state.data["task"].splice(e2.index, 1);
+        uni.removeStorageSync(TaskReminderKey);
       }
       function seeHabitDetail(index) {
         const habit = state.data["habit"][index];
@@ -6317,7 +6346,10 @@ if (uni.restoreGlobal) {
             });
             return;
           }
+          habit.oldGroupId = habit.groupId;
           habit.reminderModels = res2.data;
+          for (let reminder of habit.reminderModels)
+            reminder.toDelete = false;
           GetHabitRecords(habit.habitId, (response1) => {
             const res1 = response1.data;
             if (!res1.succeeded) {
@@ -6381,9 +6413,11 @@ if (uni.restoreGlobal) {
         const index = e2.index;
         const item = e2.item;
         state.data["habit"][index] = item;
+        uni.removeStorageSync(HabitReminderKey$1);
       }
       function habitRemoved(e2) {
         state.data["habit"].splice(e2.index, 1);
+        uni.removeStorageSync(HabitReminderKey$1);
       }
       function hideOrShowLabel(index, isList, display) {
         const label = isList ? state.lists[index] : state.labels[index];
@@ -6640,6 +6674,14 @@ if (uni.restoreGlobal) {
         return dateGE;
       }, get isBaseLabel() {
         return isBaseLabel;
+      }, get TaskReminderKey() {
+        return TaskReminderKey;
+      }, get HabitReminderKey() {
+        return HabitReminderKey$1;
+      }, get CurrentAudioKey() {
+        return CurrentAudioKey;
+      }, get ValueText() {
+        return ValueText;
       }, get imgSrc() {
         return imgSrc;
       }, get FinishOrNot() {
@@ -7163,7 +7205,7 @@ if (uni.restoreGlobal) {
                                       class: "mask"
                                     })) : vue.createCommentVNode("v-if", true),
                                     vue.createElementVNode("view", {
-                                      onClick: ($event) => $setup.openTaskEditor(task),
+                                      onClick: ($event) => $setup.openTaskEditor(index),
                                       class: "task"
                                     }, [
                                       $setup.state.currentLabel.labelId != $setup.IdOfBin ? (vue.openBlock(), vue.createElementBlock("checkbox-group", {
@@ -7275,7 +7317,7 @@ if (uni.restoreGlobal) {
                       default: vue.withCtx(() => [
                         vue.createElementVNode("view", { style: { "display": "flex", "justify-content": "center", "padding-right": "1%", "border-radius": "5px" } }, [
                           vue.createElementVNode("view", {
-                            onClick: ($event) => $setup.openTaskEditor(task),
+                            onClick: ($event) => $setup.openTaskEditor(index),
                             class: "task"
                           }, [
                             vue.createElementVNode("checkbox-group", {
@@ -8907,6 +8949,7 @@ if (uni.restoreGlobal) {
         if (state.selectedDay.getTime() < state.selectedHabit.beginDate.getTime())
           return;
         state.selectedHabit.index = index;
+        state.selectedHabit.oldGroupId = state.selectedHabit.groupId;
         state.thumbShow = imgSrc(state.selectedHabit.thumb);
         GetHabitReminders(state.selectedHabit.habitId, (response) => {
           const res2 = response.data;
@@ -9710,6 +9753,10 @@ if (uni.restoreGlobal) {
                           onTouchcancel: ($event) => $setup.cancelDragging(task),
                           style: vue.normalizeStyle(task.style)
                         }, [
+                          task.state == $setup.TaskState.abondoned ? (vue.openBlock(), vue.createElementBlock("view", {
+                            key: 0,
+                            class: "mask"
+                          })) : vue.createCommentVNode("v-if", true),
                           vue.createElementVNode("checkbox-group", {
                             onChange: ($event) => $setup.finishOrNot(task)
                           }, [
@@ -16385,7 +16432,7 @@ ${i3}
         });
       }
       function seeAppHelp() {
-        plus.runtime.openURL(appSrc.value, (res2) => formatAppLog("log", "at pages/setting.vue:159", res2));
+        plus.runtime.openURL(appSrc.value, (res2) => formatAppLog("log", "at pages/setting.vue:157", res2));
       }
       function beforePopupClose(e2) {
         if (e2.show)
@@ -16857,18 +16904,59 @@ ${i3}
     setup(__props, { expose: __expose }) {
       __expose();
       const state = vue.reactive({
-        audios: [new ValueText(0, "系统")],
-        selectedIndex: -1
+        audios: [],
+        value: 0
       });
+      const key = vue.ref(CurrentAudioKey);
       vue.onMounted(() => {
-        const currentAudio = uni.getStorageSync("current-notify-audio");
-        if (currentAudio == null || currentAudio == "")
-          state.selectedIndex = 0;
-        else
-          state.selectedIndex = currentAudio;
+        const current = uni.getStorageSync(key.value);
+        if (current != "" && current != null)
+          state.value = current.value;
+        getNotifyAudios();
       });
-      const __returned__ = { state, reactive: vue.reactive, onMounted: vue.onMounted, get ValueText() {
+      function getNotifyAudios() {
+        GetNotifyAudios((response) => {
+          const res2 = response.data;
+          if (!res2.succeeded) {
+            uni.showToast({
+              title: res2.message,
+              icon: "none"
+            });
+            return;
+          }
+          const audios = [new ValueText(0, "无")];
+          const data = res2.data;
+          let i2 = 1;
+          for (let audio of data) {
+            const toAdd = new ValueText(i2++, audio.substring(0, audio.indexOf(".")));
+            toAdd.fileName = audio;
+            audios.push(toAdd);
+          }
+          state.audios = audios;
+        });
+      }
+      function selectAudio() {
+        const audio = state.audios[state.value];
+        uni.setStorage({
+          key: key.value,
+          data: audio,
+          success: () => {
+            if (state.value == 0)
+              return;
+            playNotifyAudio(audioSrc(audio.fileName));
+          }
+        });
+      }
+      const __returned__ = { state, key, getNotifyAudios, selectAudio, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, get CurrentAudioKey() {
+        return CurrentAudioKey;
+      }, get ValueText() {
         return ValueText;
+      }, get playNotifyAudio() {
+        return playNotifyAudio;
+      }, get GetNotifyAudios() {
+        return GetNotifyAudios;
+      }, get audioSrc() {
+        return audioSrc;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -16878,22 +16966,29 @@ ${i3}
     const _component_uni_title = resolveEasycom(vue.resolveDynamicComponent("uni-title"), __easycom_7);
     const _component_uni_data_checkbox = resolveEasycom(vue.resolveDynamicComponent("uni-data-checkbox"), __easycom_5);
     return vue.openBlock(), vue.createElementBlock("view", { id: "notify-audio" }, [
-      vue.createVNode(_component_uni_title, {
-        type: "h1",
-        title: "自定义音效无法完成,uniapp对上传文件与系统原生api调用的支持不足"
-      }),
-      vue.createElementVNode("scroll-view", { "scroll-y": "" }, [
-        vue.createElementVNode("view", null, [
-          vue.createVNode(_component_uni_title, {
-            type: "h3",
-            title: "选择铃声"
-          }),
-          vue.createVNode(_component_uni_data_checkbox, {
-            mode: "list",
-            localdata: $setup.state.audios,
-            modelValue: $setup.state.selectedIndex,
-            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.selectedIndex = $event)
-          }, null, 8, ["localdata", "modelValue"])
+      vue.createElementVNode("view", { class: "content" }, [
+        vue.createVNode(_component_uni_title, {
+          type: "h1",
+          title: "自定义音效无法完成,uniapp对上传文件与系统原生api调用的支持不足,无法完成上传文件,只提供系统音频供使用",
+          style: { "width": "90%" }
+        }),
+        vue.createElementVNode("scroll-view", {
+          "scroll-y": "",
+          style: { "width": "90%" }
+        }, [
+          vue.createElementVNode("view", null, [
+            vue.createVNode(_component_uni_title, {
+              type: "h3",
+              title: "选择铃声"
+            }),
+            vue.createVNode(_component_uni_data_checkbox, {
+              mode: "list",
+              localdata: $setup.state.audios,
+              modelValue: $setup.state.value,
+              "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.value = $event),
+              onChange: $setup.selectAudio
+            }, null, 8, ["localdata", "modelValue"])
+          ])
         ])
       ])
     ]);
@@ -26687,6 +26782,7 @@ ${i3}
             url: reminder.route,
             success: (res2) => {
               plus.push.remove(msg);
+              playAudio();
               if (reminder.isTaskReminder)
                 notifyTaskWithModal(reminder, notifyTaskCallback);
               else if (reminder.isHabitReminder)
@@ -26747,7 +26843,7 @@ ${i3}
             today.setMilliseconds(0);
             reminder.timing = new Date(reminder.timing);
             if (!reminder.worked && today.getTime() == reminder.timing.getTime()) {
-              notifyTask(isBackGround.value, reminder, notifyTaskCallback);
+              notifyTask(isBackGround.value, reminder, notifyTaskCallback, playAudio);
             }
           }
         }
@@ -26762,7 +26858,7 @@ ${i3}
                 key: notifyOpt.value.key_HR,
                 data: reminders,
                 success: (res2) => {
-                  notifyHabit(isBackGround.value, reminder);
+                  notifyHabit(isBackGround.value, reminder, playAudio);
                 }
               });
             }
@@ -26798,12 +26894,22 @@ ${i3}
           FinishTask(reminder.taskId);
         }
       }
-      const __returned__ = { timeOpt, notifyOpt, isBackGround, watchReminders, getRemindersCallback, notifyTaskCallback, onMounted: vue.onMounted, onBeforeUnmount: vue.onBeforeUnmount, ref: vue.ref, get Get() {
+      function playAudio() {
+        const audio = uni.getStorageSync(CurrentAudioKey);
+        if (audio.value == 0)
+          return;
+        playNotifyAudio(audioSrc(audio.fileName));
+      }
+      const __returned__ = { timeOpt, notifyOpt, isBackGround, watchReminders, getRemindersCallback, notifyTaskCallback, playAudio, onMounted: vue.onMounted, onBeforeUnmount: vue.onBeforeUnmount, ref: vue.ref, get Get() {
         return Get;
+      }, get audioSrc() {
+        return audioSrc;
       }, get FinishTask() {
         return FinishTask;
       }, get GetCurrentTaskReminders() {
         return GetCurrentTaskReminders;
+      }, get CurrentAudioKey() {
+        return CurrentAudioKey;
       }, get HabitReminderKey() {
         return HabitReminderKey$1;
       }, get TaskReminderKey() {
@@ -26818,6 +26924,8 @@ ${i3}
         return notifyTask;
       }, get notifyTaskWithModal() {
         return notifyTaskWithModal;
+      }, get playNotifyAudio() {
+        return playNotifyAudio;
       }, get GetCurrentHabitReminders() {
         return GetCurrentHabitReminders;
       } };
@@ -28635,7 +28743,7 @@ ${i3}
       function getFinishRate() {
         var count = 0;
         if (frequency2.value.days != null) {
-          for (let i2 = 0; i2 < state.daysFromBeginDateToNow; i2++) {
+          for (let i2 = 0; i2 <= state.daysFromBeginDateToNow; i2++) {
             const date = new Date(new Date(beginDate.value).setDate(beginDate.value.getDate() + i2));
             for (let pro in frequency2.value.days) {
               if (frequency2.value.days[pro] == date.getDay()) {
@@ -29232,7 +29340,12 @@ ${i3}
               const task2 = {};
               task2.style = "";
               copy(state.task, task2);
-              const arg = state.hasLabelSetter ? { item: task2, label: label.value } : { item: task2 };
+              const arg = state.hasLabelSetter ? {
+                item: task2,
+                label: label.value
+              } : {
+                item: task2
+              };
               emits("created", arg);
               popup.value.close();
             }, 750);
@@ -29240,7 +29353,7 @@ ${i3}
         } else {
           if (state.task.title.length == 0)
             state.task.title = "无标题";
-          UpdateTask(state.task, (response) => {
+          FreshReminderTiming(state.task.instanceId, state.task.beginTime, (response) => {
             const res2 = response.data;
             if (!res2.succeeded) {
               uni.showToast({
@@ -29249,10 +29362,23 @@ ${i3}
               });
               return;
             }
-            loading("", () => {
-              emits("updated", { index: state.task.index, item: state.task });
-              popup.value.close();
-            }, 550);
+            UpdateTask(state.task, (response1) => {
+              const res1 = response1.data;
+              if (!res2.succeeded) {
+                uni.showToast({
+                  title: res1.message,
+                  icon: "none"
+                });
+                return;
+              }
+              loading("", () => {
+                emits("updated", {
+                  index: state.task.index,
+                  item: state.task
+                });
+                popup.value.close();
+              }, 550);
+            });
           });
         }
       }
@@ -29267,7 +29393,10 @@ ${i3}
             return;
           }
           loading("", () => {
-            emits("removed", { index: state.task.index, priority: state.task.priority });
+            emits("removed", {
+              index: state.task.index,
+              priority: state.task.priority
+            });
             popup.value.close();
           });
         });
@@ -29351,6 +29480,8 @@ ${i3}
         return CreateTask;
       }, get RemoveTask() {
         return RemoveTask;
+      }, get FreshReminderTiming() {
+        return FreshReminderTiming;
       }, get UpdateTask() {
         return UpdateTask;
       }, get user() {
@@ -30084,7 +30215,7 @@ ${i3}
             else {
               UploadThumb(
                 state.selectedImgFile,
-                state.selectedHabit.habitId,
+                state.habit.habitId,
                 state.habit.thumb,
                 (response1) => {
                   const res1 = JSON.parse(response1.data);
@@ -30124,8 +30255,8 @@ ${i3}
         data.beginDate = new Date(data.beginDate);
         const index = state.habit.index;
         const oldGroupName = state.groups.filter((g2) => g2.id == state.habit.oldGroupId)[0].name;
-        state.habit = data;
         const newGroupName = state.groups.filter((g2) => g2.id == state.habit.groupId)[0].name;
+        state.habit.reminderModels = data.reminderModels;
         const habit2 = {};
         copy(state.habit, habit2);
         emits("updated", {
@@ -30142,9 +30273,6 @@ ${i3}
         popup.value.open();
       }
       function takeGroup(group) {
-        if (state.isHabitUpdate) {
-          state.habit.oldGroupId = state.habit.groupId;
-        }
         state.habit.groupId = group.id;
         state.groupCode = group.code;
       }
@@ -30201,7 +30329,7 @@ ${i3}
       }
       function editReminderTime(e2) {
         const value = e2.detail.value;
-        const habitId = state.isHabitUpdate ? state.selectedHabit.habitId : null;
+        const habitId = state.isHabitUpdate ? state.habit.habitId : null;
         const data = state.habit.reminderModels;
         if (data.length == 0)
           data.push(new HabitReminder(value, habitId));

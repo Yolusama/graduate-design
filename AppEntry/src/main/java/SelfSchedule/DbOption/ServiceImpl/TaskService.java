@@ -298,6 +298,9 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                         ObjectUtil.copy(reminderVO, reminder);
                         reminder.setTaskId(instance.getId());
                         reminder.setId(null);
+                        reminder.setTiming(
+                                TaskReminder.reloadTiming(reminder.getMode(),reminder.getValue(),instance.getBeginTime())
+                        );
                         reminders.add(reminder);
                     }
                     reminderMapper.batchInsert(reminders);

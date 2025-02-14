@@ -256,14 +256,12 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         }
         List<HabitReminderModel> reminderModels= model.getReminderModels();
         List<Long> toDeleteReminderIds = new ArrayList<>();
-        List<Integer> toDeleteIndexes = new ArrayList<>();
         for(int i=0;i<reminderModels.size();i++){
             HabitReminderModel reminderModel = reminderModels.get(i);
+            System.out.println(reminderModel.getReminderId()==null);
             if(reminderModel.getReminderId()==null){
-                if(reminderModel.getToDelete()){
-                    toDeleteIndexes.add(i);
+                if(reminderModel.getToDelete())
                     continue;
-                }
                 HabitReminder reminder = new HabitReminder();
                 reminder.setHabitId(model.getHabitId());
                 reminder.setTime(reminderModel.getTime());
@@ -278,14 +276,11 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
                             .eq(HabitReminder::getId,reminderModel.getReminderId());
                     reminderMapper.update(wrapper2);
                 }
-                else{
-                    toDeleteIndexes.add(i);
+                else
                     toDeleteReminderIds.add(reminderModel.getReminderId());
-                }
             }
         }
-        for(int index:toDeleteIndexes)
-            reminderModels.remove(index);
+
         if(toDeleteReminderIds.size()>Constants.None) {
             LambdaQueryWrapper<HabitReminder> wrapper3 = new LambdaQueryWrapper<>();
             wrapper3.in(HabitReminder::getId, toDeleteReminderIds);
@@ -460,10 +455,10 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
 
     @Override
     public int remove(String habitId) {
-        optionMapper.delete(habitId);
-        reminderMapper.delete(habitId);
-        recordMapper.delete(habitId);
-        frequencyMapper.delete(habitId);
+        optionMapper.remove(habitId);
+        reminderMapper.remove(habitId);
+        recordMapper.remove(habitId);
+        frequencyMapper.remove(habitId);
         return mapper.delete(new LambdaQueryWrapper<Habit>().eq(Habit::getId,habitId));
     }
 

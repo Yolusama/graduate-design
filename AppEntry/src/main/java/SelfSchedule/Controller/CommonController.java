@@ -5,6 +5,7 @@ import SelfSchedule.Common.Constants;
 import SelfSchedule.Common.ValueText;
 import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Result.ActionResult;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,9 +22,12 @@ import java.util.concurrent.CompletableFuture;
 @Api(tags="通用api")
 public class CommonController extends ControllerBase
 {
+    private final FileService fileService;
+
     @Autowired
-    public CommonController(RedisCache redis){
+    public CommonController(RedisCache redis,FileService fileService){
         this.redis = redis;
+        this.fileService = fileService;
     }
 
 
@@ -47,6 +51,20 @@ public class CommonController extends ControllerBase
              redis.set(CachingKeys.GetDefaultThumbs, model, Constants.CachingExpire);
          }
          return CompletableFuture.completedFuture(successWithData(model.getData()));
+    }
+
+    @GetMapping("/GetNotifyAudios")
+    @ApiOperation(value = "获取系统提醒音效",notes = "获取系统提醒音效")
+    public CompletableFuture<ActionResult<String[]>> GetNotifyAudios(){
+        ArrayDataModel<String> model;
+        if(redis.has(CachingKeys.GetNotifyAudios))
+            model =(ArrayDataModel<String>)redis.get(CachingKeys.GetNotifyAudios);
+        else{
+            model = new ArrayDataModel<>();
+            model.setData(fileService.getSystemNotifyAudios());
+            redis.set(CachingKeys.GetNotifyAudios,model,Constants.CachingExpire);
+        }
+        return CompletableFuture.completedFuture(successWithData(model.getData()));
     }
 
 }

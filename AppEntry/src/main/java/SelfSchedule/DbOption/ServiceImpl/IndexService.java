@@ -295,17 +295,4 @@ public class IndexService implements IndexServiceInterface {
     public int removeOrRecoverTask(Long taskId, Boolean isRemove) {
         return isRemove ? taskService.remove(taskId) : taskService.recover(taskId);
     }
-
-    private String updateIconOptions(boolean isList, String icon, MultipartFile file, FileService fileService){
-        if(isList){
-            if(!icon.equals(Constants.DefaultListIcon))
-                fileService.removeImage(icon);
-        }
-        else{
-            if(!icon.equals(Constants.DefaultLabelIcon))
-                fileService.removeImage(icon);
-        }
-
-        return fileService.uploadImage(file);
-    }
 }

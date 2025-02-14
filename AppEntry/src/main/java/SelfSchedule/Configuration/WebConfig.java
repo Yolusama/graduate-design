@@ -20,6 +20,10 @@ public class WebConfig extends WebMvcConfigurationSupport {
     private String downloadPattern;
     @Value("${resource.download.location}")
     private String downloadLocation;
+    @Value("${resource.notify.pattern}")
+    private String notifyPattern;
+    @Value("${resource.notify.location}")
+    private String notifyLocation;
 
     @Resource
     private JwtAuthorizer jwtAuthorizer;
@@ -41,6 +45,7 @@ public class WebConfig extends WebMvcConfigurationSupport {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
        registry.addResourceHandler(imgPattern).addResourceLocations(imgLocation);
        registry.addResourceHandler(downloadPattern).addResourceLocations(downloadLocation);
+       registry.addResourceHandler(notifyPattern).addResourceLocations(notifyLocation);
 
        registry.addResourceHandler("/swagger-ui/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/springfox-swagger-ui/");

@@ -21,5 +21,5 @@ public interface HabitReminderMapper extends BaseMapper<HabitReminder> {
     @Select("select id as reminderId,time from HabitReminder where habitId=#{habitId}")
     List<HabitReminderVO> getHabitReminders(@Param("habitId") String habitId);
     @Delete("delete from HabitReminder where habitId=#{habitId}")
-    int delete(@Param("habitId")String habitId);
+    int remove(@Param("habitId")String habitId);
 }

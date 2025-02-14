@@ -14,5 +14,5 @@ public interface HabitFrequencyMapper extends BaseMapper<HabitFrequency> {
     @Update("update HabitFrequency set ${ew.sqlSet} ${ew.customSqlSegment}")
     Integer update(@Param(Constants.WRAPPER) Wrapper<HabitFrequency> wrapper);
     @Delete("delete from HabitFrequency where habitId=#{habitId}")
-    int delete(@Param("habitId")String habitId);
+    int remove(@Param("habitId")String habitId);
 }

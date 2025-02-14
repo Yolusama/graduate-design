@@ -10,7 +10,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class FileService {
@@ -20,6 +22,8 @@ public class FileService {
     private String downloadPath;
     @Value("${resource.feedback.path}")
     private String feedbackFilePath;
+    @Value("${resource.notify.path}")
+    private String notifyPath;
 
     private final Integer bufferSize = 2048;
 
@@ -77,5 +81,22 @@ public class FileService {
        catch (Exception ex){
            ex.printStackTrace();
        }
+    }
+
+    public String[] getSystemNotifyAudios(){
+        String[] res;
+        try {
+            String path = notifyPath.substring(0,notifyPath.length()-1);
+            List<Path> files = Files.list(Path.of(path)).collect(Collectors.toList());
+            res = new String[files.size()];
+            for(int i=0;i<files.size();i++){
+                Path file = files.get(i);
+                res[i] = file.getFileName().toString();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            res = new String[0];
+        }
+        return res;
     }
 }

@@ -18,3 +18,7 @@ resource:
      location: file:D:/repos/scResource/download/
    feedback:
      path: D:\repos\scResource\feedback\
+   notify:
+     pattern: /notify/**
+     path: D:\repos\scResource\notify\
+     location: file:D:/repos/scResource/notify/

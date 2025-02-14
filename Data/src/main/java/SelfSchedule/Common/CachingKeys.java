@@ -19,4 +19,5 @@ public final class CachingKeys {
     public static final String GetVersions = "GetVersions";
     public static final String GetFinishedTaskCounts = "GetFinishTaskCounts";
     public static final String GetTaskCountsMode = "GetTaskCountsMode";
+    public static final String GetNotifyAudios = "GetNotifyAudios";
 }

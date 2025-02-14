@@ -14,7 +14,7 @@ public interface HabitRecordMapper extends BaseMapper<HabitRecord> {
     @Update("update HabitRecord set ${ew.sqlSet} ${ew.customSqlSegment}")
     int update(@Param(Constants.WRAPPER)Wrapper<HabitRecord> wrapper);
     @Delete("delete from HabitRecord where habitId=#{habitId}")
-    int delete(@Param("habitId")String habitId);
+    int remove(@Param("habitId")String habitId);
     @Select("select finished from HabitRecord where habitId=#{habitId} order by day desc")
     List<Boolean> getFinishStatesOrdered(@Param("habitId")String habitId);
     @Select("select day,finished,finishTime from HabitRecord where habitId = #{habitId}")

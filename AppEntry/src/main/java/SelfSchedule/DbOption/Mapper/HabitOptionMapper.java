@@ -14,5 +14,5 @@ public interface HabitOptionMapper extends BaseMapper<HabitOption> {
     @Update("update HabitOption set ${ew.sqlSet} ${ew.customSqlSegment}")
     int update(@Param(Constants.WRAPPER) Wrapper<HabitOption> wrapper);
     @Delete("delete from HabitOption where habitId=#{habitId}")
-    int delete(@Param("habitId")String habitId);
+    int remove(@Param("habitId")String habitId);
 }

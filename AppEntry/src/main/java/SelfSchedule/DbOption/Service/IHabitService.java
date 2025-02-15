@@ -31,5 +31,6 @@ public interface IHabitService extends IService<Habit> {
     int recover(String habitId);
     int remove(String habitId);
     PagedData<HabitVO> getHabits(Integer page,Integer pageSize, String userId);
+    int clearContinuousDays(String habitId);
 }
 

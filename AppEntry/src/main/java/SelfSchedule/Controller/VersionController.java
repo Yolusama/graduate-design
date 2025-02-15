@@ -9,6 +9,7 @@ import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.annotation.ClearRedisCache;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/Api/Version")
+@Api(tags = "版本控制api")
 public class VersionController extends ControllerBase{
     private final IVersionStatusService versionService;
     private final FileService fileService;

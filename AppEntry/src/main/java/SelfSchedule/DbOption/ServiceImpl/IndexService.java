@@ -253,6 +253,24 @@ public class IndexService implements IndexServiceInterface {
     }
 
     @Override
+    @Transactional
+    public void checkHabitContinuousDays(Date today, String userId, RedisCache redis) {
+        String key = String.format("Caching_%s_%s",userId,CachingKeys.TodayContinuousDaysChecked);
+        if(redis.has(key))
+            return;
+        List<String> habitIds = habitMapper().getUserHabitIds(userId);
+        for(String habitId:habitIds){
+            Date beginDate = habitMapper().getHabitBeginDate(habitId);
+            if(habitService.isInFrequency(habitId,today,beginDate.getTime()))
+                habitService.clearContinuousDays(habitId);
+        }
+        Date tomorrow = new Date(today.getTime());
+        tomorrow.setDate(today.getDate()+1);
+        long expire = tomorrow.getTime() - Constants.Now().getTime();
+        redis.set(key,Constants.NormalState,Duration.ofMillis(expire));
+    }
+
+    @Override
     public List<TaskLabelVO> getHiddenLabels(String userId, RedisCache redis) {
         String key = String.format("Caching_%s_%s",userId,CachingKeys.GetHiddenLabels);
         ArrayDataModel<TaskLabelVO> model;

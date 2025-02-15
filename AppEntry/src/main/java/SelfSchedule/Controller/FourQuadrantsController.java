@@ -34,7 +34,7 @@ public class FourQuadrantsController extends ControllerBase {
     }
 
     @GetMapping("/GetTasks/{userId}")
-    @ApiOperation(value="以每个象限为键对应优先级中的数据",tags="键名称为quadrant-(1,2,3,4)对应优先级的值")
+    @ApiOperation(value="以每个象限为键对应优先级中的数据",notes="键名称为quadrant-(1,2,3,4)对应优先级的值")
     @ClearRedisCache(keys = {CachingKeys.GetIndexData})
     public CompletableFuture<ActionResult<Map<String, List<TaskRuleComboVO>>>> GetTasks(@PathVariable String userId,
             @RequestParam Long time,HttpServletRequest request){
@@ -42,7 +42,7 @@ public class FourQuadrantsController extends ControllerBase {
     }
 
     @PostMapping("/UpdateTask")
-    @ApiOperation(value="在四象限的编辑界面中更新任务",tags="更新任务")
+    @ApiOperation(value="在四象限的编辑界面中更新任务",notes="更新任务")
     @ClearRedisCache(keys = {CachingKeys.GetTasks,CachingKeys.GetTasksDateValue,CachingKeys.GetIndexData})
     public ActionResult UpdateTask(@RequestBody TaskModel model, HttpServletRequest request){
         taskService.updateTask(model);
@@ -50,7 +50,7 @@ public class FourQuadrantsController extends ControllerBase {
     }
 
     @PatchMapping("/ChangePriority")
-    @ApiOperation(value="在四象限的界面中拖拽至象限改变优先级",tags="修改任务优先级")
+    @ApiOperation(value="在四象限的界面中拖拽至象限改变优先级",notes="修改任务优先级")
     @ClearRedisCache(keys = {CachingKeys.GetTasks,CachingKeys.GetTasksDateValue,CachingKeys.GetIndexData})
     public ActionResult ChangePriority(@RequestBody TaskPriorityModel model, HttpServletRequest request){
         int res = taskService.changePriority(model);

@@ -133,6 +133,13 @@ public class IndexController extends ControllerBase{
         return ok();
     }
 
+    @PostMapping("/CheckTodayContinuousDays/{userId}")
+    @ApiOperation(value="检索用户昨天未完成的习惯并重置连续完成的值",notes = "重置连续完成值到0")
+    public ActionResult CheckTodayContinuousDays(@PathVariable String userId,@RequestParam Long today){
+        indexService.checkHabitContinuousDays(new Date(today),userId,redis);
+        return ok();
+    }
+
     @PostMapping("/Logout/{userId}")
     @ApiOperation(value="退出登录/注销账号",notes = "cancelAccount为真时注销账号")
     public ActionResult Logout(@PathVariable String userId,@RequestParam String email, @RequestParam Boolean cancelAccount){
@@ -164,7 +171,4 @@ public class IndexController extends ControllerBase{
             return fail("操作失败！");
         return ok(isRemove?"已正式删除！":"已恢复!");
     }
-
-
-
 }

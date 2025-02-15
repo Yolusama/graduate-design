@@ -342,10 +342,10 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         int continuousDays = 0;
         List<Boolean> states = recordMapper.getFinishStatesOrdered(model.getHabitId());
         for(int i=0;i<states.size();i++){
-            if(states.get(i))
+            boolean state = states.get(i);
+            if(state)
                 continuousDays++;
             else
-            if(i!= states.size()-1)
                 break;
         }
         if(model.getFinished())
@@ -470,5 +470,10 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         res.setData(data);
         res.setTotal(pagedData.getTotal());
         return res;
+    }
+
+    @Override
+    public int clearContinuousDays(String habitId) {
+        return optionMapper.clearContinuousDays(habitId);
     }
 }

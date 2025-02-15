@@ -407,7 +407,7 @@
 				  return 0;
 			}
 		if(persistDays.value==0) return 0;
-		return parseFloat((persistDays.value / count).toFixed(2))*100;
+		return ((persistDays.value / count)*100).toFixed(0);
 	}
 </script>
 

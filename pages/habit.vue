@@ -268,6 +268,8 @@
 
 	function habitFinished(e) {
 		const item = e.item;
+		const index = item.records.findIndex(r=>r.day.getTime()==onlyDate(state.selectedDay).getTime());
+		item.records[index].finished = true;
 		state.selectedHabit = item;
 	}
 

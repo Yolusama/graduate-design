@@ -588,7 +588,7 @@
 		state.view.current = 1;
 		state.view.expanded = false;
 		emits("modeChange",showWay.value);
-		emits("dateChange",state.selectedDay);
+		emits("onChange",state.selectedDay);
 	}
 
 	function freshItems() {
@@ -622,7 +622,9 @@
 			state.current = 1;
 			updateView(showWay.value);
 			// #endif
+			emits("modeChange",CalendarDisplayWay.week);
 		}
+		emits("onChange",state.selectedDay);
 	}
 	
 </script>

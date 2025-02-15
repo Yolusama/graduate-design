@@ -62,5 +62,9 @@ export function GetNotifyAudios(successCallback){
 	Get("/Api/Common/GetNotifyAudios",auth,successCallback);
 }
 
+export function CheckTodayContinuousDays(userId,today,successCallback){
+	Post(`/Api/Index/CheckTodayContinuousDays/${userId}?today=${today.getTime()}`,auth,{},successCallback);
+}
+
 export const IdOfLableNamed = 4;
 export const IdOfBin = 8;

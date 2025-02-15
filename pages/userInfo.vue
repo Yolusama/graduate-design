@@ -580,8 +580,8 @@
 
 		if (count == 0)
 			return 0;
-
-		return parseFloat((persistDays / count).toFixed(2))*100;
+			
+		return ((persistDays / count)*100).toFixed(0);
 	}
 
 	function getTaskCountOption() {

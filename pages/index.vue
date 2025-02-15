@@ -245,7 +245,7 @@
 			:labelSet="true" @removed="taskRemoved">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
-			@close="habitDetailClose" @removed="habitRemoved"></habit-detail>
+			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished"></habit-detail>
 		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false" @fabClick="openToEdit"
 			v-if="!isStateLabel(state.currentLabel.labelId)" @longpress="fabPosition.left=!fabPosition.left" />
 	</view>
@@ -268,7 +268,8 @@
 		RemoveLabel,
 		IdOfBin,
 		RemoveOrRecoverTask,
-		RemoveOrRecoverHabit
+		RemoveOrRecoverHabit,
+		CheckTodayContinuousDays
 	} from '../api/Index';
 	import {
 		delayToRun,
@@ -367,6 +368,7 @@
 
 		getLabels();
 		checkYesterdayTask();
+		checkTodayContinuousDays();
 		
 		const audio = uni.getStorageSync(CurrentAudioKey);
 		if(audio==""||audio==null)
@@ -380,6 +382,20 @@
 		const today = new Date();
 		const yesterday = onlyDate(new Date(today.setDate(today.getDate() - 1)));
 		CheckYesterdayTask(state.user.id, yesterday, response => {
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+		});
+	}
+	
+	function checkTodayContinuousDays(){
+		const today = onlyDate(new Date());
+		CheckTodayContinuousDays(state.user.id,today,response=>{
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -573,6 +589,17 @@
 	function habitRemoved(e) {
 		state.data["habit"].splice(e.index, 1);
 		uni.removeStorageSync(HabitReminderKey);
+	}
+	
+	function habitFinished(e){
+		const item = e.item;
+		const time = onlyDate(new Date());
+		if (state.currentLabel.id == 2)
+			time.setDate(time.getDate() + 1);
+		else if (state.currentLabel.id == 3)
+			time.setDate(time.getDate() - 1);
+		const index = item.records.findIndex(r=>r.day.getTime()==time.getTime());
+		item.records[index].finished = true;
 	}
 
 	function hideOrShowLabel(index, isList, display) {

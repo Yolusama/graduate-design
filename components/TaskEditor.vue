@@ -216,7 +216,7 @@
 	const defRulePopup = ref(null);
 	const customPopup = ref(null);
 
-	const emits = defineEmits(["close", "created", "updated", "removed"]);
+	const emits = defineEmits(["close", "created", "updated", "removed","createdLabel"]);
 	const startTime = ref({
 		date: "",
 		time: ""
@@ -480,9 +480,9 @@
 	function editTask() {
 		state.task.beginTime = new Date(`${startTime.value.date} ${startTime.value.time}`);
 		state.task.endTime = new Date(`${endTime.value.date} ${endTime.value.time}`);
+		if (label.value != undefined && state.hasLabelSetter && !isBaseLabel(label.value.labelId))
+			state.task.labelId = label.value.labelId;
 		if (!state.isTaskUpdate) {
-			if (label.value != undefined && state.hasLabelSetter && !isBaseLabel(label.value.labelId))
-				state.task.labelId = label.value.labelId;
 			CreateTask(state.task, response => {
 				const res = response.data;
 				if (!res.succeeded) {
@@ -595,6 +595,7 @@
 							return;
 						}
 						label.value = res.data;
+						emits("createdLabel",{label:label.value});
 					});
 				}
 			}

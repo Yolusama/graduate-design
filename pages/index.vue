@@ -79,7 +79,9 @@
 		<scroll-view class="index-content" direction="vertical">
 			<view class="header">
 				<uni-icons type="bars" color="rgb(0,125,245)" :size="20" @click="labelDrawer.open()"></uni-icons>
-				<text class="text">{{state.currentLabel.labelName}}</text>
+				<image :src="imgSrc(state.currentLabel.icon)"
+					style="height: 30px;width: 30px;margin-left: 1%;margin-right: 1%"></image>
+				<text class="text" style="margin-left: 0;">{{state.currentLabel.labelName}}</text>
 			</view>
 			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0"
 				style="margin-bottom: 4vh;" v-model="state.model.habit" :accordion="true">
@@ -203,7 +205,6 @@
 									</view>
 								</view>
 							</uni-swipe-action-item>
-
 						</uni-swipe-action>
 					</scroll-view>
 				</uni-collapse-item>
@@ -242,12 +243,13 @@
 		</scroll-view>
 		<task-editor ref="indexTaskEditor" :task="state.task" :isTaskUpdate="state.task!=null" v-if="state.show.task"
 			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :label="state.currentLabel"
-			:labelSet="true" @removed="taskRemoved">
+			:labelSet="true" @removed="taskRemoved" @createdLabel="createdLabel">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
 			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished"></habit-detail>
-		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false" @fabClick="openToEdit"
-			v-if="!isStateLabel(state.currentLabel.labelId)" @longpress="fabPosition.left=!fabPosition.left" />
+		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false"
+			@fabClick="openToEdit" v-if="!isStateLabel(state.currentLabel.labelId)"
+			@longpress="fabPosition.left=!fabPosition.left" />
 	</view>
 </template>
 
@@ -306,11 +308,11 @@
 		buttonColor: '#007AFF',
 		iconColor: '#fff'
 	});
-	
+
 	const fabPosition = ref({
-		left:false,
-		value:function(){
-			return this.left? "left":"right";
+		left: false,
+		value: function() {
+			return this.left ? "left" : "right";
 		}
 	});
 
@@ -348,6 +350,12 @@
 	const indexLabelEditor = ref(null);
 	const labelDrawer = ref(null);
 	const currentLabel = ref("current-label");
+	const todayLabel = ref({
+		labelId: 1,
+		labelName: "今天",
+		isList: true,
+		icon: "today.png"
+	});
 
 	onMounted(() => {
 		const user = uni.getStorageSync("user");
@@ -359,22 +367,18 @@
 
 		var label = uni.getStorageSync(currentLabel.value);
 		if (label == null || label == '')
-			label = {
-				labelId: 1,
-				labelName: "今天"
-			};
+			label = todayLabel.value;
 		state.currentLabel = label;
 		getData(label.labelId);
 
 		getLabels();
 		checkYesterdayTask();
 		checkTodayContinuousDays();
-		
+
 		const audio = uni.getStorageSync(CurrentAudioKey);
-		if(audio==""||audio==null)
-		{
-			audio = new ValueText(0,"无");
-			uni.setStorageSync(CurrentAudioKey,audio);
+		if (audio == "" || audio == null) {
+			audio = new ValueText(0, "无");
+			uni.setStorageSync(CurrentAudioKey, audio);
 		}
 	});
 
@@ -392,10 +396,10 @@
 			}
 		});
 	}
-	
-	function checkTodayContinuousDays(){
+
+	function checkTodayContinuousDays() {
 		const today = onlyDate(new Date());
-		CheckTodayContinuousDays(state.user.id,today,response=>{
+		CheckTodayContinuousDays(state.user.id, today, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -422,8 +426,8 @@
 				return;
 			}
 			task.reminderInfoModels = res.data;
-			for(let reminder of task.reminderInfoModels)
-			   reminder.timing = new Date(reminder.timing);
+			for (let reminder of task.reminderInfoModels)
+				reminder.timing = new Date(reminder.timing);
 			openToEdit();
 		});
 	}
@@ -480,20 +484,23 @@
 			state.labels.push(e.label);
 		if (item.labelId == state.currentLabel.labelId)
 			state.data["task"].push(item);
-		uni.removeStorageSync(TaskReminderKey);	
+		uni.removeStorageSync(TaskReminderKey);
 	}
 
 	function taskUpdated(e) {
 		const index = e.index;
 		const item = e.item;
 
-		state.data["task"][index] = item;
-		uni.removeStorageSync(TaskReminderKey);	
+		if (item.labelId == null || item.labelId == state.currentLabel.labelId)
+			state.data["task"][index] = item;
+		else
+			state.data["task"].splice(index, 1);
+		uni.removeStorageSync(TaskReminderKey);
 	}
 
 	function taskRemoved(e) {
 		state.data["task"].splice(e.index, 1);
-		uni.removeStorageSync(TaskReminderKey);	
+		uni.removeStorageSync(TaskReminderKey);
 	}
 
 	function seeHabitDetail(index) {
@@ -509,8 +516,8 @@
 			}
 			habit.oldGroupId = habit.groupId;
 			habit.reminderModels = res.data;
-			for(let reminder of habit.reminderModels)
-			   reminder.toDelete = false;
+			for (let reminder of habit.reminderModels)
+				reminder.toDelete = false;
 			GetHabitRecords(habit.habitId, response1 => {
 				const res1 = response1.data;
 				if (!res1.succeeded) {
@@ -521,9 +528,9 @@
 					return;
 				}
 				habit.records = res1.data;
-				for(let record of habit.records)
+				for (let record of habit.records)
 					record.day = new Date(record.day);
-				
+
 				habit.index = index;
 				state.habit = habit;
 				state.show.habit = true;
@@ -590,15 +597,15 @@
 		state.data["habit"].splice(e.index, 1);
 		uni.removeStorageSync(HabitReminderKey);
 	}
-	
-	function habitFinished(e){
+
+	function habitFinished(e) {
 		const item = e.item;
 		const time = onlyDate(new Date());
 		if (state.currentLabel.id == 2)
 			time.setDate(time.getDate() + 1);
 		else if (state.currentLabel.id == 3)
 			time.setDate(time.getDate() - 1);
-		const index = item.records.findIndex(r=>r.day.getTime()==time.getTime());
+		const index = item.records.findIndex(r => r.day.getTime() == time.getTime());
 		item.records[index].finished = true;
 	}
 
@@ -639,6 +646,16 @@
 				state.lists.splice(index, 1);
 			else
 				state.labels.splice(index, 1);
+			if(label.labelId!=state.currentLabel.labelId)return;
+			state.currentLabel = todayLabel.value;
+			uni.setStorage({
+				key: currentLabel.value,
+				data: state.currentLabel,
+				success: () => {
+					getData(state.currentLabel.labelId);
+					labelDrawer.value.close();
+				}
+			});
 		});
 	}
 
@@ -657,6 +674,14 @@
 		});
 	}
 
+	function createdLabel(e) {
+		const label = e.label;
+		const labelId = label.labelId;
+		const index = state.labels.findIndex(l => l.labelId == labelId);
+		if (index < 0)
+			state.labels.push(label);
+	}
+
 	function getTaskTimeStr(task) {
 		const beginTime = task.beginTime;
 		const endTime = task.endTime;
@@ -671,9 +696,11 @@
 			res =
 			`<text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text><text style="color:red">${timeWithoutSeconds(endTime)}</text>`;
 		else if (dateEquals(beginTime, time) && !dateEquals(endTime, time))
-			res = `<text style="text-align:center">开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
+			res =
+			`<text style="text-align:center">开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
 		else if (!dateEquals(beginTime, time) && dateEquals(endTime, time))
-			res = `<text style="text-align:center">结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
+			res =
+			`<text style="text-align:center">结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
 		else if (onlyDate(endTime).getTime() < time.getTime()) {
 			if (!dateEquals(beginTime, endTime))
 				res = `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text>
@@ -903,8 +930,8 @@
 
 	#task-labels .label-info .hide {
 		font-size: 13px;
-		margin-left: 6px;
-		margin-right: 6px;
+		margin-left: 4px;
+		margin-right: 4px;
 		color: rgb(0, 75, 235)
 	}
 
@@ -924,8 +951,8 @@
 	}
 
 	#task-labels .label-icon {
-		width: 22px;
-		height: 22px;
+		width: 25px;
+		height: 25px;
 	}
 
 	#task-labels .labels {
@@ -953,6 +980,11 @@
 		align-items: center;
 		justify-content: space-between;
 		height: 40px;
+	}
+
+	#index .index-content .header {
+		display: flex;
+		align-items: center;
 	}
 
 	#index .mask {
@@ -1054,5 +1086,4 @@
 		margin-left: 1%;
 		margin-right: 1%;
 	}
-	
 </style>

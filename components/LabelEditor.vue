@@ -203,11 +203,11 @@
 					title: res.message,
 					icon: "none"
 				});
-				state.label.name = e = "";
+				state.label.labelName = e = "";
 				return;
 			}
 			if (res.data)
-				state.label.name = e = "";
+				state.label.labelName = e = "";
 		});
 	}
 

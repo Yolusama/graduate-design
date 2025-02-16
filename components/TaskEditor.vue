@@ -594,6 +594,7 @@
 							});
 							return;
 						}
+						if(label.value.isList)return;
 						label.value = res.data;
 						emits("createdLabel",{label:label.value});
 					});

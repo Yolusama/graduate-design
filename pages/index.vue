@@ -37,7 +37,7 @@
 											</uni-icons>
 										</view>
 									</view>
-									<scroll-view style="height: 30vh;" v-if="state.labelsExpand" scroll-y>
+									<scroll-view style="height: 30vh;" v-if="state.labelsExpand&&state.labels.length>0" scroll-y>
 										<view class="label-info" v-for="(label,index1) in state.labels" :key="index1"
 											style="margin-left: 4%;margin-top: 2%;" @click="switchContent(label)">
 											<image :src="imgSrc(label.icon)" class="label-icon"
@@ -271,7 +271,7 @@
 		IdOfBin,
 		RemoveOrRecoverTask,
 		RemoveOrRecoverHabit,
-		CheckTodayContinuousDays
+		CheckContinuousDays
 	} from '../api/Index';
 	import {
 		delayToRun,
@@ -288,7 +288,8 @@
 		TaskReminderKey,
 		HabitReminderKey,
 		CurrentAudioKey,
-		ValueText
+		ValueText,
+		CurrentFinsihAudioKey
 	} from '../module/Common';
 	import {
 		imgSrc
@@ -373,12 +374,18 @@
 
 		getLabels();
 		checkYesterdayTask();
-		checkTodayContinuousDays();
+		checkContinuousDays();
 
-		const audio = uni.getStorageSync(CurrentAudioKey);
+		var audio = uni.getStorageSync(CurrentAudioKey);
 		if (audio == "" || audio == null) {
 			audio = new ValueText(0, "无");
 			uni.setStorageSync(CurrentAudioKey, audio);
+		}
+		var finishAudio = uni.getStorageSync(CurrentFinsihAudioKey);
+		if(finishAudio == "" || finishAudio==null)
+		{
+			finishAudio = new ValueText(0,"无");
+			uni.setStorageSync(CurrentFinsihAudioKey,finishAudio);
 		}
 	});
 
@@ -397,9 +404,10 @@
 		});
 	}
 
-	function checkTodayContinuousDays() {
-		const today = onlyDate(new Date());
-		CheckTodayContinuousDays(state.user.id, today, response => {
+	function checkContinuousDays() {
+		const yesterday = onlyDate(new Date());
+		yesterday.setDate(yesterday.getDate()-1);
+		CheckContinuousDays(state.user.id, yesterday, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -541,7 +549,7 @@
 	}
 
 	function taskEditorClose() {
-		delayToRun(() => state.show.task = false, 150);
+		delayToRun(() => {state.show.task = false;state.task=null;}, 150);
 	}
 
 	function habitDetailClose() {
@@ -930,8 +938,14 @@
 
 	#task-labels .label-info .hide {
 		font-size: 13px;
+		/*#ifdef APP-PLUS*/
+		margin-left: 2px;
+		margin-right: 2px;
+		/*#endif*/
+		/*#ifdef H5*/
 		margin-left: 4px;
 		margin-right: 4px;
+		/*#endif*/
 		color: rgb(0, 75, 235)
 	}
 

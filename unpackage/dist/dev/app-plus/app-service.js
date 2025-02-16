@@ -4103,6 +4103,7 @@ if (uni.restoreGlobal) {
   }
   const AWeek = 7;
   const CurrentAudioKey = "current-notify-audio";
+  const CurrentFinsihAudioKey = "current-finish-audio";
   function playNotifyAudio(audio) {
     const context = uni.createInnerAudioContext();
     context.src = audio;
@@ -6107,6 +6108,9 @@ if (uni.restoreGlobal) {
   function GetNotifyAudios(successCallback) {
     Get("/Api/Common/GetNotifyAudios", auth, successCallback);
   }
+  function CheckContinuousDays(userId, yesterday, successCallback) {
+    Post(`/Api/Index/CheckContinuousDays/${userId}?today=${yesterday.getTime()}`, auth, {}, successCallback);
+  }
   const IdOfLableNamed = 4;
   const IdOfBin = 8;
   function GetDefaultThumbs(successCallback) {
@@ -6219,6 +6223,12 @@ if (uni.restoreGlobal) {
       const indexLabelEditor = vue.ref(null);
       const labelDrawer = vue.ref(null);
       const currentLabel = vue.ref("current-label");
+      const todayLabel = vue.ref({
+        labelId: 1,
+        labelName: "今天",
+        isList: true,
+        icon: "today.png"
+      });
       vue.onMounted(() => {
         const user2 = uni.getStorageSync("user");
         state.user.id = user2.uid;
@@ -6227,24 +6237,41 @@ if (uni.restoreGlobal) {
         state.labelsExpandStyle = "-webkit-transform: rotateZ(90deg);";
         var label = uni.getStorageSync(currentLabel.value);
         if (label == null || label == "")
-          label = {
-            labelId: 1,
-            labelName: "今天"
-          };
+          label = todayLabel.value;
         state.currentLabel = label;
         getData(label.labelId);
         getLabels();
         checkYesterdayTask();
-        const audio = uni.getStorageSync(CurrentAudioKey);
+        checkContinuousDays();
+        var audio = uni.getStorageSync(CurrentAudioKey);
         if (audio == "" || audio == null) {
           audio = new ValueText(0, "无");
           uni.setStorageSync(CurrentAudioKey, audio);
+        }
+        var finishAudio = uni.getStorageSync(CurrentFinsihAudioKey);
+        if (finishAudio == "" || finishAudio == null) {
+          finishAudio = new ValueText(0, "无");
+          uni.setStorageSync(CurrentFinsihAudioKey, finishAudio);
         }
       });
       function checkYesterdayTask() {
         const today2 = /* @__PURE__ */ new Date();
         const yesterday = onlyDate(new Date(today2.setDate(today2.getDate() - 1)));
         CheckYesterdayTask(state.user.id, yesterday, (response) => {
+          const res2 = response.data;
+          if (!res2.succeeded) {
+            uni.showToast({
+              title: res2.message,
+              icon: "none"
+            });
+            return;
+          }
+        });
+      }
+      function checkContinuousDays() {
+        const yesterday = onlyDate(/* @__PURE__ */ new Date());
+        yesterday.setDate(yesterday.getDate() - 1);
+        CheckContinuousDays(state.user.id, yesterday, (response) => {
           const res2 = response.data;
           if (!res2.succeeded) {
             uni.showToast({
@@ -6328,7 +6355,10 @@ if (uni.restoreGlobal) {
       function taskUpdated(e2) {
         const index = e2.index;
         const item = e2.item;
-        state.data["task"][index] = item;
+        if (item.labelId == null || item.labelId == state.currentLabel.labelId)
+          state.data["task"][index] = item;
+        else
+          state.data["task"].splice(index, 1);
         uni.removeStorageSync(TaskReminderKey);
       }
       function taskRemoved(e2) {
@@ -6370,7 +6400,10 @@ if (uni.restoreGlobal) {
         });
       }
       function taskEditorClose() {
-        delayToRun(() => state.show.task = false, 150);
+        delayToRun(() => {
+          state.show.task = false;
+          state.task = null;
+        }, 150);
       }
       function habitDetailClose() {
         delayToRun(() => state.show.habit = false, 150);
@@ -6419,6 +6452,16 @@ if (uni.restoreGlobal) {
         state.data["habit"].splice(e2.index, 1);
         uni.removeStorageSync(HabitReminderKey$1);
       }
+      function habitFinished(e2) {
+        const item = e2.item;
+        const time = onlyDate(/* @__PURE__ */ new Date());
+        if (state.currentLabel.id == 2)
+          time.setDate(time.getDate() + 1);
+        else if (state.currentLabel.id == 3)
+          time.setDate(time.getDate() - 1);
+        const index = item.records.findIndex((r2) => r2.day.getTime() == time.getTime());
+        item.records[index].finished = true;
+      }
       function hideOrShowLabel(index, isList, display) {
         const label = isList ? state.lists[index] : state.labels[index];
         HideOrShowLabel(label.labelId, display, (response) => {
@@ -6454,6 +6497,17 @@ if (uni.restoreGlobal) {
             state.lists.splice(index, 1);
           else
             state.labels.splice(index, 1);
+          if (label.labelId != state.currentLabel.labelId)
+            return;
+          state.currentLabel = todayLabel.value;
+          uni.setStorage({
+            key: currentLabel.value,
+            data: state.currentLabel,
+            success: () => {
+              getData(state.currentLabel.labelId);
+              labelDrawer.value.close();
+            }
+          });
         });
       }
       function getLabels() {
@@ -6469,6 +6523,13 @@ if (uni.restoreGlobal) {
           state.lists = res2.data.filter((l2) => l2.isList);
           state.labels = res2.data.filter((l2) => !l2.isList);
         });
+      }
+      function createdLabel(e2) {
+        const label = e2.label;
+        const labelId = label.labelId;
+        const index = state.labels.findIndex((l2) => l2.labelId == labelId);
+        if (index < 0)
+          state.labels.push(label);
       }
       function getTaskTimeStr(task) {
         const beginTime = task.beginTime;
@@ -6632,7 +6693,7 @@ if (uni.restoreGlobal) {
       function recoverHabit(index) {
         removeOrRecoverHabit(index, false);
       }
-      const __returned__ = { pattern: pattern2, fabPosition, today, state, indexTaskEditor, indexHabitDetail, indexLabelEditor, labelDrawer, currentLabel, checkYesterdayTask, openTaskEditor, showMask, openToEdit, openLabelEditor, labelCreated, labelUpdated, taskCreated, taskUpdated, taskRemoved, seeHabitDetail, taskEditorClose, habitDetailClose, labelEditorClose, getData, habitUpdated, habitRemoved, hideOrShowLabel, removeLabel, getLabels, getTaskTimeStr, finishTaskOrNot, finishHabit, unfinishHabit, recordFinish, switchContent, seeHiddenLabels, goToSelfInfo, removeOrRecoverTask, removeTask, recoverTask, removeOrRecoverHabit, removeHabit, recoverHabit, nextTick: vue.nextTick, onMounted: vue.onMounted, reactive: vue.reactive, ref: vue.ref, get CheckYesterdayTask() {
+      const __returned__ = { pattern: pattern2, fabPosition, today, state, indexTaskEditor, indexHabitDetail, indexLabelEditor, labelDrawer, currentLabel, todayLabel, checkYesterdayTask, checkContinuousDays, openTaskEditor, showMask, openToEdit, openLabelEditor, labelCreated, labelUpdated, taskCreated, taskUpdated, taskRemoved, seeHabitDetail, taskEditorClose, habitDetailClose, labelEditorClose, getData, habitUpdated, habitRemoved, habitFinished, hideOrShowLabel, removeLabel, getLabels, createdLabel, getTaskTimeStr, finishTaskOrNot, finishHabit, unfinishHabit, recordFinish, switchContent, seeHiddenLabels, goToSelfInfo, removeOrRecoverTask, removeTask, recoverTask, removeOrRecoverHabit, removeHabit, recoverHabit, nextTick: vue.nextTick, onMounted: vue.onMounted, reactive: vue.reactive, ref: vue.ref, get CheckYesterdayTask() {
         return CheckYesterdayTask;
       }, get FinishTaskOrNot() {
         return FinishTaskOrNot;
@@ -6652,6 +6713,8 @@ if (uni.restoreGlobal) {
         return RemoveOrRecoverTask;
       }, get RemoveOrRecoverHabit() {
         return RemoveOrRecoverHabit;
+      }, get CheckContinuousDays() {
+        return CheckContinuousDays;
       }, get delayToRun() {
         return delayToRun;
       }, get onlyDate() {
@@ -6682,6 +6745,8 @@ if (uni.restoreGlobal) {
         return CurrentAudioKey;
       }, get ValueText() {
         return ValueText;
+      }, get CurrentFinsihAudioKey() {
+        return CurrentFinsihAudioKey;
       }, get imgSrc() {
         return imgSrc;
       }, get FinishOrNot() {
@@ -6831,7 +6896,7 @@ if (uni.restoreGlobal) {
                                   /* STYLE */
                                 )) : vue.createCommentVNode("v-if", true)
                               ]),
-                              $setup.state.labelsExpand ? (vue.openBlock(), vue.createElementBlock("scroll-view", {
+                              $setup.state.labelsExpand && $setup.state.labels.length > 0 ? (vue.openBlock(), vue.createElementBlock("scroll-view", {
                                 key: 0,
                                 style: { "height": "30vh" },
                                 "scroll-y": ""
@@ -6956,9 +7021,16 @@ if (uni.restoreGlobal) {
             size: 20,
             onClick: _cache[3] || (_cache[3] = ($event) => $setup.labelDrawer.open())
           }),
+          vue.createElementVNode("image", {
+            src: $setup.imgSrc($setup.state.currentLabel.icon),
+            style: { "height": "30px", "width": "30px", "margin-left": "1%", "margin-right": "1%" }
+          }, null, 8, ["src"]),
           vue.createElementVNode(
             "text",
-            { class: "text" },
+            {
+              class: "text",
+              style: { "margin-left": "0" }
+            },
             vue.toDisplayString($setup.state.currentLabel.labelName),
             1
             /* TEXT */
@@ -7385,7 +7457,8 @@ if (uni.restoreGlobal) {
         onUpdated: $setup.taskUpdated,
         label: $setup.state.currentLabel,
         labelSet: true,
-        onRemoved: $setup.taskRemoved
+        onRemoved: $setup.taskRemoved,
+        onCreatedLabel: $setup.createdLabel
       }, null, 8, ["task", "isTaskUpdate", "label"])) : vue.createCommentVNode("v-if", true),
       $setup.state.show.habit ? (vue.openBlock(), vue.createBlock(_component_habit_detail, {
         key: 2,
@@ -7393,7 +7466,8 @@ if (uni.restoreGlobal) {
         onUpdated: $setup.habitUpdated,
         ref: "indexHabitDetail",
         onClose: $setup.habitDetailClose,
-        onRemoved: $setup.habitRemoved
+        onRemoved: $setup.habitRemoved,
+        onFinished: $setup.habitFinished
       }, null, 8, ["habit"])) : vue.createCommentVNode("v-if", true),
       !$setup.isStateLabel($setup.state.currentLabel.labelId) ? (vue.openBlock(), vue.createBlock(_component_uni_fab, {
         key: 3,
@@ -9042,6 +9116,8 @@ if (uni.restoreGlobal) {
       }
       function habitFinished(e2) {
         const item = e2.item;
+        const index = item.records.findIndex((r2) => r2.day.getTime() == onlyDate(state.selectedDay).getTime());
+        item.records[index].finished = true;
         state.selectedHabit = item;
       }
       function finishHabit(e2) {
@@ -15507,7 +15583,7 @@ ${i3}
         }
         if (count == 0)
           return 0;
-        return parseFloat((persistDays2 / count).toFixed(2)) * 100;
+        return (persistDays2 / count * 100).toFixed(0);
       }
       function getTaskCountOption() {
         GetFinishedTaskCount(state.user.userId, (response) => {
@@ -16905,7 +16981,9 @@ ${i3}
       __expose();
       const state = vue.reactive({
         audios: [],
-        value: 0
+        value: 0,
+        audioMode: 0,
+        audioModeData: [new ValueText(0, "设置通知音效"), new ValueText(1, "设置完成音效")]
       });
       const key = vue.ref(CurrentAudioKey);
       vue.onMounted(() => {
@@ -16947,8 +17025,18 @@ ${i3}
           }
         });
       }
-      const __returned__ = { state, key, getNotifyAudios, selectAudio, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, get CurrentAudioKey() {
+      function setAudioMode() {
+        if (state.audioMode == 0)
+          key.value = CurrentAudioKey;
+        else
+          key.value = CurrentFinsihAudioKey;
+        const audio = uni.getStorageSync(key.value);
+        state.value = audio.value;
+      }
+      const __returned__ = { state, key, getNotifyAudios, selectAudio, setAudioMode, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, get CurrentAudioKey() {
         return CurrentAudioKey;
+      }, get CurrentFinsihAudioKey() {
+        return CurrentFinsihAudioKey;
       }, get ValueText() {
         return ValueText;
       }, get playNotifyAudio() {
@@ -16972,6 +17060,13 @@ ${i3}
           title: "自定义音效无法完成,uniapp对上传文件与系统原生api调用的支持不足,无法完成上传文件,只提供系统音频供使用",
           style: { "width": "90%" }
         }),
+        vue.createVNode(_component_uni_data_checkbox, {
+          mode: "tag",
+          localdata: $setup.state.audioModeData,
+          modelValue: $setup.state.audioMode,
+          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.audioMode = $event),
+          onChange: $setup.setAudioMode
+        }, null, 8, ["localdata", "modelValue"]),
         vue.createElementVNode("scroll-view", {
           "scroll-y": "",
           style: { "width": "90%" }
@@ -16985,7 +17080,7 @@ ${i3}
               mode: "list",
               localdata: $setup.state.audios,
               modelValue: $setup.state.value,
-              "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.value = $event),
+              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => $setup.state.value = $event),
               onChange: $setup.selectAudio
             }, null, 8, ["localdata", "modelValue"])
           ])
@@ -27511,7 +27606,7 @@ ${i3}
         state.view.current = 1;
         state.view.expanded = false;
         emits("modeChange", showWay.value);
-        emits("dateChange", state.selectedDay);
+        emits("onChange", state.selectedDay);
       }
       function freshItems() {
         state.data.splice(0, state.data.length);
@@ -27535,7 +27630,9 @@ ${i3}
           vue.nextTick(() => {
             showWay.value = CalendarDisplayWay.week;
           });
+          emits("modeChange", CalendarDisplayWay.week);
         }
+        emits("onChange", state.selectedDay);
       }
       const __returned__ = { pros, state, current, showWay, unchangable, emits, weekDayShow, loadWeekDays, loadMonthDays, loadYearDays, loadDays, labelText, selectDay, freshSelection, transformed, toTransform, backTransform, changeDays, switchLeft, switchRight, signRotate, updateView, switchViewMode, goToMonth, freshItems, dateChange, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, watch: vue.watch, nextTick: vue.nextTick, get CalendarDisplayWay() {
         return CalendarDisplayWay;
@@ -28411,14 +28508,23 @@ ${i3}
         } else {
           state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(${width.value - height.value / 2}px,-50%);`;
           event.finished = true;
+          const audio = uni.getStorageSync(CurrentFinsihAudioKey);
+          if (audio.value != 0)
+            playNotifyAudio(audioSrc(audio.fileName));
         }
         emits("finish", event);
         state.canMove = false;
       }
-      const __returned__ = { pros, swiper, emits, state, backgroundColor, width, height, scrollWidth, start, move, end, ref: vue.ref, reactive: vue.reactive, onMounted: vue.onMounted, nextTick: vue.nextTick, get delayToRun() {
+      const __returned__ = { pros, swiper, emits, state, backgroundColor, width, height, scrollWidth, start, move, end, ref: vue.ref, reactive: vue.reactive, onMounted: vue.onMounted, nextTick: vue.nextTick, get CurrentFinsihAudioKey() {
+        return CurrentFinsihAudioKey;
+      }, get delayToRun() {
         return delayToRun;
       }, get getElBound() {
         return getElBound;
+      }, get playNotifyAudio() {
+        return playNotifyAudio;
+      }, get audioSrc() {
+        return audioSrc;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -28526,9 +28632,10 @@ ${i3}
         }
       }
       function select(day) {
+        const date = onlyDate(day.date);
         if (day.record.result) {
           const record = records.value[day.record.index];
-          DayInFrequency(habitId.value, day.date.getTime(), beginDate.value.getTime(), (response) => {
+          DayInFrequency(habitId.value, date.getTime(), beginDate.value.getTime(), (response) => {
             const res2 = response.data;
             if (!res2.succeeded) {
               uni.showToast({
@@ -28585,9 +28692,8 @@ ${i3}
             });
           });
         } else {
-          const date = onlyDate(day.date);
           if (date.getTime() <= today.value.getTime() && date.getTime() >= beginDate.value.getTime()) {
-            DayInFrequency(habitId.value, day.date.getTime(), beginDate.value.getTime(), (response) => {
+            DayInFrequency(habitId.value, date.getTime(), beginDate.value.getTime(), (response) => {
               const res2 = response.data;
               if (!res2.succeeded) {
                 uni.showToast({
@@ -28770,7 +28876,7 @@ ${i3}
         }
         if (persistDays2.value == 0)
           return 0;
-        return parseFloat((persistDays2.value / count).toFixed(2)) * 100;
+        return (persistDays2.value / count * 100).toFixed(0);
       }
       const __returned__ = { pros, emits, today, state, records, beginDate, habitId, current, continuousDays, mostDays, persistDays: persistDays2, frequency: frequency2, loadMonthDays, select, toTransform, backTransform, transformed, selectDate, transformLeft, transformRight, changeMonthDays, getFinishRate, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get onlyDate() {
         return onlyDate;
@@ -29075,7 +29181,7 @@ ${i3}
       label: Object,
       labelSet: Boolean
     },
-    emits: ["close", "created", "updated", "removed"],
+    emits: ["close", "created", "updated", "removed", "createdLabel"],
     setup(__props, { expose: __expose, emit: __emit }) {
       const pros = __props;
       const task = vue.ref(pros.task);
@@ -29322,9 +29428,9 @@ ${i3}
       function editTask() {
         state.task.beginTime = /* @__PURE__ */ new Date(`${startTime.value.date} ${startTime.value.time}`);
         state.task.endTime = /* @__PURE__ */ new Date(`${endTime.value.date} ${endTime.value.time}`);
+        if (label.value != void 0 && state.hasLabelSetter && !isBaseLabel(label.value.labelId))
+          state.task.labelId = label.value.labelId;
         if (!state.isTaskUpdate) {
-          if (label.value != void 0 && state.hasLabelSetter && !isBaseLabel(label.value.labelId))
-            state.task.labelId = label.value.labelId;
           CreateTask(state.task, (response) => {
             const res2 = response.data;
             if (!res2.succeeded) {
@@ -29432,7 +29538,10 @@ ${i3}
                   });
                   return;
                 }
+                if (label.value.isList)
+                  return;
                 label.value = res3.data;
+                emits("createdLabel", { label: label.value });
               });
             }
           }
@@ -31427,11 +31536,11 @@ ${i3}
               title: res2.message,
               icon: "none"
             });
-            state.label.name = e2 = "";
+            state.label.labelName = e2 = "";
             return;
           }
           if (res2.data)
-            state.label.name = e2 = "";
+            state.label.labelName = e2 = "";
         });
       }
       function input(e2) {

@@ -153,9 +153,10 @@
 	}
 
 	function select(day) {
+		const date = onlyDate(day.date);
 		if (day.record.result) {
 			const record = records.value[day.record.index];
-			DayInFrequency(habitId.value, day.date.getTime(), beginDate.value.getTime(), response => {
+			DayInFrequency(habitId.value, date.getTime(), beginDate.value.getTime(), response => {
 				const res = response.data;
 				if (!res.succeeded) {
 					uni.showToast({
@@ -210,9 +211,8 @@
 				});
 			});
 		} else {
-			const date = onlyDate(day.date);
 			if (date.getTime() <= today.value.getTime() && date.getTime() >= beginDate.value.getTime()) {
-				DayInFrequency(habitId.value, day.date.getTime(), beginDate.value.getTime(), response => {
+				DayInFrequency(habitId.value,date.getTime(),beginDate.value.getTime(), response => {
 					const res = response.data;
 					if (!res.succeeded) {
 						uni.showToast({

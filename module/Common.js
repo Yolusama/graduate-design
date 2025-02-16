@@ -440,6 +440,7 @@ export function isStateLabel(labelId){
 
 export const AWeek = 7;
 export const CurrentAudioKey = "current-notify-audio";
+export const CurrentFinsihAudioKey = "current-finish-audio";
 
 export function playNotifyAudio(audio){
 	const context = uni.createInnerAudioContext();

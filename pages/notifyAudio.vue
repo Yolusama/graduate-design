@@ -4,8 +4,10 @@
 			<uni-title type="h1" title="自定义音效无法完成,uniapp对上传文件与系统原生api调用的支持不足,无法完成上传文件,只提供系统音频供使用"
 			 style="width: 90%;">
 			</uni-title>
+			<uni-data-checkbox mode="tag" :localdata="state.audioModeData"
+			v-model="state.audioMode" @change="setAudioMode"></uni-data-checkbox>
 			<scroll-view scroll-y style="width: 90%;">
-				<view >
+				<view>
 					<uni-title type="h3" title="选择铃声"></uni-title>
 					<uni-data-checkbox mode="list" :localdata="state.audios" v-model="state.value"
 						@change="selectAudio">
@@ -24,6 +26,7 @@
 	} from 'vue';
 	import {
 		CurrentAudioKey,
+		CurrentFinsihAudioKey,
 		ValueText,
 		playNotifyAudio
 	} from '../module/Common';
@@ -35,7 +38,9 @@
 	} from '../module/Request';
 	const state = reactive({
 		audios: [],
-		value: 0
+		value: 0,
+		audioMode:0,
+		audioModeData:[new ValueText(0,"设置通知音效"),new ValueText(1,"设置完成音效")]
 	});
 
 	const key = ref(CurrentAudioKey);
@@ -79,6 +84,15 @@
 				playNotifyAudio(audioSrc(audio.fileName));
 			}
 		});
+	}
+	
+	function setAudioMode(){
+		if(state.audioMode==0)
+		   key.value = CurrentAudioKey;
+		else
+		   key.value = CurrentFinsihAudioKey;
+		const audio = uni.getStorageSync(key.value);
+		state.value = audio.value;
 	}
 </script>
 

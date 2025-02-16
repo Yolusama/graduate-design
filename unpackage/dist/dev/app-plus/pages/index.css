@@ -1327,8 +1327,14 @@
 }
 #task-labels .label-info .hide {
 		font-size: 13px;
-		margin-left: 6px;
-		margin-right: 6px;
+
+		margin-left: 2px;
+		margin-right: 2px;
+
+
+
+
+
 		color: rgb(0, 75, 235)
 }
 #task-labels .text {
@@ -1345,8 +1351,8 @@
 		transition: transform 150ms;
 }
 #task-labels .label-icon {
-		width: 22px;
-		height: 22px;
+		width: 25px;
+		height: 25px;
 }
 #task-labels .labels {
 		width: 94%;
@@ -1370,6 +1376,10 @@
 		align-items: center;
 		justify-content: space-between;
 		height: 40px;
+}
+#index .index-content .header {
+		display: flex;
+		align-items: center;
 }
 #index .mask {
 		height: 100%;
@@ -1456,4 +1466,3 @@
 		margin-left: 1%;
 		margin-right: 1%;
 }
-	

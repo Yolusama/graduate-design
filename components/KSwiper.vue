@@ -8,7 +8,8 @@
 
 <script setup>
 	import {ref,reactive,onMounted,nextTick} from "vue";
-    import { delayToRun, getElBound } from "../module/Common";
+    import { CurrentFinsihAudioKey, delayToRun, getElBound, playNotifyAudio } from "../module/Common";
+import { audioSrc } from "../module/Request";
 	const pros = defineProps({ 
 		backgroundColor:String,
 		height:Number,
@@ -124,6 +125,9 @@
 			  state.scrollStyle = `${state.scrollBaseStyle};-webkit-transform: translate(${width.value-height.value/2}px,-50%);`; 
 			 //#endif 
 			  event.finished = true;
+			  const audio = uni.getStorageSync(CurrentFinsihAudioKey);
+			  if(audio.value!=0)
+			     playNotifyAudio(audioSrc(audio.fileName));
 		 }  
 		emits("finish",event);
 		state.canMove = false;

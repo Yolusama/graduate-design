@@ -61,10 +61,6 @@ public class Task{
      */
     private Date updateTime;
     /**
-    *用户自定义标签时带有的标签id
-    */
-    private Long labelId;
-    /**
      * 任务完成时间
      */
     private Date finishTime;
@@ -74,7 +70,9 @@ public class Task{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return Objects.equals(beginTime, task.beginTime) && Objects.equals(endTime, task.endTime) && Objects.equals(description, task.description) && Objects.equals(priority, task.priority) && Objects.equals(title, task.title);
+        return Objects.equals(beginTime, task.beginTime) && Objects.equals(endTime, task.endTime) &&
+                Objects.equals(description, task.description) && Objects.equals(priority, task.priority) &&
+                Objects.equals(title, task.title);
     }
 
     @Override

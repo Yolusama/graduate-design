@@ -133,10 +133,10 @@ public class IndexController extends ControllerBase{
         return ok();
     }
 
-    @PostMapping("/CheckTodayContinuousDays/{userId}")
+    @PostMapping("/CheckContinuousDays/{userId}")
     @ApiOperation(value="检索用户昨天未完成的习惯并重置连续完成的值",notes = "重置连续完成值到0")
-    public ActionResult CheckTodayContinuousDays(@PathVariable String userId,@RequestParam Long today){
-        indexService.checkHabitContinuousDays(new Date(today),userId,redis);
+    public ActionResult CheckContinuousDays(@PathVariable String userId,@RequestParam Long yesterday){
+        indexService.checkHabitContinuousDays(new Date(yesterday),userId,redis);
         return ok();
     }
 

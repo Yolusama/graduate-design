@@ -3,10 +3,7 @@ package SelfSchedule.DbOption.ServiceImpl;
 import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
 import SelfSchedule.Common.Pair;
-import SelfSchedule.DbOption.Mapper.HabitMapper;
-import SelfSchedule.DbOption.Mapper.TaskLabelMapper;
-import SelfSchedule.DbOption.Mapper.TaskMapper;
-import SelfSchedule.DbOption.Mapper.UserMapper;
+import SelfSchedule.DbOption.Mapper.*;
 import SelfSchedule.DbOption.Service.IHabitService;
 import SelfSchedule.DbOption.Service.ITaskService;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
@@ -40,13 +37,16 @@ public class IndexService implements IndexServiceInterface {
     private final IHabitService habitService;
     private final TaskLabelMapper labelMapper;
     private final UserMapper userMapper;
+    private final TaskLabelOptionMapper labelOptionMapper;
 
     @Autowired
-    public IndexService(TaskService taskService,HabitService habitService,TaskLabelMapper labelMapper,UserMapper userMapper){
+    public IndexService(TaskService taskService,HabitService habitService,TaskLabelMapper labelMapper,
+                        UserMapper userMapper,TaskLabelOptionMapper labelOptionMapper){
        this.taskService = taskService;
        this.habitService = habitService;
        this.labelMapper = labelMapper;
        this.userMapper = userMapper;
+       this.labelOptionMapper = labelOptionMapper;
     }
 
     private TaskMapper taskMapper(){
@@ -210,13 +210,17 @@ public class IndexService implements IndexServiceInterface {
         String icon = labelMapper.getIcon(labelId);
         if(!icon.equals(Constants.DefaultLabelIcon)&&!icon.equals(Constants.DefaultListIcon))
             fileService.removeImage(icon);
+        LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
+
+        taskMapper().update(wrapper);
         return labelMapper.deleteById(labelId);
     }
 
     @Override
     public TaskLabelVO createOrCheckLabel(String labelName, String userId) {
         LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false);
+        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false)
+                .eq(TaskLabel::getUserId,userId);
         TaskLabel label = labelMapper.selectOne(wrapper);
         if(label == null)
         {
@@ -254,19 +258,19 @@ public class IndexService implements IndexServiceInterface {
 
     @Override
     @Transactional
-    public void checkHabitContinuousDays(Date today, String userId, RedisCache redis) {
-        String key = String.format("Caching_%s_%s",userId,CachingKeys.TodayContinuousDaysChecked);
+    public void checkHabitContinuousDays(Date yesterday, String userId, RedisCache redis) {
+        String key = String.format("Caching_%s_%s",userId,CachingKeys.ContinuousDaysChecked);
         if(redis.has(key))
             return;
         List<String> habitIds = habitMapper().getUserHabitIds(userId);
         for(String habitId:habitIds){
             Date beginDate = habitMapper().getHabitBeginDate(habitId);
-            if(habitService.isInFrequency(habitId,today,beginDate.getTime()))
+            if(habitService.isInFrequency(habitId,yesterday,beginDate.getTime()))
                 habitService.clearContinuousDays(habitId);
         }
-        Date tomorrow = new Date(today.getTime());
-        tomorrow.setDate(today.getDate()+1);
-        long expire = tomorrow.getTime() - Constants.Now().getTime();
+        Date time = new Date(yesterday.getTime());
+        time.setDate(yesterday.getDate()+1);
+        long expire = time.getTime() - Constants.Now().getTime();
         redis.set(key,Constants.NormalState,Duration.ofMillis(expire));
     }
 

@@ -22,7 +22,7 @@ public interface IndexServiceInterface {
     TaskLabelVO createOrCheckLabel(String labelName, String userId);
     List<TaskLabelVO> getHiddenLabels(String userId,RedisCache redis);
     void checkYesterdayTask(Date yesterday,String userId,RedisCache redis);
-    void checkHabitContinuousDays(Date today, String userId, RedisCache redis);
+    void checkHabitContinuousDays(Date yesterday, String userId, RedisCache redis);
     void logout(boolean cancelAccount,String userId,String email, RedisCache redis);
     int removeOrRecoverTask(Long taskId,Boolean isRemove);
     int removeOrRecoverHabit(String habitId,Boolean isRemove);

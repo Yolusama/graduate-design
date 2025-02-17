@@ -6,6 +6,7 @@
         select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
               r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
                  join TaskInstance i on i.instanceId = t.id and i.instanceId = i.taskId
+                  join TaskLabelOption tl on tl.taskId = t.id
                  left join TaskRepeatRule r on t.id = r.taskId
                   <where>
                       t.userId=#{userId}  and ((
@@ -21,7 +22,7 @@
 
     <select id="getTask" resultType="SelfSchedule.Entity.VO.TaskRuleComboVO">
         select t.id as instanceId,t.userId,t.beginTime,t.endTime,t.createTime,t.title,t.description,t.priority,t.repeatable,t.state,
-              tl.labelId,tl.listId,r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId,i.flag as deleteFlag from Task t
+              r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId,i.flag as deleteFlag from Task t
                                    join TaskInstance i on i.instanceId = t.id
                                     join TaskLabelOption tl on tl.taskId = t.id
                                 left join TaskRepeatRule r on t.id = r.taskId

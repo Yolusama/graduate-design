@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -19,7 +20,6 @@ public class TaskRuleComboVO extends IndexDisplayVO{
     private Date createTime;
     private String title;
     private String description;
-    private Long labelId;
     private Integer priority;
     private Boolean repeatable;
     private Integer state;

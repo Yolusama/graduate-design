@@ -1,7 +1,9 @@
 package SelfSchedule.DbOption.Service;
 
 import SelfSchedule.Entity.VO.IndexDisplayVO;
+import SelfSchedule.Entity.VO.TaskLabelOptionVO;
 import SelfSchedule.Entity.VO.TaskLabelVO;
+import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,4 +28,7 @@ public interface IndexServiceInterface {
     void logout(boolean cancelAccount,String userId,String email, RedisCache redis);
     int removeOrRecoverTask(Long taskId,Boolean isRemove);
     int removeOrRecoverHabit(String habitId,Boolean isRemove);
+    List<TaskLabelVO> takeTaskLabelsFor(String userId, Long taskId,Long listId, ArrayDataModel<String> model);
+    int moveListTo(Long taskId,Long listId);
+    TaskLabelOptionVO getTaskLabels(Long taskId, String userId);
 }

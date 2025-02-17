@@ -1,6 +1,7 @@
 package SelfSchedule.DbOption.Mapper;
 
 import SelfSchedule.Entity.Task;
+import SelfSchedule.Entity.VO.TaskLabelVO;
 import SelfSchedule.Entity.VO.TaskRuleComboVO;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;

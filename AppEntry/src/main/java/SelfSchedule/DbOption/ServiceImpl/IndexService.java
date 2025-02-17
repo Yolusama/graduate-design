@@ -11,10 +11,8 @@ import SelfSchedule.Entity.Enum.TaskState;
 import SelfSchedule.Entity.Habit;
 import SelfSchedule.Entity.Task;
 import SelfSchedule.Entity.TaskLabel;
-import SelfSchedule.Entity.VO.HabitVO;
-import SelfSchedule.Entity.VO.IndexDisplayVO;
-import SelfSchedule.Entity.VO.TaskLabelVO;
-import SelfSchedule.Entity.VO.TaskRuleComboVO;
+import SelfSchedule.Entity.TaskLabelOption;
+import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
@@ -30,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class IndexService implements IndexServiceInterface {
@@ -207,16 +206,21 @@ public class IndexService implements IndexServiceInterface {
     @Override
     @Transactional
     public int removeLabel(Long labelId, FileService fileService) {
-        String icon = labelMapper.getIcon(labelId);
+        TaskLabel label = labelMapper.selectById(labelId);
+        String icon = label.getIcon();
         if(!icon.equals(Constants.DefaultLabelIcon)&&!icon.equals(Constants.DefaultListIcon))
             fileService.removeImage(icon);
-        LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
-
-        taskMapper().update(wrapper);
+        LambdaUpdateWrapper<TaskLabelOption> wrapper = new LambdaUpdateWrapper<>();
+        if(label.getIsList())
+            wrapper.set(TaskLabelOption::getListId,null).eq(TaskLabelOption::getListId,label.getId());
+        else
+            wrapper.set(TaskLabelOption::getLabelId,null).eq(TaskLabelOption::getLabelId,label.getId());
+        labelOptionMapper.update(wrapper);
         return labelMapper.deleteById(labelId);
     }
 
     @Override
+    @Transactional
     public TaskLabelVO createOrCheckLabel(String labelName, String userId) {
         LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false)
@@ -269,7 +273,7 @@ public class IndexService implements IndexServiceInterface {
                 habitService.clearContinuousDays(habitId);
         }
         Date time = new Date(yesterday.getTime());
-        time.setDate(yesterday.getDate()+1);
+        time.setDate(yesterday.getDate()+2);
         long expire = time.getTime() - Constants.Now().getTime();
         redis.set(key,Constants.NormalState,Duration.ofMillis(expire));
     }
@@ -316,5 +320,66 @@ public class IndexService implements IndexServiceInterface {
     @Transactional
     public int removeOrRecoverTask(Long taskId, Boolean isRemove) {
         return isRemove ? taskService.remove(taskId) : taskService.recover(taskId);
+    }
+
+    @Override
+    @Transactional
+    public List<TaskLabelVO> takeTaskLabelsFor(String userId, Long taskId, Long listId, ArrayDataModel<String> model) {
+        List<TaskLabelVO> res = new ArrayList<>();
+
+        for(String labelName: model.getData()){
+            LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(TaskLabel::getIsList,false).eq(TaskLabel::getUserId,userId).
+            eq(TaskLabel::getName,labelName);
+
+            TaskLabel label = labelMapper.selectOne(wrapper);
+            if(label==null){
+              label = new TaskLabel();
+              label.setIcon(Constants.DefaultLabelIcon);
+              label.setName(labelName);
+              label.setCreateTime(Constants.Now());
+              label.setUserId(userId);
+              labelMapper.insert(label);
+              TaskLabelOption option = new TaskLabelOption();
+              option.setTaskId(taskId);
+              option.setLabelId(label.getId());
+              option.setListId(listId);
+              labelOptionMapper.insert(option);
+            }
+            else
+            {
+               LambdaUpdateWrapper<TaskLabelOption> wrapper1 = new LambdaUpdateWrapper<>();
+               wrapper1.set(TaskLabelOption::getLabelId,label.getId()).set(TaskLabelOption::getListId,listId)
+                        .eq(TaskLabelOption::getTaskId,taskId);
+              labelOptionMapper.update(wrapper1);
+            }
+            TaskLabelVO labelVO = ObjectUtil.copy(label,new TaskLabelVO());
+            labelVO.setLabelId(label.getId());
+            labelVO.setLabelName(labelName);
+            res.add(labelVO);
+        }
+
+        return res;
+    }
+
+    @Override
+    @Transactional
+    public int moveListTo(Long taskId, Long listId) {
+        LambdaUpdateWrapper<TaskLabelOption> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(TaskLabelOption::getListId,listId).eq(TaskLabelOption::getTaskId,taskId);
+        return labelOptionMapper.update(wrapper);
+    }
+
+    @Override
+    public TaskLabelOptionVO getTaskLabels(Long taskId, String userId) {
+       List<TaskLabelVO> data = labelOptionMapper.getTaskLabels(userId,taskId);
+       TaskLabelOptionVO res = new TaskLabelOptionVO();
+       Optional<TaskLabelVO> optional = data.stream().filter(l->l.getIsList()).findFirst();
+       if(optional.isEmpty())
+           res.setList(null);
+       else
+           res.setList(optional.get());
+       res.setLabels(data.stream().filter(l->!l.getIsList()).collect(Collectors.toList()));
+       return res;
     }
 }

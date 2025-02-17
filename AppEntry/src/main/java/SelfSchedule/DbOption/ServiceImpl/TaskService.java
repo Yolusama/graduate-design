@@ -60,7 +60,6 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         task.setPriority(model.getPriority());
         task.setDescription(model.getDescription());
         task.setTitle(model.getTitle());
-        task.setLabelId(model.getLabelId());
         task.setState(TaskState.UNFINISHED.value());
         task.setUserId(model.getUserId());
         task.setRepeatable(model.getRepeatable());

@@ -5,11 +5,14 @@ import SelfSchedule.Common.Constants;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
 import SelfSchedule.DbOption.ServiceImpl.IndexService;
 import SelfSchedule.Entity.VO.IndexDisplayVO;
+import SelfSchedule.Entity.VO.TaskLabelOptionVO;
 import SelfSchedule.Entity.VO.TaskLabelVO;
+import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Model.TaskLabelModel;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
+import SelfSchedule.Utils.ObjectUtil;
 import SelfSchedule.annotation.ClearRedisCache;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -115,7 +118,8 @@ public class IndexController extends ControllerBase{
     @PostMapping("/CreateOrGetLabel/{userId}")
     @ApiOperation(value="创建或获取标签",notes = "标签不存在时创建")
     @ClearRedisCache(keys={CachingKeys.GetHiddenLabels,CachingKeys.GetTaskLabels})
-    public ActionResult<TaskLabelVO> CreateOrGetLabel(@PathVariable String userId,@RequestParam String labelName,
+    public ActionResult<TaskLabelVO> CreateOrGetLabel(@PathVariable String userId,
+                                                      @RequestParam String labelName,
                                                       HttpServletRequest request){
         return successWithData(indexService.createOrCheckLabel(labelName,userId));
     }
@@ -170,5 +174,38 @@ public class IndexController extends ControllerBase{
         if(res==Constants.AbNormalState)
             return fail("操作失败！");
         return ok(isRemove?"已正式删除！":"已恢复!");
+    }
+
+    @PatchMapping("/MoveListTo/{taskId}/{listId}")
+    @ApiOperation(value = "移动任务标签",notes = "移动任务标签")
+    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels,CachingKeys.GetIndexData})
+    public ActionResult MoveListTo(@PathVariable Long taskId,@PathVariable Long listId,HttpServletRequest request){
+        int res = indexService.moveListTo(taskId,listId);
+        if(res==Constants.AbNormalState)
+            return fail("移动失败！");
+        return ok("移动完成！");
+    }
+
+    @PostMapping("/TakeTaskLabelsFor/{userId}/{taskId}/{listId}")
+    @ApiOperation(value = "更新/追加任务标签",notes = "更新/追加任务标签")
+    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels,CachingKeys.GetIndexData})
+    public CompletableFuture<ActionResult<List<TaskLabelVO>>> TakeTaskLabelsFor(@PathVariable String userId,
+                                                             @PathVariable Long taskId,
+                                                             @PathVariable String listId,
+                                                             @RequestBody ArrayDataModel<String> model,
+                                                             HttpServletRequest request){
+        Long _listId = ObjectUtil.isRequestParamStrNull(listId)?null:Long.parseLong(listId);
+        return CompletableFuture.completedFuture(
+                successWithData(indexService.takeTaskLabelsFor(userId,taskId,_listId,model))
+        );
+    }
+
+    @GetMapping("/GetTaskLabels/{userId}/{taskId}")
+    @ApiOperation(value = "获取任务的标签",notes = "获取任务的标签")
+    public CompletableFuture<ActionResult<TaskLabelOptionVO>> GetTaskLabels(@PathVariable String userId,
+                                                                            @PathVariable Long taskId){
+        return CompletableFuture.completedFuture(
+                successWithData(indexService.getTaskLabels(taskId,userId))
+        );
     }
 }

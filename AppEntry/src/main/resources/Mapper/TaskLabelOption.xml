@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.TaskLabelOptionMapper">
+    <select id="getTaskLabels" resultType="SelfSchedule.Entity.VO.TaskLabelVO">
+        select l.id as labelId,l.name as labelName,display,icon,notCustom,isList from TaskLabel l
+                        join TaskLabelOption tl on tl.labelId = l.id or tl.listId = l.id
+        where (l.userId is not null and l.userId = #{userId}) and tl.taskId = #{taskId} and l.display = 1
+    </select>
+</mapper>

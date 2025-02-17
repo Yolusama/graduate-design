@@ -242,8 +242,8 @@
 			</uni-swipe-action>
 		</scroll-view>
 		<task-editor ref="indexTaskEditor" :task="state.task" :isTaskUpdate="state.task!=null" v-if="state.show.task"
-			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :label="state.currentLabel"
-			:labelSet="true" @removed="taskRemoved" @createdLabel="createdLabel">
+			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :labelSet="true" 
+			@removed="taskRemoved" @createdLabel="createdLabel" :userLabels="state.labels">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
 			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished"></habit-detail>
@@ -271,7 +271,8 @@
 		IdOfBin,
 		RemoveOrRecoverTask,
 		RemoveOrRecoverHabit,
-		CheckContinuousDays
+		CheckContinuousDays,
+		GetTaskLabels
 	} from '../api/Index';
 	import {
 		delayToRun,
@@ -436,8 +437,21 @@
 			task.reminderInfoModels = res.data;
 			for (let reminder of task.reminderInfoModels)
 				reminder.timing = new Date(reminder.timing);
+		});
+		GetTaskLabels(state.user.id,task.instanceId,response=>{
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			state.task.labels = res.data.labels;
+			state.task.list = res.data.list;
 			openToEdit();
 		});
+		
 	}
 
 	function showMask(task) {

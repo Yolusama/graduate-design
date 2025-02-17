@@ -63,7 +63,17 @@ export function GetNotifyAudios(successCallback){
 }
 
 export function CheckContinuousDays(userId,yesterday,successCallback){
-	Post(`/Api/Index/CheckContinuousDays/${userId}?today=${yesterday.getTime()}`,auth,{},successCallback);
+	Post(`/Api/Index/CheckContinuousDays/${userId}?yesterday=${yesterday.getTime()}`,auth,{},successCallback);
+}
+
+export function TakeTaskLabelsFor(userId,taskId,listId,labelNames,successCallback){
+	Post(`/Api/Index/TaskTaskLabelsFor/${userId}/${taskId}/${listId}`,auth,{
+		data:labelNames
+	},successCallback);
+}
+
+export function GetTaskLabels(userId,taskId,successCallback){
+	Get(`/Api/Index/GetTaskLabels/${userId}/${taskId}`,auth,successCallback);
 }
 
 export const IdOfLableNamed = 4;

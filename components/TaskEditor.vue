@@ -12,10 +12,9 @@
 					class="image" @click="editTask" />
 				<image :src="imgSrc(DefaultLabelIcon)" v-if="state.hasLabelSetter" @click="takeLabel" class="image">
 				</image>
-				<text class="label-text"
-					v-if="state.hasLabelSetter&&state.task.list!=null&&!isBaseLabel(state.task.labelId)"
-					style="background-color:cyan">
-					{{state.task.list.labelName}}
+				<text class="label-text" v-if="state.hasLabelSetter" @click="listPopup.open()"
+					style="background-color: cyan;">
+					{{state.task.list!=null?state.task.list.labelName:"指定清单"}}
 				</text>
 				<uni-icons type="close" color="red" :size="18" v-if="state.isTaskUpdate" style="margin-left: 2%;"
 					@click="removeTask"></uni-icons>
@@ -23,9 +22,9 @@
 			<uni-easyinput v-model="state.task.title" placeholder="标题" :focus="!state.isTaskUpdate"
 				style="margin-bottom: 2px;margin-top: 3px;" @input="titleInput"></uni-easyinput>
 			<uni-easyinput v-model="state.task.description" placeholder="描述" type="textarea" :rows="3"></uni-easyinput>
-			<view v-if="state.hasLabelSetter" style="display: flex;flex-wrap: wrap;margin-top: 2px;">
-				<text class="label-text" v-for="(labelName,index) in state.task.labels" :key="index">
-					{{labelName}}
+			<view v-if="state.hasLabelSetter" style="display: flex;flex-wrap: wrap;margin-top: 5px;">
+				<text class="label-text" v-for="(label,index) in state.task.labels" :key="index">
+					{{label.labelName}}
 				</text>
 			</view>
 		</view>
@@ -173,10 +172,42 @@
 					<uni-easyinput placeholder="新标签" v-model="state.labelOpt.labelName"
 						@change="createNewLabel"></uni-easyinput>
 				</view>
-				<uni-data-checkbox v-model="state.labelOpt.selected" :localdata="state.labelOpt.data" mode="tag" @change="changeTaskLables"
-				 multiple wrap></uni-data-checkbox>
+				<uni-data-checkbox v-model="state.labelOpt.selected" :localdata="state.labelOpt.data" mode="tag"
+					@change="changeTaskLabels" multiple></uni-data-checkbox>
 			</view>
 		</scroll-view>
+	</uni-popup>
+	<uni-popup ref="listPopup" background-color="#fff" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
+		<view class="list">
+			<view class="header">
+				<uni-icons type="closeempty" @click="listPopup.close()"></uni-icons>
+			</view>
+			<button @click="addList" style="margin-top: 2%;margin-bottom: 1%;height: 30px;line-height: 30px;" 
+			size="mini" type="primary">
+				<uni-icons type="plusempty" color="white"></uni-icons>
+				<text style="font-size: 13px;">添加清单</text>
+			</button>
+			<scroll-view scroll-y style="max-width: 40vh;">
+				<view class="list-item" @click="changeTaskList(null)"
+					:style="state.listOpt.selected==null?'background-color:rgb(25,25,24,.25)':''">
+					<view style="display: flex;align-items: center;margin-left: 1%;">
+						<image class="image" :src="imgSrc(DefaultListIcon)"></image>
+						<text class="overflow">无</text>
+					</view>
+					<uni-icons type="checkmarkempty" v-if="state.listOpt.selected==null"
+					:size="18" color="red" style="margin-right: 2%;"></uni-icons>
+				</view>
+				<view class="list-item" @click="changeTaskList(list)" v-for="(list,index) in userLists" :key="index"
+					:style="state.listOpt.itemSelected(list)?'background-color:rgb(25,25,24,.25)':''">
+					<view style="display: flex;align-items: center;margin-left: 1%;">
+						<image class="image" :src="imgSrc(list.icon)"></image>
+						<text class="overflow">{{list.labelName}}</text>
+					</view>
+					<uni-icons type="checkmarkempty" v-if="state.listOpt.itemSelected(list)" :size="18" color="red" 
+					style="margin-right: 2%;"></uni-icons>
+				</view>
+			</scroll-view>
+		</view>
 	</uni-popup>
 </template>
 
@@ -202,7 +233,8 @@
 		loading,
 		DefaultLabelIcon,
 		isBaseDayLabel,
-		isBaseLabel
+		isBaseLabel,
+		DefaultListIcon
 	} from '../module/Common';
 	import {
 		CreateTask,
@@ -219,6 +251,7 @@
 		imgSrc
 	} from '../module/Request';
 	import {
+		CreateList,
 		CreateOrGetLabel,
 		TakeTaskLabelsFor
 	} from '../api/Index';
@@ -228,17 +261,21 @@
 		task: Object,
 		isTaskUpdate: Boolean,
 		labelSet: Boolean,
-		userLabels: Array
+		userLabels: Array,
+		userLists: Array,
+		label: Object
 	});
 	const task = ref(pros.task);
 	const label = ref(pros.label);
 	const userLabels = ref(pros.userLabels);
+	const userLists = ref(pros.userLists);
 	const popup = ref(null);
 	const timePopup = ref(null);
 	const priorityPopup = ref(null);
 	const defRulePopup = ref(null);
 	const customPopup = ref(null);
 	const labelPopup = ref(null);
+	const listPopup = ref(null);
 
 	const emits = defineEmits(["close", "created", "updated", "removed", "createdLabel"]);
 	const startTime = ref({
@@ -292,17 +329,24 @@
 		canCreateTask: false,
 		isTaskUpdate: pros.isTaskUpdate,
 		hasLabelSetter: pros.labelSet,
-		labelNames: [],
 		labelOpt: {
 			data: [],
 			selected: [],
 			labelName: "",
 			labelNames: function() {
 				const res = [];
-				for (let index in this.selected)
-					res.push(this.data[index].text);
+				for (let s of this.selected) {
+					const label = this.data.find(l => l.value == s);
+					res.push(label.text);
+				}
 				return res;
 			}
+		},
+		listOpt: {
+			itemSelected: function(list) {
+				return  this.selected!=null && list != null && list.labelId == this.selected;
+			},
+			selected: null
 		}
 	});
 
@@ -331,12 +375,27 @@
 			resetBeginEndTime();
 
 		if (state.hasLabelSetter) {
+			if (!state.isTaskUpdate && label.value != undefined) {
+				state.labelOpt.selected.push(label.value.labelId);
+				if (label.value.isList) {
+					state.task.list = label.value;
+					state.listOpt.selected = label.value.labelId;
+				} else {
+					state.task.labels = [label.value];
+					state.task.list = null;
+					state.listOpt.selected = null;
+				}
+			}
+			if (state.isTaskUpdate && state.task.list != null)
+				state.listOpt.selected = state.task.list.labelId;
 			for (let i = 0; i < userLabels.value.length; i++) {
 				const label = userLabels.value[i];
 				state.labelOpt.data.push(new ValueText(label.labelId, label.labelName));
-				const index = state.task.labels.findIndex(l=>l.labelId==label.labelId);
-				if(index>=0)
-				   state.labelOpt.selected.push(label.labelId);
+				if (state.isTaskUpdate) {
+					const index = state.task.labels.findIndex(l => l.labelId == label.labelId);
+					if (index >= 0)
+						state.labelOpt.selected.push(label.labelId);
+				}
 			}
 		}
 	});
@@ -458,38 +517,52 @@
 			state.notifyOpt[0] = remindModeValues(detail.value + 1);
 		}
 	}
-	
-	function createNewLabel(){
+
+	function createNewLabel() {
 		const user = uni.getStorageSync("user");
-		CreateOrGetLabel(state.labelOpt.labelName,user.uid,response=>{
+		CreateOrGetLabel(state.labelOpt.labelName, user.uid, response => {
 			const res = response.data;
-			if(!res.succeeded){
+			if (!res.succeeded) {
 				uni.showToast({
-					title:res.message,
-					icon:"none"
+					title: res.message,
+					icon: "none"
 				});
 				return;
 			}
 			const data = res.data;
-			const index = userLabels.value.filter(l=>l.labelId == data.labelId);
-			if(index<0)
-			{
+			const index = userLabels.value.filter(l => l.labelId == data.labelId);
+			if (index < 0) {
 				state.labelOpt.data.push(data);
-				state.labelOpt.selected.push(state.labelOpt.data.length-1);
+				state.labelOpt.selected.push(state.labelOpt.data.length - 1);
 			}
-		    emits("createdLabel",{item:data});
-			state.labelOpt.labelName = "";
+			loading("", () => {
+				state.labelOpt.labelName = "";
+				userLabels.value.push(data);
+				state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
+				state.labelOpt.selected.push(data.labelId);
+				state.task.labels.push(data);
+				emits("createdLabel",{
+					data:userLabels.value,
+					isList:false
+				});
+			}, 750);
 		});
 	}
-	
-	function changeTaskLabeles(){
+
+	function changeTaskLabels() {
 		const labels = [];
-		for(let labelId of state.labelOpt.selected)
-		{
-			const label = labels.find(l=>l.labelId==labelId);
+		for (let labelId of state.labelOpt.selected) {
+			const label = userLabels.value.find(l => l.labelId == labelId);
 			labels.push(label);
 		}
 		state.task.labels = labels;
+	}
+
+	function changeTaskList(list) {
+		if (list == null) state.listOpt.selected = null;
+		else state.listOpt.selected = list.labelId;
+		state.task.list = list;
+		listPopup.value.close();
 	}
 
 
@@ -572,9 +645,9 @@
 					task.style = "";
 					copy(state.task, task);
 					const user = uni.getStorageSync("user");
-					var listId = null;
 					if (state.hasLabelSetter)
-						TakeTaskLabelsFor(user.uid, state.task.instanceId, listId, state.labelNames,
+						TakeTaskLabelsFor(user.uid, state.task.instanceId, state.listOpt.selected, state
+							.labelOpt.selected, false,
 							response1 => {
 								const res1 = response1.data;
 								if (!res1.succeeded) {
@@ -587,17 +660,19 @@
 								const arg = {
 									item: task,
 									list: state.task.list,
-									labels: label.value.isList ? res1.data : []
+									labels: state.task.labels,
+									labelSet: true
 								};
 								emits("created", arg);
 								popup.value.close();
 							});
-					else
-						{
-							const arg = {item:task};
-							emits("created", arg);
-							popup.value.close();
-						}
+					else {
+						const arg = {
+							item: task
+						};
+						emits("created", arg);
+						popup.value.close();
+					}
 				}, 750);
 			});
 		} else {
@@ -624,8 +699,10 @@
 					loading("", () => {
 						var listId = null;
 						if (state.hasLabelSetter) {
-							TakeTaskLabelsFor(user.uid, state.task.instanceId, listId, state
-								.labelNames, response1 => {
+							TakeTaskLabelsFor(user.uid, state.task.instanceId, state.listOpt
+								.selected,
+								state.labelOpt.selected, true,
+								response1 => {
 									const res1 = response1.data;
 									if (!res1.succeeded) {
 										uni.showToast({
@@ -637,12 +714,12 @@
 									emits("updated", {
 										index: state.task.index,
 										item: state.task,
-										labels:res1.data,
-										list:state.task.list
+										labels: state.task.labels,
+										list: state.task.list
 									});
 									popup.value.close();
 								});
-								return;
+							return;
 						}
 						emits("updated", {
 							index: state.task.index,
@@ -691,6 +768,33 @@
 		labelPopup.value.open();
 	}
 
+	function addList() {
+		uni.showModal({
+			cancelText: "取消",
+			confirmText: "确定",
+			editable: true,
+			placeholderText: "清单名",
+			success: res => {
+				if (res.cancel) return;
+				const user = uni.getStorageSync("user");
+				CreateList(user.uid, res.content, response => {
+					const res = response.data;
+					if (!res.succeeded) {
+						uni.showToast({
+							title: res.message,
+							icon: "none"
+						});
+						return;
+					}
+					const newList = res.data;
+					state.listOpt.selected = newList.labelId;
+					userLists.value.push(newList);
+					emits("createdLabel",{data:newList,isList:true});
+				});
+			}
+		})
+	}
+
 	function open() {
 		popup.value.open();
 	}
@@ -722,6 +826,7 @@
 		line-height: 20px;
 		padding: 4px;
 		padding-top: 0;
+		padding-bottom: 0;
 		max-width: 100px;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -731,6 +836,7 @@
 		color: white;
 		border-radius: 7px;
 		font-size: 13px;
+		min-width: 20px;
 		text-align: center;
 	}
 
@@ -852,7 +958,46 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 60vw;
+		width: 72vw;
 		height: 40vh;
+	}
+
+	.list {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 72vw;
+		height: 40vh;
+	}
+
+	.list .header {
+		width: 94%;
+		margin-bottom: 1%;
+	}
+
+	.list .list-item {
+		height: 35px;
+		width: 92%;
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 1%;
+		border-radius: 7px;
+	}
+
+	.list .list-item .image {
+		width: 28px;
+		height: 28px;
+		margin-right: 4px;
+	}
+	
+	.list .list-item .overflow{
+		max-width: 60%;
+		text-wrap: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: 13px;
+		color: rgb(0,75,235);
 	}
 </style>

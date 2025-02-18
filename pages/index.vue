@@ -37,7 +37,8 @@
 											</uni-icons>
 										</view>
 									</view>
-									<scroll-view style="height: 30vh;" v-if="state.labelsExpand&&state.labels.length>0" scroll-y>
+									<scroll-view style="height: 30vh;" v-if="state.labelsExpand&&state.labels.length>0"
+										scroll-y>
 										<view class="label-info" v-for="(label,index1) in state.labels" :key="index1"
 											style="margin-left: 4%;margin-top: 2%;" @click="switchContent(label)">
 											<image :src="imgSrc(label.icon)" class="label-icon"
@@ -242,8 +243,9 @@
 			</uni-swipe-action>
 		</scroll-view>
 		<task-editor ref="indexTaskEditor" :task="state.task" :isTaskUpdate="state.task!=null" v-if="state.show.task"
-			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :labelSet="true" 
-			@removed="taskRemoved" @createdLabel="createdLabel" :userLabels="state.labels">
+			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :labelSet="true"
+			@removed="taskRemoved" @createdLabel="createdLabel" :userLabels="state.labels" :label="state.currentLabel"
+			:userLists="state.lists.filter(l=>l.userId!=null)">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
 			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished"></habit-detail>
@@ -383,10 +385,9 @@
 			uni.setStorageSync(CurrentAudioKey, audio);
 		}
 		var finishAudio = uni.getStorageSync(CurrentFinsihAudioKey);
-		if(finishAudio == "" || finishAudio==null)
-		{
-			finishAudio = new ValueText(0,"无");
-			uni.setStorageSync(CurrentFinsihAudioKey,finishAudio);
+		if (finishAudio == "" || finishAudio == null) {
+			finishAudio = new ValueText(0, "无");
+			uni.setStorageSync(CurrentFinsihAudioKey, finishAudio);
 		}
 	});
 
@@ -407,7 +408,7 @@
 
 	function checkContinuousDays() {
 		const yesterday = onlyDate(new Date());
-		yesterday.setDate(yesterday.getDate()-1);
+		yesterday.setDate(yesterday.getDate() - 1);
 		CheckContinuousDays(state.user.id, yesterday, response => {
 			const res = response.data;
 			if (!res.succeeded) {
@@ -438,7 +439,7 @@
 			for (let reminder of task.reminderInfoModels)
 				reminder.timing = new Date(reminder.timing);
 		});
-		GetTaskLabels(state.user.id,task.instanceId,response=>{
+		GetTaskLabels(state.user.id, task.instanceId, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({
@@ -451,7 +452,7 @@
 			state.task.list = res.data.list;
 			openToEdit();
 		});
-		
+
 	}
 
 	function showMask(task) {
@@ -501,22 +502,41 @@
 
 	function taskCreated(e) {
 		const item = e.item;
-		const index = state.data["task"].findIndex(l => l.labelId == item.lableId);
-		if (index < 0)
-			state.labels.push(e.label);
-		if (item.labelId == state.currentLabel.labelId)
-			state.data["task"].push(item);
+		if (e.labelSet) {
+			state.labels = e.labels;
+		}
+		if (e.list != null && state.currentLabel.isList) {
+			if (e.list.labelId == state.currentLabel.labelId)
+				state.data["task"].push(item);
+		} else if (!state.currentLabel.isList) {
+			const index = state.labels.findIndex(l => l.labelId == state.currentLabel.labelId)
+			if (index >= 0)
+				state.data["task"].push(item);
+		}
 		uni.removeStorageSync(TaskReminderKey);
 	}
 
 	function taskUpdated(e) {
 		const index = e.index;
 		const item = e.item;
-
-		if (item.labelId == null || item.labelId == state.currentLabel.labelId)
+		if (e.labelSet) {
+			state.labels = e.labels;
+		}
+		if (isBaseLabel(state.currentLabel.labelId)) {
 			state.data["task"][index] = item;
-		else
-			state.data["task"].splice(index, 1);
+			return;
+		}
+		if (state.currentLabel.isList && e.list != null) {
+			{
+				if (e.list.labelId == state.currentLabel.labelId)
+					state.data["task"][index] = item;
+				else state.data["task"].splice(index,1);	
+			}
+		} else if (!state.currentLabel.isList) {
+			const index1 = state.labels.findIndex(l => l.labelId == state.currentLabel.labelId);
+			if (index1 >= 0)
+				state.data["task"].splice(index, 1);
+		}
 		uni.removeStorageSync(TaskReminderKey);
 	}
 
@@ -563,7 +583,10 @@
 	}
 
 	function taskEditorClose() {
-		delayToRun(() => {state.show.task = false;state.task=null;}, 150);
+		delayToRun(() => {
+			state.show.task = false;
+			state.task = null;
+		}, 150);
 	}
 
 	function habitDetailClose() {
@@ -668,7 +691,7 @@
 				state.lists.splice(index, 1);
 			else
 				state.labels.splice(index, 1);
-			if(label.labelId!=state.currentLabel.labelId)return;
+			if (label.labelId != state.currentLabel.labelId) return;
 			state.currentLabel = todayLabel.value;
 			uni.setStorage({
 				key: currentLabel.value,
@@ -697,11 +720,10 @@
 	}
 
 	function createdLabel(e) {
-		const label = e.label;
-		const labelId = label.labelId;
-		const index = state.labels.findIndex(l => l.labelId == labelId);
-		if (index < 0)
-			state.labels.push(label);
+		if(e.isList)
+		  state.lists.push(e.data);
+		else
+		  state.labels = e.data;
 	}
 
 	function getTaskTimeStr(task) {

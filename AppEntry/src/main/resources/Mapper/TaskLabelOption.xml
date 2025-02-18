@@ -2,9 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="SelfSchedule.DbOption.Mapper.TaskLabelOptionMapper">
+    <insert id="batchInsert">
+        insert into TaskLabelOption values
+        <foreach collection="options" item="option" separator="," >
+            (null,#{option.taskId},#{option.labelId},#{option.listId},null)
+        </foreach>
+    </insert>
     <select id="getTaskLabels" resultType="SelfSchedule.Entity.VO.TaskLabelVO">
         select l.id as labelId,l.name as labelName,display,icon,notCustom,isList from TaskLabel l
                         join TaskLabelOption tl on tl.labelId = l.id or tl.listId = l.id
         where (l.userId is not null and l.userId = #{userId}) and tl.taskId = #{taskId} and l.display = 1
+    </select>
+
+    <select id="getTaskLabelIds" resultType="java.lang.Long">
+        select l.id from TaskLabel l
+                        join TaskLabelOption tl on tl.labelId = l.id or tl.listId = l.id
+        <where>
+            (l.userId is not null and l.userId = #{userId}) and tl.taskId = #{taskId} and l.display = 1
+                 and (listId = #{listId} or listId is null)
+       </where>
     </select>
 </mapper>

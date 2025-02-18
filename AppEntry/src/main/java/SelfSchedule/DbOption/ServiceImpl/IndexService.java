@@ -324,50 +324,59 @@ public class IndexService implements IndexServiceInterface {
 
     @Override
     @Transactional
-    public List<TaskLabelVO> takeTaskLabelsFor(String userId, Long taskId, Long listId, ArrayDataModel<String> model) {
-        List<TaskLabelVO> res = new ArrayList<>();
-
-        for(String labelName: model.getData()){
-            LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(TaskLabel::getIsList,false).eq(TaskLabel::getUserId,userId).
-            eq(TaskLabel::getName,labelName);
-
-            TaskLabel label = labelMapper.selectOne(wrapper);
-            if(label==null){
-              label = new TaskLabel();
-              label.setIcon(Constants.DefaultLabelIcon);
-              label.setName(labelName);
-              label.setCreateTime(Constants.Now());
-              label.setUserId(userId);
-              labelMapper.insert(label);
-              TaskLabelOption option = new TaskLabelOption();
-              option.setTaskId(taskId);
-              option.setLabelId(label.getId());
-              option.setListId(listId);
-              labelOptionMapper.insert(option);
+    public void takeTaskLabelsFor(String userId, Long taskId, Long listId,
+                                  Boolean isUpdate, ArrayDataModel<Long> model) {
+        List<TaskLabelOption> toInsert = new ArrayList<>();
+        List<Long> labelIds = ObjectUtil.toList(model.getData());
+        for(Long labelId:labelIds){
+            LambdaQueryWrapper<TaskLabelOption> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(TaskLabelOption::getLabelId,labelId).eq(TaskLabelOption::getTaskId,taskId);
+            TaskLabelOption option = labelOptionMapper.selectOne(wrapper);
+            if(option==null){
+                option = new TaskLabelOption();
+                option.setListId(listId);
+                option.setLabelId(labelId);
+                option.setTaskId(taskId);
+                toInsert.add(option);
             }
-            else
-            {
-               LambdaUpdateWrapper<TaskLabelOption> wrapper1 = new LambdaUpdateWrapper<>();
-               wrapper1.set(TaskLabelOption::getLabelId,label.getId()).set(TaskLabelOption::getListId,listId)
-                        .eq(TaskLabelOption::getTaskId,taskId);
-              labelOptionMapper.update(wrapper1);
+            else{
+                if(listId==null){
+                    LambdaUpdateWrapper<TaskLabelOption> wrapper1 = new LambdaUpdateWrapper<>();
+                    wrapper1.set(TaskLabelOption::getListId,null).eq(TaskLabelOption::getTaskId,taskId)
+                            .eq(TaskLabelOption::getLabelId,labelId);
+                    labelOptionMapper.update(wrapper1);
+                }
+                else{
+                    if(option.getListId()==null)
+                    {
+                        option.setListId(listId);
+                        labelOptionMapper.updateById(option);
+                    }
+                    else{
+                        if(!option.getListId().equals(listId))
+                        {
+                            option.setListId(listId);
+                            labelOptionMapper.updateById(option);
+                        }
+                    }
+                }
             }
-            TaskLabelVO labelVO = ObjectUtil.copy(label,new TaskLabelVO());
-            labelVO.setLabelId(label.getId());
-            labelVO.setLabelName(labelName);
-            res.add(labelVO);
         }
+        if (toInsert.size() > Constants.None)
+            labelOptionMapper.batchInsert(toInsert);
 
-        return res;
-    }
+        List<Long> taskLabelIds = labelOptionMapper.getTaskLabelIds(userId,taskId,listId);
+        List<Long> toRemove = new ArrayList<>();
 
-    @Override
-    @Transactional
-    public int moveListTo(Long taskId, Long listId) {
-        LambdaUpdateWrapper<TaskLabelOption> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(TaskLabelOption::getListId,listId).eq(TaskLabelOption::getTaskId,taskId);
-        return labelOptionMapper.update(wrapper);
+        if(isUpdate) {
+            for (Long labelId : taskLabelIds) {
+                Optional<Long> optional = labelIds.stream().filter(id -> id.equals(labelId)).findFirst();
+                if (optional.isEmpty())
+                    toRemove.add(labelId);
+            }
+            if (toRemove.size() > Constants.None)
+                labelOptionMapper.delete(new LambdaQueryWrapper<TaskLabelOption>().in(TaskLabelOption::getLabelId, toRemove));
+        }
     }
 
     @Override
@@ -381,5 +390,22 @@ public class IndexService implements IndexServiceInterface {
            res.setList(optional.get());
        res.setLabels(data.stream().filter(l->!l.getIsList()).collect(Collectors.toList()));
        return res;
+    }
+
+    @Override
+    @Transactional
+    public TaskLabelVO createList(String userId, String listName) {
+        TaskLabel label = new TaskLabel();
+        label.setIsList(true);
+        label.setNotCustom(false);
+        label.setCreateTime(Constants.Now());
+        label.setIcon(Constants.DefaultListIcon);
+        label.setName(listName);
+        label.setUserId(userId);
+        labelMapper.insert(label);
+        TaskLabelVO res = ObjectUtil.copy(label,new TaskLabelVO());
+        res.setLabelName(listName);
+        res.setLabelId(label.getId());
+        return res;
     }
 }

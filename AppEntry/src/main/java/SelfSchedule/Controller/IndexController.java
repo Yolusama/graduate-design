@@ -176,28 +176,17 @@ public class IndexController extends ControllerBase{
         return ok(isRemove?"已正式删除！":"已恢复!");
     }
 
-    @PatchMapping("/MoveListTo/{taskId}/{listId}")
-    @ApiOperation(value = "移动任务标签",notes = "移动任务标签")
-    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels,CachingKeys.GetIndexData})
-    public ActionResult MoveListTo(@PathVariable Long taskId,@PathVariable Long listId,HttpServletRequest request){
-        int res = indexService.moveListTo(taskId,listId);
-        if(res==Constants.AbNormalState)
-            return fail("移动失败！");
-        return ok("移动完成！");
-    }
-
     @PostMapping("/TakeTaskLabelsFor/{userId}/{taskId}/{listId}")
     @ApiOperation(value = "更新/追加任务标签",notes = "更新/追加任务标签")
     @ClearRedisCache(keys = {CachingKeys.GetTaskLabels,CachingKeys.GetIndexData})
-    public CompletableFuture<ActionResult<List<TaskLabelVO>>> TakeTaskLabelsFor(@PathVariable String userId,
-                                                             @PathVariable Long taskId,
+    public ActionResult TakeTaskLabelsFor(@PathVariable String userId, @PathVariable Long taskId,
                                                              @PathVariable String listId,
-                                                             @RequestBody ArrayDataModel<String> model,
+                                                             @RequestParam Boolean isUpdate,
+                                                             @RequestBody ArrayDataModel<Long> model,
                                                              HttpServletRequest request){
         Long _listId = ObjectUtil.isRequestParamStrNull(listId)?null:Long.parseLong(listId);
-        return CompletableFuture.completedFuture(
-                successWithData(indexService.takeTaskLabelsFor(userId,taskId,_listId,model))
-        );
+        indexService.takeTaskLabelsFor(userId,taskId,_listId,isUpdate,model);
+        return ok();
     }
 
     @GetMapping("/GetTaskLabels/{userId}/{taskId}")
@@ -207,5 +196,12 @@ public class IndexController extends ControllerBase{
         return CompletableFuture.completedFuture(
                 successWithData(indexService.getTaskLabels(taskId,userId))
         );
+    }
+
+    @PutMapping("/CreateList/{userId}")
+    @ClearRedisCache(keys = {CachingKeys.GetTaskLabels})
+    public ActionResult<TaskLabelVO> CreateList(@PathVariable String userId,@RequestParam String listName,
+                                                HttpServletRequest request){
+        return successWithData(indexService.createList(userId,listName));
     }
 }

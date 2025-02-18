@@ -18,10 +18,10 @@ public interface TaskLabelMapper extends BaseMapper<TaskLabel> {
     int update(@Param(Constants.WRAPPER) Wrapper<TaskLabel> wrapper);
     @Select("select icon from TaskLabel where id=#{labelId}")
     String getIcon(@Param("labelId")Long labelId);
-    @Select("select id as labelId,name as labelName,icon,isList,notCustom,display from TaskLabel where (userId=#{userId} " +
+    @Select("select id as labelId,name as labelName,userId,icon,isList,notCustom,display from TaskLabel where (userId=#{userId} " +
             "or userId is null) and display=1")
     List<TaskLabelVO> getLabels(@Param("userId")String userId);
-    @Select("select id as labelId,name as labelName,icon,isList,notCustom,display from TaskLabel where userId=#{userId}" +
+    @Select("select id as labelId,name as labelName,userId,icon,isList,notCustom,display from TaskLabel where userId=#{userId}" +
             " and display=0")
     List<TaskLabelVO> getHiddenLabels(@Param("userId")String userId);
 }

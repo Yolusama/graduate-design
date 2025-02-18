@@ -15,6 +15,9 @@ import java.util.List;
 @Mapper
 public interface TaskLabelOptionMapper extends BaseMapper<TaskLabelOption> {
     List<TaskLabelVO> getTaskLabels(@Param("userId")String userId, @Param("taskId")Long taskId);
+    Integer batchInsert(@Param("options")List<TaskLabelOption> options);
+    List<Long> getTaskLabelIds(@Param("userId")String userId,@Param("taskId")Long taskId,@Param("listId")Long listId);
+
     @Update("update TaskLabelOption set ${ew.sqlSet} ${ew.customSqlSegment}")
     int update(@Param(Constants.WRAPPER) Wrapper<TaskLabelOption> wrapper);
 }

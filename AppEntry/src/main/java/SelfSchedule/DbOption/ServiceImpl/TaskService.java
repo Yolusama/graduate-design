@@ -3,16 +3,10 @@ package SelfSchedule.DbOption.ServiceImpl;
 import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
 import SelfSchedule.Common.Pair;
-import SelfSchedule.DbOption.Mapper.TaskInstanceMapper;
-import SelfSchedule.DbOption.Mapper.TaskMapper;
-import SelfSchedule.DbOption.Mapper.TaskReminderMapper;
-import SelfSchedule.DbOption.Mapper.TaskRepeatRuleMapper;
+import SelfSchedule.DbOption.Mapper.*;
 import SelfSchedule.DbOption.Service.ITaskService;
+import SelfSchedule.Entity.*;
 import SelfSchedule.Entity.Enum.*;
-import SelfSchedule.Entity.TaskInstance;
-import SelfSchedule.Entity.Task;
-import SelfSchedule.Entity.TaskReminder;
-import SelfSchedule.Entity.TaskRepeatRule;
 import SelfSchedule.Entity.VO.PagedData;
 import SelfSchedule.Entity.VO.TaskReminderInfoVO;
 import SelfSchedule.Entity.VO.TaskReminderVO;
@@ -37,15 +31,18 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     private final TaskRepeatRuleMapper ruleMapper;
     private final TaskReminderMapper reminderMapper;
     private final TaskInstanceMapper instanceMapper;
+    private final TaskLabelOptionMapper labelOptionMapper;
 
     @Autowired
     public TaskService(TaskMapper mapper,TaskRepeatRuleMapper ruleMapper,
-                       TaskReminderMapper reminderMapper,TaskInstanceMapper instanceMapper)
+                       TaskReminderMapper reminderMapper,TaskInstanceMapper instanceMapper,
+                       TaskLabelOptionMapper labelOptionMapper)
     {
         this.mapper = mapper;
         this.ruleMapper = ruleMapper;
         this.reminderMapper = reminderMapper;
         this.instanceMapper = instanceMapper;
+        this.labelOptionMapper = labelOptionMapper;
     }
 
     /*创建任务，从TaskModel中接受所需参数，创建任务的同时创建自己的对应实例，读取reminderInfoModels创建提醒，repeatable为真，使用所需参数创建
@@ -747,6 +744,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
        instanceMapper.delete(new LambdaQueryWrapper<TaskInstance>().eq(TaskInstance::getTaskId,taskId));
        reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,taskIds));
        ruleMapper.delete(new LambdaQueryWrapper<TaskRepeatRule>().eq(TaskRepeatRule::getTaskId,taskId));
+       labelOptionMapper.delete(new LambdaQueryWrapper<TaskLabelOption>().eq(TaskLabelOption::getTaskId,taskId));
        return  mapper.delete(new LambdaQueryWrapper<Task>().eq(Task::getId,taskId));
     }
 

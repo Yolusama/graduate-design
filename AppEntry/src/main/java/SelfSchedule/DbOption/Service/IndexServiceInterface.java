@@ -28,7 +28,7 @@ public interface IndexServiceInterface {
     void logout(boolean cancelAccount,String userId,String email, RedisCache redis);
     int removeOrRecoverTask(Long taskId,Boolean isRemove);
     int removeOrRecoverHabit(String habitId,Boolean isRemove);
-    List<TaskLabelVO> takeTaskLabelsFor(String userId, Long taskId,Long listId, ArrayDataModel<String> model);
-    int moveListTo(Long taskId,Long listId);
+    void takeTaskLabelsFor(String userId, Long taskId,Long listId,Boolean isUpdate, ArrayDataModel<Long> model);
     TaskLabelOptionVO getTaskLabels(Long taskId, String userId);
+    TaskLabelVO createList(String userId,String listName);
 }

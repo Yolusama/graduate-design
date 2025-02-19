@@ -328,6 +328,12 @@ public class IndexService implements IndexServiceInterface {
                                   Boolean isUpdate, ArrayDataModel<Long> model) {
         List<TaskLabelOption> toInsert = new ArrayList<>();
         List<Long> labelIds = ObjectUtil.toList(model.getData());
+        if(labelIds.size()==0&&listId!=null){
+            TaskLabelOption option = new TaskLabelOption();
+            option.setListId(listId);
+            option.setTaskId(taskId);
+            labelOptionMapper.insert(option);
+        }
         for(Long labelId:labelIds){
             LambdaQueryWrapper<TaskLabelOption> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(TaskLabelOption::getLabelId,labelId).eq(TaskLabelOption::getTaskId,taskId);
@@ -365,10 +371,9 @@ public class IndexService implements IndexServiceInterface {
         if (toInsert.size() > Constants.None)
             labelOptionMapper.batchInsert(toInsert);
 
-        List<Long> taskLabelIds = labelOptionMapper.getTaskLabelIds(userId,taskId,listId);
-        List<Long> toRemove = new ArrayList<>();
-
         if(isUpdate) {
+            List<Long> taskLabelIds = labelOptionMapper.getTaskLabelIds(userId,taskId,listId);
+            List<Long> toRemove = new ArrayList<>();
             for (Long labelId : taskLabelIds) {
                 Optional<Long> optional = labelIds.stream().filter(id -> id.equals(labelId)).findFirst();
                 if (optional.isEmpty())

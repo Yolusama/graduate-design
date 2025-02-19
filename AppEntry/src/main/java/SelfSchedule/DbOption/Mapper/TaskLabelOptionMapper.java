@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -20,4 +21,6 @@ public interface TaskLabelOptionMapper extends BaseMapper<TaskLabelOption> {
 
     @Update("update TaskLabelOption set ${ew.sqlSet} ${ew.customSqlSegment}")
     int update(@Param(Constants.WRAPPER) Wrapper<TaskLabelOption> wrapper);
+    @Select("select id,taskId,listId,labelId from TaskLabelOption where taskId=#{taskId}")
+    List<TaskLabelOption> getTaskLabelOptios(@Param("taskId")Long taskId);
 }

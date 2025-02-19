@@ -7,10 +7,7 @@ import SelfSchedule.DbOption.Mapper.*;
 import SelfSchedule.DbOption.Service.ITaskService;
 import SelfSchedule.Entity.*;
 import SelfSchedule.Entity.Enum.*;
-import SelfSchedule.Entity.VO.PagedData;
-import SelfSchedule.Entity.VO.TaskReminderInfoVO;
-import SelfSchedule.Entity.VO.TaskReminderVO;
-import SelfSchedule.Entity.VO.TaskRuleComboVO;
+import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.*;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.Utils.DateUtil;
@@ -300,6 +297,14 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                         reminders.add(reminder);
                     }
                     reminderMapper.batchInsert(reminders);
+                }
+                List<TaskLabelOption> options = labelOptionMapper.getTaskLabelOptios(task.getTaskId());
+                if(options.size()>0){
+                    for(TaskLabelOption option:options){
+                        option.setId(null);
+                        option.setTaskId(instance.getId());
+                    }
+                    labelOptionMapper.batchInsert(options);
                 }
                 TaskRuleComboVO toAdd = new TaskRuleComboVO();
                 ObjectUtil.copy(instance, toAdd);

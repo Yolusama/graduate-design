@@ -8,6 +8,7 @@
             (null,#{option.taskId},#{option.labelId},#{option.listId},null)
         </foreach>
     </insert>
+
     <select id="getTaskLabels" resultType="SelfSchedule.Entity.VO.TaskLabelVO">
         select l.id as labelId,l.name as labelName,display,icon,notCustom,isList from TaskLabel l
                         join TaskLabelOption tl on tl.labelId = l.id or tl.listId = l.id

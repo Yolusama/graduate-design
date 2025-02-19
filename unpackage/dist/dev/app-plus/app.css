@@ -1899,7 +1899,7 @@
 }
 .task-edit[data-v-8922942d] {
 		position: relative;
-		height: 35vh;
+		height: 45vh;
 		padding: 1%;
 }
 .task-edit .label-text[data-v-8922942d] {
@@ -1907,6 +1907,7 @@
 		line-height: 20px;
 		padding: 4px;
 		padding-top: 0;
+		padding-bottom: 0;
 		max-width: 100px;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -1916,6 +1917,7 @@
 		color: white;
 		border-radius: 7px;
 		font-size: 13px;
+		min-width: 20px;
 		text-align: center;
 }
 .gray-text[data-v-8922942d] {
@@ -2012,6 +2014,47 @@
 		width: 100%;
 		text-align: center;
 		font-size: 14px;
+}
+.label[data-v-8922942d] {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 72vw;
+		height: 40vh;
+}
+.list[data-v-8922942d] {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 72vw;
+		height: 40vh;
+}
+.list .header[data-v-8922942d] {
+		width: 94%;
+		margin-bottom: 1%;
+}
+.list .list-item[data-v-8922942d] {
+		height: 35px;
+		width: 92%;
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 1%;
+		border-radius: 7px;
+}
+.list .list-item .image[data-v-8922942d] {
+		width: 28px;
+		height: 28px;
+		margin-right: 4px;
+}
+.list .list-item .overflow[data-v-8922942d] {
+		max-width: 60%;
+		text-wrap: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: 13px;
+		color: rgb(0, 75, 235);
 }
 
 /**

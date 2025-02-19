@@ -182,8 +182,8 @@
 			<view class="header">
 				<uni-icons type="closeempty" @click="listPopup.close()"></uni-icons>
 			</view>
-			<button @click="addList" style="margin-top: 2%;margin-bottom: 1%;height: 30px;line-height: 30px;" 
-			size="mini" type="primary">
+			<button @click="addList" style="margin-top: 2%;margin-bottom: 1%;height: 30px;line-height: 30px;"
+				size="mini" type="primary">
 				<uni-icons type="plusempty" color="white"></uni-icons>
 				<text style="font-size: 13px;">添加清单</text>
 			</button>
@@ -194,8 +194,8 @@
 						<image class="image" :src="imgSrc(DefaultListIcon)"></image>
 						<text class="overflow">无</text>
 					</view>
-					<uni-icons type="checkmarkempty" v-if="state.listOpt.selected==null"
-					:size="18" color="red" style="margin-right: 2%;"></uni-icons>
+					<uni-icons type="checkmarkempty" v-if="state.listOpt.selected==null" :size="18" color="red"
+						style="margin-right: 2%;"></uni-icons>
 				</view>
 				<view class="list-item" @click="changeTaskList(list)" v-for="(list,index) in userLists" :key="index"
 					:style="state.listOpt.itemSelected(list)?'background-color:rgb(25,25,24,.25)':''">
@@ -203,8 +203,8 @@
 						<image class="image" :src="imgSrc(list.icon)"></image>
 						<text class="overflow">{{list.labelName}}</text>
 					</view>
-					<uni-icons type="checkmarkempty" v-if="state.listOpt.itemSelected(list)" :size="18" color="red" 
-					style="margin-right: 2%;"></uni-icons>
+					<uni-icons type="checkmarkempty" v-if="state.listOpt.itemSelected(list)" :size="18" color="red"
+						style="margin-right: 2%;"></uni-icons>
 				</view>
 			</scroll-view>
 		</view>
@@ -332,19 +332,11 @@
 		labelOpt: {
 			data: [],
 			selected: [],
-			labelName: "",
-			labelNames: function() {
-				const res = [];
-				for (let s of this.selected) {
-					const label = this.data.find(l => l.value == s);
-					res.push(label.text);
-				}
-				return res;
-			}
+			labelName: ""
 		},
 		listOpt: {
 			itemSelected: function(list) {
-				return  this.selected!=null && list != null && list.labelId == this.selected;
+				return this.selected != null && list != null && list.labelId == this.selected;
 			},
 			selected: null
 		}
@@ -376,11 +368,12 @@
 
 		if (state.hasLabelSetter) {
 			if (!state.isTaskUpdate && label.value != undefined) {
-				state.labelOpt.selected.push(label.value.labelId);
 				if (label.value.isList) {
 					state.task.list = label.value;
 					state.listOpt.selected = label.value.labelId;
+					state.task.labels = [];
 				} else {
+					state.labelOpt.selected.push(label.value.labelId);
 					state.task.labels = [label.value];
 					state.task.list = null;
 					state.listOpt.selected = null;
@@ -420,7 +413,6 @@
 		state.frequency.selection = 0;
 		state.rule.selected = [];
 		state.rule.selection = 0;
-		state.isTaskUpdate = false;
 		state.canCreateTask = false;
 	}
 
@@ -541,9 +533,9 @@
 				state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
 				state.labelOpt.selected.push(data.labelId);
 				state.task.labels.push(data);
-				emits("createdLabel",{
-					data:userLabels.value,
-					isList:false
+				emits("createdLabel", {
+					data: userLabels.value,
+					isList: false
 				});
 			}, 750);
 		});
@@ -697,7 +689,6 @@
 						return;
 					}
 					loading("", () => {
-						var listId = null;
 						if (state.hasLabelSetter) {
 							TakeTaskLabelsFor(user.uid, state.task.instanceId, state.listOpt
 								.selected,
@@ -770,6 +761,7 @@
 
 	function addList() {
 		uni.showModal({
+			title:"添加清单",
 			cancelText: "取消",
 			confirmText: "确定",
 			editable: true,
@@ -788,8 +780,13 @@
 					}
 					const newList = res.data;
 					state.listOpt.selected = newList.labelId;
+					state.task.list = newList;
 					userLists.value.push(newList);
-					emits("createdLabel",{data:newList,isList:true});
+					emits("createdLabel", {
+						data: newList,
+						isList: true
+					});
+					listPopup.value.close();
 				});
 			}
 		})
@@ -991,13 +988,13 @@
 		height: 28px;
 		margin-right: 4px;
 	}
-	
-	.list .list-item .overflow{
+
+	.list .list-item .overflow {
 		max-width: 60%;
 		text-wrap: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		font-size: 13px;
-		color: rgb(0,75,235);
+		color: rgb(0, 75, 235);
 	}
 </style>

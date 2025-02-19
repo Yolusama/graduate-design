@@ -6109,7 +6109,18 @@ if (uni.restoreGlobal) {
     Get("/Api/Common/GetNotifyAudios", auth, successCallback);
   }
   function CheckContinuousDays(userId, yesterday, successCallback) {
-    Post(`/Api/Index/CheckContinuousDays/${userId}?today=${yesterday.getTime()}`, auth, {}, successCallback);
+    Post(`/Api/Index/CheckContinuousDays/${userId}?yesterday=${yesterday.getTime()}`, auth, {}, successCallback);
+  }
+  function TakeTaskLabelsFor(userId, taskId, listId, labelIds, isUpdate, successCallback) {
+    Post(`/Api/Index/TakeTaskLabelsFor/${userId}/${taskId}/${listId}?isUpdate=${isUpdate}`, auth, {
+      data: labelIds
+    }, successCallback);
+  }
+  function GetTaskLabels(userId, taskId, successCallback) {
+    Get(`/Api/Index/GetTaskLabels/${userId}/${taskId}`, auth, successCallback);
+  }
+  function CreateList(userId, listName, successCallback) {
+    Put(`/Api/Index/CreateList/${userId}?listName=${listName}`, auth, {}, successCallback);
   }
   const IdOfLableNamed = 4;
   const IdOfBin = 8;
@@ -6300,6 +6311,18 @@ if (uni.restoreGlobal) {
           task.reminderInfoModels = res2.data;
           for (let reminder of task.reminderInfoModels)
             reminder.timing = new Date(reminder.timing);
+        });
+        GetTaskLabels(state.user.id, task.instanceId, (response) => {
+          const res2 = response.data;
+          if (!res2.succeeded) {
+            uni.showToast({
+              title: res2.message,
+              icon: "none"
+            });
+            return;
+          }
+          state.task.labels = res2.data.labels;
+          state.task.list = res2.data.list;
           openToEdit();
         });
       }
@@ -6345,20 +6368,41 @@ if (uni.restoreGlobal) {
       }
       function taskCreated(e2) {
         const item = e2.item;
-        const index = state.data["task"].findIndex((l2) => l2.labelId == item.lableId);
-        if (index < 0)
-          state.labels.push(e2.label);
-        if (item.labelId == state.currentLabel.labelId)
-          state.data["task"].push(item);
+        if (e2.labelSet) {
+          state.labels = e2.labels;
+        }
+        if (e2.list != null && state.currentLabel.isList) {
+          if (e2.list.labelId == state.currentLabel.labelId)
+            state.data["task"].push(item);
+        } else if (!state.currentLabel.isList) {
+          const index = state.labels.findIndex((l2) => l2.labelId == state.currentLabel.labelId);
+          if (index >= 0)
+            state.data["task"].push(item);
+        }
         uni.removeStorageSync(TaskReminderKey);
       }
       function taskUpdated(e2) {
         const index = e2.index;
         const item = e2.item;
-        if (item.labelId == null || item.labelId == state.currentLabel.labelId)
+        if (e2.labelSet) {
+          state.labels = e2.labels;
+        }
+        if (isBaseLabel(state.currentLabel.labelId)) {
           state.data["task"][index] = item;
-        else
-          state.data["task"].splice(index, 1);
+          return;
+        }
+        if (state.currentLabel.isList && e2.list != null) {
+          {
+            if (e2.list.labelId == state.currentLabel.labelId)
+              state.data["task"][index] = item;
+            else
+              state.data["task"].splice(index, 1);
+          }
+        } else if (!state.currentLabel.isList) {
+          const index1 = state.labels.findIndex((l2) => l2.labelId == state.currentLabel.labelId);
+          if (index1 >= 0)
+            state.data["task"].splice(index, 1);
+        }
         uni.removeStorageSync(TaskReminderKey);
       }
       function taskRemoved(e2) {
@@ -6525,11 +6569,10 @@ if (uni.restoreGlobal) {
         });
       }
       function createdLabel(e2) {
-        const label = e2.label;
-        const labelId = label.labelId;
-        const index = state.labels.findIndex((l2) => l2.labelId == labelId);
-        if (index < 0)
-          state.labels.push(label);
+        if (e2.isList)
+          state.lists.push(e2.data);
+        else
+          state.labels = e2.data;
       }
       function getTaskTimeStr(task) {
         const beginTime = task.beginTime;
@@ -6715,6 +6758,8 @@ if (uni.restoreGlobal) {
         return RemoveOrRecoverHabit;
       }, get CheckContinuousDays() {
         return CheckContinuousDays;
+      }, get GetTaskLabels() {
+        return GetTaskLabels;
       }, get delayToRun() {
         return delayToRun;
       }, get onlyDate() {
@@ -7455,11 +7500,13 @@ if (uni.restoreGlobal) {
         onClose: $setup.taskEditorClose,
         onCreated: $setup.taskCreated,
         onUpdated: $setup.taskUpdated,
-        label: $setup.state.currentLabel,
         labelSet: true,
         onRemoved: $setup.taskRemoved,
-        onCreatedLabel: $setup.createdLabel
-      }, null, 8, ["task", "isTaskUpdate", "label"])) : vue.createCommentVNode("v-if", true),
+        onCreatedLabel: $setup.createdLabel,
+        userLabels: $setup.state.labels,
+        label: $setup.state.currentLabel,
+        userLists: $setup.state.lists.filter((l2) => l2.userId != null)
+      }, null, 8, ["task", "isTaskUpdate", "userLabels", "label", "userLists"])) : vue.createCommentVNode("v-if", true),
       $setup.state.show.habit ? (vue.openBlock(), vue.createBlock(_component_habit_detail, {
         key: 2,
         habit: $setup.state.habit,
@@ -29178,19 +29225,25 @@ ${i3}
     props: {
       task: Object,
       isTaskUpdate: Boolean,
-      label: Object,
-      labelSet: Boolean
+      labelSet: Boolean,
+      userLabels: Array,
+      userLists: Array,
+      label: Object
     },
     emits: ["close", "created", "updated", "removed", "createdLabel"],
     setup(__props, { expose: __expose, emit: __emit }) {
       const pros = __props;
       const task = vue.ref(pros.task);
       const label = vue.ref(pros.label);
+      const userLabels = vue.ref(pros.userLabels);
+      const userLists = vue.ref(pros.userLists);
       const popup = vue.ref(null);
       const timePopup = vue.ref(null);
       const priorityPopup = vue.ref(null);
       const defRulePopup = vue.ref(null);
       const customPopup = vue.ref(null);
+      const labelPopup = vue.ref(null);
+      const listPopup = vue.ref(null);
       const emits = __emit;
       const startTime = vue.ref({
         date: "",
@@ -29241,7 +29294,18 @@ ${i3}
         weekdays,
         canCreateTask: false,
         isTaskUpdate: pros.isTaskUpdate,
-        hasLabelSetter: pros.labelSet
+        hasLabelSetter: pros.labelSet,
+        labelOpt: {
+          data: [],
+          selected: [],
+          labelName: ""
+        },
+        listOpt: {
+          itemSelected: function(list) {
+            return this.selected != null && list != null && list.labelId == this.selected;
+          },
+          selected: null
+        }
       });
       vue.onMounted(() => {
         for (let i2 = 0; i2 < 4; i2++)
@@ -29264,9 +29328,30 @@ ${i3}
         }
         if (!state.isTaskUpdate)
           resetBeginEndTime();
-        if (state.hasLabelSetter && label.value != void 0) {
-          if (isBaseDayLabel(label.value.labelId))
-            state.task.labelId = label.value.labelId;
+        if (state.hasLabelSetter) {
+          if (!state.isTaskUpdate && label.value != void 0) {
+            if (label.value.isList) {
+              state.task.list = label.value;
+              state.listOpt.selected = label.value.labelId;
+              state.task.labels = [];
+            } else {
+              state.labelOpt.selected.push(label.value.labelId);
+              state.task.labels = [label.value];
+              state.task.list = null;
+              state.listOpt.selected = null;
+            }
+          }
+          if (state.isTaskUpdate && state.task.list != null)
+            state.listOpt.selected = state.task.list.labelId;
+          for (let i2 = 0; i2 < userLabels.value.length; i2++) {
+            const label2 = userLabels.value[i2];
+            state.labelOpt.data.push(new ValueText(label2.labelId, label2.labelName));
+            if (state.isTaskUpdate) {
+              const index = state.task.labels.findIndex((l2) => l2.labelId == label2.labelId);
+              if (index >= 0)
+                state.labelOpt.selected.push(label2.labelId);
+            }
+          }
         }
       });
       function reloadModelData() {
@@ -29289,7 +29374,6 @@ ${i3}
         state.frequency.selection = 0;
         state.rule.selected = [];
         state.rule.selection = 0;
-        state.isTaskUpdate = false;
         state.canCreateTask = false;
       }
       function beforeEditorClose(e2) {
@@ -29374,6 +29458,52 @@ ${i3}
           state.notifyOpt[0] = remindModeValues(detail.value + 1);
         }
       }
+      function createNewLabel() {
+        const user2 = uni.getStorageSync("user");
+        CreateOrGetLabel(state.labelOpt.labelName, user2.uid, (response) => {
+          const res2 = response.data;
+          if (!res2.succeeded) {
+            uni.showToast({
+              title: res2.message,
+              icon: "none"
+            });
+            return;
+          }
+          const data = res2.data;
+          const index = userLabels.value.filter((l2) => l2.labelId == data.labelId);
+          if (index < 0) {
+            state.labelOpt.data.push(data);
+            state.labelOpt.selected.push(state.labelOpt.data.length - 1);
+          }
+          loading("", () => {
+            state.labelOpt.labelName = "";
+            userLabels.value.push(data);
+            state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
+            state.labelOpt.selected.push(data.labelId);
+            state.task.labels.push(data);
+            emits("createdLabel", {
+              data: userLabels.value,
+              isList: false
+            });
+          }, 750);
+        });
+      }
+      function changeTaskLabels() {
+        const labels = [];
+        for (let labelId of state.labelOpt.selected) {
+          const label2 = userLabels.value.find((l2) => l2.labelId == labelId);
+          labels.push(label2);
+        }
+        state.task.labels = labels;
+      }
+      function changeTaskList(list) {
+        if (list == null)
+          state.listOpt.selected = null;
+        else
+          state.listOpt.selected = list.labelId;
+        state.task.list = list;
+        listPopup.value.close();
+      }
       function openToEdit() {
         popup.value.open();
       }
@@ -29428,8 +29558,6 @@ ${i3}
       function editTask() {
         state.task.beginTime = /* @__PURE__ */ new Date(`${startTime.value.date} ${startTime.value.time}`);
         state.task.endTime = /* @__PURE__ */ new Date(`${endTime.value.date} ${endTime.value.time}`);
-        if (label.value != void 0 && state.hasLabelSetter && !isBaseLabel(label.value.labelId))
-          state.task.labelId = label.value.labelId;
         if (!state.isTaskUpdate) {
           CreateTask(state.task, (response) => {
             const res2 = response.data;
@@ -29446,14 +29574,40 @@ ${i3}
               const task2 = {};
               task2.style = "";
               copy(state.task, task2);
-              const arg = state.hasLabelSetter ? {
-                item: task2,
-                label: label.value
-              } : {
-                item: task2
-              };
-              emits("created", arg);
-              popup.value.close();
+              const user2 = uni.getStorageSync("user");
+              if (state.hasLabelSetter)
+                TakeTaskLabelsFor(
+                  user2.uid,
+                  state.task.instanceId,
+                  state.listOpt.selected,
+                  state.labelOpt.selected,
+                  false,
+                  (response1) => {
+                    const res1 = response1.data;
+                    if (!res1.succeeded) {
+                      uni.showToast({
+                        title: res1.message,
+                        icon: "none"
+                      });
+                      return;
+                    }
+                    const arg = {
+                      item: task2,
+                      list: state.task.list,
+                      labels: state.task.labels,
+                      labelSet: true
+                    };
+                    emits("created", arg);
+                    popup.value.close();
+                  }
+                );
+              else {
+                const arg = {
+                  item: task2
+                };
+                emits("created", arg);
+                popup.value.close();
+              }
             }, 750);
           });
         } else {
@@ -29478,6 +29632,33 @@ ${i3}
                 return;
               }
               loading("", () => {
+                if (state.hasLabelSetter) {
+                  TakeTaskLabelsFor(
+                    user.uid,
+                    state.task.instanceId,
+                    state.listOpt.selected,
+                    state.labelOpt.selected,
+                    true,
+                    (response12) => {
+                      const res12 = response12.data;
+                      if (!res12.succeeded) {
+                        uni.showToast({
+                          title: res12.message,
+                          icon: "none"
+                        });
+                        return;
+                      }
+                      emits("updated", {
+                        index: state.task.index,
+                        item: state.task,
+                        labels: state.task.labels,
+                        list: state.task.list
+                      });
+                      popup.value.close();
+                    }
+                  );
+                  return;
+                }
                 emits("updated", {
                   index: state.task.index,
                   item: state.task
@@ -29517,33 +29698,38 @@ ${i3}
         editModePopup.value.open();
       }
       function takeLabel() {
+        labelPopup.value.open();
+      }
+      function addList() {
         uni.showModal({
-          title: "选择标签",
-          editable: true,
-          placeholderText: "标签名",
-          confirmText: "确定",
+          title: "添加清单",
           cancelText: "取消",
+          confirmText: "确定",
+          editable: true,
+          placeholderText: "清单名",
           success: (res2) => {
             if (res2.cancel)
               return;
-            if (res2.confirm) {
-              const user2 = uni.getStorageSync("user");
-              const labelName = res2.content;
-              CreateOrGetLabel(labelName, user2.uid, (response) => {
-                const res3 = response.data;
-                if (!res3.succeeded) {
-                  uni.showToast({
-                    title: res3.message,
-                    icon: "none"
-                  });
-                  return;
-                }
-                if (label.value.isList)
-                  return;
-                label.value = res3.data;
-                emits("createdLabel", { label: label.value });
+            const user2 = uni.getStorageSync("user");
+            CreateList(user2.uid, res2.content, (response) => {
+              const res3 = response.data;
+              if (!res3.succeeded) {
+                uni.showToast({
+                  title: res3.message,
+                  icon: "none"
+                });
+                return;
+              }
+              const newList = res3.data;
+              state.listOpt.selected = newList.labelId;
+              state.task.list = newList;
+              userLists.value.push(newList);
+              emits("createdLabel", {
+                data: newList,
+                isList: true
               });
-            }
+              listPopup.value.close();
+            });
           }
         });
       }
@@ -29553,7 +29739,7 @@ ${i3}
       __expose({
         open
       });
-      const __returned__ = { pros, task, label, popup, timePopup, priorityPopup, defRulePopup, customPopup, emits, startTime, endTime, today, state, reloadModelData, beforeEditorClose, addReminderInfoModel, removeReminderInfoModel, titleInput, resetBeginEndTime, pick, changeNotifyMode, openToEdit, takePriority, takeBaseRule, takeCount, takeDeadline, takeDef, resetSomeData, editTask, removeTask, selectDay, openEditMode, takeLabel, open, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get ValueText() {
+      const __returned__ = { pros, task, label, userLabels, userLists, popup, timePopup, priorityPopup, defRulePopup, customPopup, labelPopup, listPopup, emits, startTime, endTime, today, state, reloadModelData, beforeEditorClose, addReminderInfoModel, removeReminderInfoModel, titleInput, resetBeginEndTime, pick, changeNotifyMode, createNewLabel, changeTaskLabels, changeTaskList, openToEdit, takePriority, takeBaseRule, takeCount, takeDeadline, takeDef, resetSomeData, editTask, removeTask, selectDay, openEditMode, takeLabel, addList, open, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get ValueText() {
         return ValueText;
       }, get priority() {
         return priority;
@@ -29585,6 +29771,8 @@ ${i3}
         return isBaseDayLabel;
       }, get isBaseLabel() {
         return isBaseLabel;
+      }, get DefaultListIcon() {
+        return DefaultListIcon;
       }, get CreateTask() {
         return CreateTask;
       }, get RemoveTask() {
@@ -29597,8 +29785,12 @@ ${i3}
         return user;
       }, get imgSrc() {
         return imgSrc;
+      }, get CreateList() {
+        return CreateList;
       }, get CreateOrGetLabel() {
         return CreateOrGetLabel;
+      }, get TakeTaskLabelsFor() {
+        return TakeTaskLabelsFor;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -29663,16 +29855,17 @@ ${i3}
                     onClick: $setup.takeLabel,
                     class: "image"
                   }, null, 8, ["src"])) : vue.createCommentVNode("v-if", true),
-                  $setup.state.hasLabelSetter && $setup.label != void 0 && !$setup.isBaseLabel($setup.label.labelId) ? (vue.openBlock(), vue.createElementBlock(
+                  $setup.state.hasLabelSetter ? (vue.openBlock(), vue.createElementBlock(
                     "text",
                     {
                       key: 3,
                       class: "label-text",
-                      style: vue.normalizeStyle($setup.label != void 0 && $setup.label.isList ? "background-color:cyan" : "")
+                      onClick: _cache[2] || (_cache[2] = ($event) => $setup.listPopup.open()),
+                      style: { "background-color": "cyan" }
                     },
-                    vue.toDisplayString($setup.label.labelName),
-                    5
-                    /* TEXT, STYLE */
+                    vue.toDisplayString($setup.state.task.list != null ? $setup.state.task.list.labelName : "指定清单"),
+                    1
+                    /* TEXT */
                   )) : vue.createCommentVNode("v-if", true),
                   $setup.state.isTaskUpdate ? (vue.openBlock(), vue.createBlock(_component_uni_icons, {
                     key: 4,
@@ -29685,19 +29878,42 @@ ${i3}
                 ]),
                 vue.createVNode(_component_uni_easyinput, {
                   modelValue: $setup.state.task.title,
-                  "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => $setup.state.task.title = $event),
+                  "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => $setup.state.task.title = $event),
                   placeholder: "标题",
-                  focus: "",
+                  focus: !$setup.state.isTaskUpdate,
                   style: { "margin-bottom": "2px", "margin-top": "3px" },
                   onInput: $setup.titleInput
-                }, null, 8, ["modelValue"]),
+                }, null, 8, ["modelValue", "focus"]),
                 vue.createVNode(_component_uni_easyinput, {
                   modelValue: $setup.state.task.description,
-                  "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => $setup.state.task.description = $event),
+                  "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => $setup.state.task.description = $event),
                   placeholder: "描述",
                   type: "textarea",
                   rows: 3
-                }, null, 8, ["modelValue"])
+                }, null, 8, ["modelValue"]),
+                $setup.state.hasLabelSetter ? (vue.openBlock(), vue.createElementBlock("view", {
+                  key: 0,
+                  style: { "display": "flex", "flex-wrap": "wrap", "margin-top": "5px" }
+                }, [
+                  (vue.openBlock(true), vue.createElementBlock(
+                    vue.Fragment,
+                    null,
+                    vue.renderList($setup.state.task.labels, (label, index) => {
+                      return vue.openBlock(), vue.createElementBlock(
+                        "text",
+                        {
+                          class: "label-text",
+                          key: index
+                        },
+                        vue.toDisplayString(label.labelName),
+                        1
+                        /* TEXT */
+                      );
+                    }),
+                    128
+                    /* KEYED_FRAGMENT */
+                  ))
+                ])) : vue.createCommentVNode("v-if", true)
               ])
             ]),
             _: 1
@@ -29768,7 +29984,7 @@ ${i3}
               vue.createElementVNode("view", { style: { "display": "flex", "width": "96%", "margin-bottom": "1%" } }, [
                 vue.createVNode(_component_uni_icons, {
                   type: "closeempty",
-                  onClick: _cache[4] || (_cache[4] = ($event) => $setup.timePopup.close()),
+                  onClick: _cache[5] || (_cache[5] = ($event) => $setup.timePopup.close()),
                   size: 20
                 })
               ]),
@@ -29793,13 +30009,13 @@ ${i3}
                           vue.createTextVNode(" 开始： "),
                           vue.createElementVNode("picker", {
                             mode: "date",
-                            onChange: _cache[5] || (_cache[5] = ($event) => $setup.pick("begin-date", $event)),
+                            onChange: _cache[6] || (_cache[6] = ($event) => $setup.pick("begin-date", $event)),
                             value: $setup.startTime.date
                           }, vue.toDisplayString($setup.startTime.date), 41, ["value"]),
                           vue.createTextVNode("   "),
                           vue.createElementVNode("picker", {
                             mode: "time",
-                            onChange: _cache[6] || (_cache[6] = ($event) => $setup.pick("begin-time", $event)),
+                            onChange: _cache[7] || (_cache[7] = ($event) => $setup.pick("begin-time", $event)),
                             value: $setup.startTime.time
                           }, vue.toDisplayString($setup.startTime.time), 41, ["value"])
                         ]),
@@ -29807,13 +30023,13 @@ ${i3}
                           vue.createTextVNode(" 结束： "),
                           vue.createElementVNode("picker", {
                             mode: "date",
-                            onChange: _cache[7] || (_cache[7] = ($event) => $setup.pick("end-date", $event)),
+                            onChange: _cache[8] || (_cache[8] = ($event) => $setup.pick("end-date", $event)),
                             value: $setup.endTime.date
                           }, vue.toDisplayString($setup.endTime.date), 41, ["value"]),
                           vue.createTextVNode("   "),
                           vue.createElementVNode("picker", {
                             mode: "time",
-                            onChange: _cache[8] || (_cache[8] = ($event) => $setup.pick("end-time", $event)),
+                            onChange: _cache[9] || (_cache[9] = ($event) => $setup.pick("end-time", $event)),
                             value: $setup.endTime.time
                           }, vue.toDisplayString($setup.endTime.time), 41, ["value"])
                         ])
@@ -29903,7 +30119,7 @@ ${i3}
                         vue.createElementVNode(
                           "text",
                           {
-                            onClick: _cache[9] || (_cache[9] = ($event) => {
+                            onClick: _cache[10] || (_cache[10] = ($event) => {
                               $setup.defRulePopup.open();
                               $setup.state.frequency.selected = [$setup.state.task.period - 1, $setup.state.task.periodUnit - 1];
                             }),
@@ -29969,7 +30185,7 @@ ${i3}
                 vue.createElementVNode("view", { style: { "display": "flex", "width": "96%", "margin-bottom": "1%" } }, [
                   vue.createVNode(_component_uni_icons, {
                     type: "closeempty",
-                    onClick: _cache[10] || (_cache[10] = ($event) => $setup.customPopup.close()),
+                    onClick: _cache[11] || (_cache[11] = ($event) => $setup.customPopup.close()),
                     size: 20
                   })
                 ]),
@@ -29991,7 +30207,7 @@ ${i3}
                   multiple: "",
                   onChange: _ctx.takeCustom,
                   modelValue: $setup.state.rule.selected,
-                  "onUpdate:modelValue": _cache[11] || (_cache[11] = ($event) => $setup.state.rule.selected = $event),
+                  "onUpdate:modelValue": _cache[12] || (_cache[12] = ($event) => $setup.state.rule.selected = $event),
                   localdata: $setup.state.weekdays,
                   mode: "tag"
                 }, null, 8, ["onChange", "modelValue", "localdata"])) : vue.createCommentVNode("v-if", true),
@@ -29999,7 +30215,7 @@ ${i3}
                   vue.createVNode(_component_k_radio_group, {
                     data: $setup.state.rule.data,
                     modelValue: $setup.state.rule.selection,
-                    "onUpdate:modelValue": _cache[12] || (_cache[12] = ($event) => $setup.state.rule.selection = $event),
+                    "onUpdate:modelValue": _cache[13] || (_cache[13] = ($event) => $setup.state.rule.selection = $event),
                     onOnChange: $setup.resetSomeData,
                     style: { "margin-top": "2%", "margin-bottom": "2%" }
                   }, null, 8, ["data", "modelValue"])
@@ -30062,7 +30278,156 @@ ${i3}
           },
           512
           /* NEED_PATCH */
-        )
+        ),
+        $setup.state.hasLabelSetter ? (vue.openBlock(), vue.createBlock(
+          _component_uni_popup,
+          {
+            key: 0,
+            ref: "labelPopup",
+            "background-color": "#fff",
+            "border-radius": "7px 8px 8px 7px"
+          },
+          {
+            default: vue.withCtx(() => [
+              vue.createElementVNode("scroll-view", {
+                "scroll-y": "",
+                style: { "max-height": "40vh" }
+              }, [
+                vue.createElementVNode("view", { class: "header" }, [
+                  vue.createVNode(_component_uni_icons, {
+                    type: "closeempty",
+                    onClick: _cache[14] || (_cache[14] = ($event) => $setup.labelPopup.close())
+                  })
+                ]),
+                vue.createElementVNode("view", { class: "label" }, [
+                  vue.createElementVNode("view", { style: { "width": "90%" } }, [
+                    vue.createVNode(_component_uni_easyinput, {
+                      placeholder: "新标签",
+                      modelValue: $setup.state.labelOpt.labelName,
+                      "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $setup.state.labelOpt.labelName = $event),
+                      onChange: $setup.createNewLabel
+                    }, null, 8, ["modelValue"])
+                  ]),
+                  vue.createVNode(_component_uni_data_checkbox, {
+                    modelValue: $setup.state.labelOpt.selected,
+                    "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $setup.state.labelOpt.selected = $event),
+                    localdata: $setup.state.labelOpt.data,
+                    mode: "tag",
+                    onChange: $setup.changeTaskLabels,
+                    multiple: ""
+                  }, null, 8, ["modelValue", "localdata"])
+                ])
+              ])
+            ]),
+            _: 1
+            /* STABLE */
+          },
+          512
+          /* NEED_PATCH */
+        )) : vue.createCommentVNode("v-if", true),
+        $setup.state.hasLabelSetter ? (vue.openBlock(), vue.createBlock(
+          _component_uni_popup,
+          {
+            key: 1,
+            ref: "listPopup",
+            "background-color": "#fff",
+            "border-radius": "7px 8px 8px 7px"
+          },
+          {
+            default: vue.withCtx(() => [
+              vue.createElementVNode("view", { class: "list" }, [
+                vue.createElementVNode("view", { class: "header" }, [
+                  vue.createVNode(_component_uni_icons, {
+                    type: "closeempty",
+                    onClick: _cache[17] || (_cache[17] = ($event) => $setup.listPopup.close())
+                  })
+                ]),
+                vue.createElementVNode("button", {
+                  onClick: $setup.addList,
+                  style: { "margin-top": "2%", "margin-bottom": "1%", "height": "30px", "line-height": "30px" },
+                  size: "mini",
+                  type: "primary"
+                }, [
+                  vue.createVNode(_component_uni_icons, {
+                    type: "plusempty",
+                    color: "white"
+                  }),
+                  vue.createElementVNode("text", { style: { "font-size": "13px" } }, "添加清单")
+                ]),
+                vue.createElementVNode("scroll-view", {
+                  "scroll-y": "",
+                  style: { "max-width": "40vh" }
+                }, [
+                  vue.createElementVNode(
+                    "view",
+                    {
+                      class: "list-item",
+                      onClick: _cache[18] || (_cache[18] = ($event) => $setup.changeTaskList(null)),
+                      style: vue.normalizeStyle($setup.state.listOpt.selected == null ? "background-color:rgb(25,25,24,.25)" : "")
+                    },
+                    [
+                      vue.createElementVNode("view", { style: { "display": "flex", "align-items": "center", "margin-left": "1%" } }, [
+                        vue.createElementVNode("image", {
+                          class: "image",
+                          src: $setup.imgSrc($setup.DefaultListIcon)
+                        }, null, 8, ["src"]),
+                        vue.createElementVNode("text", { class: "overflow" }, "无")
+                      ]),
+                      $setup.state.listOpt.selected == null ? (vue.openBlock(), vue.createBlock(_component_uni_icons, {
+                        key: 0,
+                        type: "checkmarkempty",
+                        size: 18,
+                        color: "red",
+                        style: { "margin-right": "2%" }
+                      })) : vue.createCommentVNode("v-if", true)
+                    ],
+                    4
+                    /* STYLE */
+                  ),
+                  (vue.openBlock(true), vue.createElementBlock(
+                    vue.Fragment,
+                    null,
+                    vue.renderList($setup.userLists, (list, index) => {
+                      return vue.openBlock(), vue.createElementBlock("view", {
+                        class: "list-item",
+                        onClick: ($event) => $setup.changeTaskList(list),
+                        key: index,
+                        style: vue.normalizeStyle($setup.state.listOpt.itemSelected(list) ? "background-color:rgb(25,25,24,.25)" : "")
+                      }, [
+                        vue.createElementVNode("view", { style: { "display": "flex", "align-items": "center", "margin-left": "1%" } }, [
+                          vue.createElementVNode("image", {
+                            class: "image",
+                            src: $setup.imgSrc(list.icon)
+                          }, null, 8, ["src"]),
+                          vue.createElementVNode(
+                            "text",
+                            { class: "overflow" },
+                            vue.toDisplayString(list.labelName),
+                            1
+                            /* TEXT */
+                          )
+                        ]),
+                        $setup.state.listOpt.itemSelected(list) ? (vue.openBlock(), vue.createBlock(_component_uni_icons, {
+                          key: 0,
+                          type: "checkmarkempty",
+                          size: 18,
+                          color: "red",
+                          style: { "margin-right": "2%" }
+                        })) : vue.createCommentVNode("v-if", true)
+                      ], 12, ["onClick"]);
+                    }),
+                    128
+                    /* KEYED_FRAGMENT */
+                  ))
+                ])
+              ])
+            ]),
+            _: 1
+            /* STABLE */
+          },
+          512
+          /* NEED_PATCH */
+        )) : vue.createCommentVNode("v-if", true)
       ],
       64
       /* STABLE_FRAGMENT */

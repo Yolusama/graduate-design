@@ -18,18 +18,9 @@ public class TaskLabel {
     @TableId(type = IdType.AUTO)
     private Long id;
     /**
-     * 任务表关联的用户id
-     */
-    private String userId;
-    /**
      * 标签名
      */
     private String name;
-    /**
-     * 显示模式，1.显示，0.隐藏
-     */
-    @TableField(jdbcType = JdbcType.TINYINT)
-    private Boolean display;
     /**
      * 创建时间
      */
@@ -60,12 +51,12 @@ public class TaskLabel {
     public static final Long Abandoned = 6L;
     public static final Long Cancelled = 7L;
     public static final Long RecycleBin = 8L;
+    public static final Long[] BaseIds = {Today,Tomorrow,Yesterday,Finished,Abandoned,Cancelled,RecycleBin};
 
     public static Boolean isBaseLabel(Long id){
-        final Long[] baseIds = {Today,Tomorrow,Yesterday,Finished,Abandoned,Cancelled,RecycleBin};
-        for(int i=0;i<baseIds.length;i++)
+        for(int i=0;i<BaseIds.length;i++)
         {
-            if(id.equals(baseIds[i]))
+            if(id.equals(BaseIds[i]))
                 return true;
         }
         return false;

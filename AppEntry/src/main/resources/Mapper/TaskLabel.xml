@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.TaskLabelMapper">
+    <select id="getLabels" resultType="SelfSchedule.Entity.VO.TaskLabelVO">
+        select l.id as labelId,l.name as labelName,ul.userId,l.icon,l.isList,l.notCustom,ul.display from TaskLabel l
+           join UserTaskLabel ul on l.id = ul.labelId
+        where ul.userId=#{userId} and ul.display= 1
+    </select>
+
+    <select id="getHiddenLabels" resultType="SelfSchedule.Entity.VO.TaskLabelVO">
+        select l.id as labelId,l.name as labelName,ul.userId,l.icon,l.isList,l.notCustom,ul.display from TaskLabel l
+                join UserTaskLabel ul on l.id = ul.labelId
+        where ul.userId=#{userId} and ul.display= 0
+    </select>
+
+    <select id="labelExists" resultType="java.lang.Long">
+        select l.id from TaskLabel l join UserTaskLabel ul on l.id = ul.labelId
+          where ul.userId = #{userId} and l.isList = 0 and l.name = #{labelName}
+    </select>
+
+    <select id="getUserTaskLabelIds" resultType="java.lang.Long">
+        select l.id from TaskLabel join UserTaskLabel ul on l.id = ul.id
+        where ul.userId = #{userId} and l.notCutstom = 0
+    </select>
+
+
+</mapper>

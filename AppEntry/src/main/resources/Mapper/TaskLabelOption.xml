@@ -10,17 +10,19 @@
     </insert>
 
     <select id="getTaskLabels" resultType="SelfSchedule.Entity.VO.TaskLabelVO">
-        select l.id as labelId,l.name as labelName,display,icon,notCustom,isList from TaskLabel l
+        select l.id as labelId,l.name as labelName,ul.userId,ul.display,icon,notCustom,isList from TaskLabel l
                         join TaskLabelOption tl on tl.labelId = l.id or tl.listId = l.id
-        where (l.userId is not null and l.userId = #{userId}) and tl.taskId = #{taskId} and l.display = 1
+                          join UserTaskLabel ul on ul.labelId = l.id
+        where ul.userId = #{userId} and tl.taskId = #{taskId} and ul.display = 1
     </select>
 
     <select id="getTaskLabelIds" resultType="java.lang.Long">
         select l.id from TaskLabel l
-                        join TaskLabelOption tl on tl.labelId = l.id or tl.listId = l.id
+                    join TaskLabelOption tl on tl.labelId = l.id or tl.listId = l.id
+                      join UserTaskLabel ul on ul.labelId = l.id
         <where>
-            (l.userId is not null and l.userId = #{userId}) and tl.taskId = #{taskId} and l.display = 1
-                 and (listId = #{listId} or listId is null)
+            ul.userId = #{userId} and tl.taskId = #{taskId} and ul.display = 1
+                 and (tl.listId = #{listId} or tl.listId is null)
        </where>
     </select>
 </mapper>

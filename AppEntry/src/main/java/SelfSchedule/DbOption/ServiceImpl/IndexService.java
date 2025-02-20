@@ -7,11 +7,8 @@ import SelfSchedule.DbOption.Mapper.*;
 import SelfSchedule.DbOption.Service.IHabitService;
 import SelfSchedule.DbOption.Service.ITaskService;
 import SelfSchedule.DbOption.Service.IndexServiceInterface;
+import SelfSchedule.Entity.*;
 import SelfSchedule.Entity.Enum.TaskState;
-import SelfSchedule.Entity.Habit;
-import SelfSchedule.Entity.Task;
-import SelfSchedule.Entity.TaskLabel;
-import SelfSchedule.Entity.TaskLabelOption;
 import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Service.FileService;
@@ -37,15 +34,18 @@ public class IndexService implements IndexServiceInterface {
     private final TaskLabelMapper labelMapper;
     private final UserMapper userMapper;
     private final TaskLabelOptionMapper labelOptionMapper;
+    private final UserTaskLabelMapper userTaskLabelMapper;
 
     @Autowired
     public IndexService(TaskService taskService,HabitService habitService,TaskLabelMapper labelMapper,
-                        UserMapper userMapper,TaskLabelOptionMapper labelOptionMapper){
+                        UserMapper userMapper,TaskLabelOptionMapper labelOptionMapper,
+                        UserTaskLabelMapper userTaskLabelMapper){
        this.taskService = taskService;
        this.habitService = habitService;
        this.labelMapper = labelMapper;
        this.userMapper = userMapper;
        this.labelOptionMapper = labelOptionMapper;
+       this.userTaskLabelMapper = userTaskLabelMapper;
     }
 
     private TaskMapper taskMapper(){
@@ -119,12 +119,12 @@ public class IndexService implements IndexServiceInterface {
             }
         }
         else{
-            List<TaskRuleComboVO> tasks = taskService.getTasks(current, size, userId, time,labelId,redis).getData();
+            List<TaskRuleComboVO> tasks = taskService.getTasks(current, size, userId,time,labelId,redis).getData();
             setTasks(res, key1, tasks);
         }
 
         redis.set(key,res,Constants.CachingExpire);
-        redis.set(key_label,res,Constants.CachingExpire);
+        redis.set(key_label,labelId,Constants.CachingExpire);
 
         return res;
     }
@@ -153,9 +153,12 @@ public class IndexService implements IndexServiceInterface {
        label.setIsList(isList);
        label.setCreateTime(Constants.Now());
        label.setNotCustom(false);
-       label.setUserId(userId);
        label.setIcon(isList?Constants.DefaultListIcon:Constants.DefaultLabelIcon);
        labelMapper.insert(label);
+       UserTaskLabel userTaskLabel = new UserTaskLabel();
+       userTaskLabel.setLabelId(label.getId());
+       userTaskLabel.setUserId(userId);
+       userTaskLabelMapper.insert(userTaskLabel);
        return label.getId();
     }
 
@@ -189,18 +192,16 @@ public class IndexService implements IndexServiceInterface {
      */
     @Override
     public boolean checkLabelNameExists(String labelName,String userId) {
-        LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false).eq(TaskLabel::getUserId,userId);
-        Long count = labelMapper.selectCount(wrapper);
-        return count > 0;
+        Long labelId = labelMapper.labelExists(userId,labelName);
+        return labelId!=null;
     }
 
     @Override
     @Transactional
     public int hideOrShowLabel(Boolean display, Long labelId) {
-        LambdaUpdateWrapper<TaskLabel> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(TaskLabel::getDisplay,display).eq(TaskLabel::getId,labelId);
-        return labelMapper.update(wrapper);
+        LambdaUpdateWrapper<UserTaskLabel> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(UserTaskLabel::getDisplay,display).eq(UserTaskLabel::getLabelId,labelId);
+        return userTaskLabelMapper.update(wrapper);
     }
 
     @Override
@@ -216,25 +217,26 @@ public class IndexService implements IndexServiceInterface {
         else
             wrapper.set(TaskLabelOption::getLabelId,null).eq(TaskLabelOption::getLabelId,label.getId());
         labelOptionMapper.update(wrapper);
+        userTaskLabelMapper.delete(new LambdaQueryWrapper<UserTaskLabel>().eq(UserTaskLabel::getLabelId,labelId));
         return labelMapper.deleteById(labelId);
     }
 
     @Override
     @Transactional
     public TaskLabelVO createOrCheckLabel(String labelName, String userId) {
-        LambdaQueryWrapper<TaskLabel> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(TaskLabel::getName,labelName).eq(TaskLabel::getIsList,false)
-                .eq(TaskLabel::getUserId,userId);
-        TaskLabel label = labelMapper.selectOne(wrapper);
+        TaskLabel label = userTaskLabelMapper.getLabel(userId,labelName);
         if(label == null)
         {
            label = new TaskLabel();
            label.setIcon(Constants.DefaultLabelIcon);
            label.setCreateTime(Constants.Now());
-           label.setUserId(userId);
            label.setIsList(false);
            label.setName(labelName);
            labelMapper.insert(label);
+           UserTaskLabel userTaskLabel = new UserTaskLabel();
+           userTaskLabel.setUserId(userId);
+           userTaskLabel.setLabelId(label.getId());
+           userTaskLabelMapper.insert(userTaskLabel);
         }
         TaskLabelVO res = ObjectUtil.copy(label,new TaskLabelVO());
         res.setLabelId(label.getId());
@@ -303,7 +305,10 @@ public class IndexService implements IndexServiceInterface {
         if(redis.has(checkCodeKey))
             redis.remove(checkCodeKey);
         if(cancelAccount){
-            labelMapper.delete(new LambdaQueryWrapper<TaskLabel>().eq(TaskLabel::getUserId,userId));
+            List<Long> userLabelIds = labelMapper.getUserTaskLabelIds(userId);
+            labelMapper.delete(new LambdaQueryWrapper<TaskLabel>().in(TaskLabel::getId,userLabelIds));
+            userTaskLabelMapper.delete(new LambdaQueryWrapper<UserTaskLabel>().eq(UserTaskLabel::getUserId,userId));
+            labelOptionMapper.delete(new LambdaQueryWrapper<TaskLabelOption>().in(TaskLabelOption::getLabelId,userLabelIds));
             taskService.removeAllAbout(userId);
             habitService.removeAllAbout(userId);
             userMapper.deleteById(userId);
@@ -406,8 +411,11 @@ public class IndexService implements IndexServiceInterface {
         label.setCreateTime(Constants.Now());
         label.setIcon(Constants.DefaultListIcon);
         label.setName(listName);
-        label.setUserId(userId);
         labelMapper.insert(label);
+        UserTaskLabel userTaskLabel = new UserTaskLabel();
+        userTaskLabel.setLabelId(label.getId());
+        userTaskLabel.setUserId(userId);
+        userTaskLabelMapper.insert(userTaskLabel);
         TaskLabelVO res = ObjectUtil.copy(label,new TaskLabelVO());
         res.setLabelName(listName);
         res.setLabelId(label.getId());

@@ -157,7 +157,8 @@ public class TaskController extends ControllerBase
 
     @PutMapping("/RemoveTask")
     @ApiOperation(value = "形式删除当前任务",notes = "重复任务的主实例才会被放入回收站")
-    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData,CachingKeys.GetTaskCountsMode})
+    @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData,
+            CachingKeys.GetTaskCountsMode})
     public ActionResult RemoveTask(@RequestBody TaskModel model,@RequestParam Integer mode,HttpServletRequest request){
         int res = taskService.removeTask(model,mode);
         if(res==Constants.AbNormalState)

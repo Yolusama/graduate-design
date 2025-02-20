@@ -183,7 +183,8 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
             if(!task.getRepeatable()){
                 if(DateUtil.onlyDateEquals(task.getBeginTime(),time)||DateUtil.onlyDateEquals(task.getEndTime(),time)
                 ||(task.getBeginTime().getTime()<time.getTime()&&task.getEndTime().getTime()>=time.getTime())) {
-                    res.getData().add(task);
+                    if(!task.getState().equals(TaskState.CANCELLED.value()))
+                       res.getData().add(task);
                 }
                 continue;
             }
@@ -298,7 +299,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                     }
                     reminderMapper.batchInsert(reminders);
                 }
-                List<TaskLabelOption> options = labelOptionMapper.getTaskLabelOptios(task.getTaskId());
+                List<TaskLabelOption> options = labelOptionMapper.getTaskLabelOptions(task.getTaskId());
                 if(options.size()>0){
                     for(TaskLabelOption option:options){
                         option.setId(null);

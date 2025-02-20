@@ -9,6 +9,17 @@
             from Habit h join HabitOption o on h.id = o.habitId
                 join HabitGroup g on g.id = h.groupId
               left join HabitFrequency f on h.id = f.habitId
-               where h.deleteFlag = #{recycled} and h.userId = #{userId}
+               where h.userId = #{userId} and h.deleteFlag = 0
     </select>
+
+    <select id="getRecycledHabit" resultType="SelfSchedule.Entity.VO.HabitVO">
+        select h.id as habitId,h.userId,h.name,h.createTime,h.beginDate,h.description,h.thumb,
+               o.aimDays,o.persistDays,o.continuousDays,o.mostDays
+        from Habit h join HabitOption o on h.id = o.habitId
+                     join HabitGroup g on g.id = h.groupId
+                     left join HabitFrequency f on h.id = f.habitId
+        where h.deleteFlag = 1 and h.userId = #{userId}
+    </select>
+
+
 </mapper>

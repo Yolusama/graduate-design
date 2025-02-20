@@ -108,7 +108,15 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         }
         Page<HabitVO> page = Page.of(current,pageSize);
         PagedData<HabitVO> res = new PagedData<>();
-        List<HabitVO> habits = mapper.getHabits(page,userId,recycled);
+        if(recycled){
+            List<HabitVO> recycledHabits = mapper.getRecycledHabit(page,userId);
+            res.setTotal(page.getTotal());
+            res.setData(recycledHabits);
+            redis.set(key1,res,Constants.CachingExpire);
+            redis.set(key2,new Date(0,0,0),Constants.CachingExpire);
+            return res;
+        }
+        List<HabitVO> habits = mapper.getHabits(page,userId);
         Date date = DateUtil.onlyDate(time);
         Date today = DateUtil.onlyDate(Constants.Now());
         boolean flag = false;
@@ -466,7 +474,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     public PagedData<HabitVO> getHabits(Integer page, Integer pageSize, String userId) {
         PagedData<HabitVO> res = new PagedData<>();
         Page<HabitVO> pagedData = Page.of(page,pageSize);
-        List<HabitVO> data = mapper.getHabits(pagedData,userId,false);
+        List<HabitVO> data = mapper.getHabits(pagedData,userId);
         res.setData(data);
         res.setTotal(pagedData.getTotal());
         return res;

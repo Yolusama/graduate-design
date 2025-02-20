@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SelfSchedule.DbOption.Mapper.UserTaskLabelMapper">
+    <insert id="batchInsert">
+        insert into UserTaskLabel values
+        <foreach collection="userLabels" item="label" separator="," >
+            (null,#{label.userId},#{label.labelId},#{label.display},null)
+        </foreach>
+    </insert>
+
+    <select id="getLabel" resultType="SelfSchedule.Entity.TaskLabel">
+        select l.id,l.name,l.icon,l.notCustom,l.createTime,l.updateTime from TaskLabel l
+               join UserTaskLabel ul on ul.labelId = l.id
+          where l.isList = 0 and ul.userId = #{userId} and l.name = #{labelName}
+    </select>
+</mapper>

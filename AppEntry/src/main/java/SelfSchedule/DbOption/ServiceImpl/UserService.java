@@ -3,11 +3,14 @@ package SelfSchedule.DbOption.ServiceImpl;
 import SelfSchedule.Common.Constants;
 import SelfSchedule.DbOption.Mapper.HabitGroupMapper;
 import SelfSchedule.DbOption.Mapper.UserMapper;
+import SelfSchedule.DbOption.Mapper.UserTaskLabelMapper;
 import SelfSchedule.DbOption.Service.IUserService;
 import SelfSchedule.Entity.Enum.UserLoginStatus;
 import SelfSchedule.Entity.Enum.UserRole;
 import SelfSchedule.Entity.HabitGroup;
+import SelfSchedule.Entity.TaskLabel;
 import SelfSchedule.Entity.User;
+import SelfSchedule.Entity.UserTaskLabel;
 import SelfSchedule.Entity.VO.PagedData;
 import SelfSchedule.Entity.VO.UserLoginVO;
 import SelfSchedule.Entity.VO.UserVO;
@@ -39,11 +42,13 @@ import java.util.List;
 public class UserService extends ServiceImpl<UserMapper, User> implements IUserService {
     private final UserMapper mapper;
     private final HabitGroupMapper groupMapper;
+    private final UserTaskLabelMapper userTaskLabelMapper;
 
     @Autowired
-    public UserService(UserMapper mapper,HabitGroupMapper groupMapper){
+    public UserService(UserMapper mapper, HabitGroupMapper groupMapper, UserTaskLabelMapper userTaskLabelMapper){
         this.mapper = mapper;
         this.groupMapper = groupMapper;
+        this.userTaskLabelMapper = userTaskLabelMapper;
     }
 
     @Override
@@ -79,6 +84,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         user.setPassword(StringEncryptUtil.getString(model.getPassword()));
         user.setCreateTime(Constants.Now());
         addUserHabitGroups(user.getId());
+        addUserDefaultLabels(user.getId());
         redis.remove(key);
         return mapper.insert(user);
     }
@@ -314,6 +320,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
 
         mapper.insert(user);
         addUserHabitGroups(user.getId());
+        addUserDefaultLabels(user.getId());
         return ObjectUtil.copy(user,new UserVO());
     }
 
@@ -349,5 +356,17 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             groups.add(group);
         }
         groupMapper.batchInsert(groups);
+    }
+
+    private void addUserDefaultLabels(String userId){
+         List<UserTaskLabel> userTaskLabels = new ArrayList<>();
+         for(Long labelId:TaskLabel.BaseIds){
+             UserTaskLabel userTaskLabel = new UserTaskLabel();
+             userTaskLabel.setUserId(userId);
+             userTaskLabel.setLabelId(labelId);
+             userTaskLabel.setDisplay(true);
+             userTaskLabels.add(userTaskLabel);
+         }
+         userTaskLabelMapper.batchInsert(userTaskLabels);
     }
 }

@@ -77,7 +77,6 @@
 <script setup>
 	import {
 		reactive,
-		onMounted,
 		ref
 	} from 'vue';
 	import {
@@ -86,14 +85,16 @@
 	import {
 		Logout
 	} from '../api/UserInfo';
-import { Feedback } from '../api/User';
+    import { Feedback } from '../api/User';
+	import {onShow} from "@dcloudio/uni-app"
+	
 	const state = reactive({
 		user: null,
 		userFeedback: ""
 	});
 	const feedbackPopup = ref(null);
 	const appSrc = ref("https://github.com/Yolusama/graduate-design/tree/front");
-	onMounted(() => {
+	onShow(() => {
 		const user = uni.getStorage({
 			key: "user",
 			success: res => {

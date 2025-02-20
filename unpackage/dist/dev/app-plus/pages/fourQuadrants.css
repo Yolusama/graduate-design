@@ -702,7 +702,7 @@
 		width: 100%;
 		background-color: aliceblue;
 		height: 96vh;
-		flex-flow:column nowrap;
+		flex-flow: column nowrap;
 		align-items: center;
 }
 #four-quadrants .content {
@@ -713,9 +713,9 @@
 		width: 96%;
 		height: 90%;
 }
-#four-quadrants .header 
-	{
+#four-quadrants .header {
 		width: 96%;
+
 
 
 
@@ -734,32 +734,34 @@
 		overflow: hidden auto;
 		border-radius: 5px;
 }
-#four-quadrants .item-content{
+#four-quadrants .item-content {
 		height: 45px;
-		width:38vw;
+		width: 38vw;
 }
-#four-quadrants .task{
+#four-quadrants .task {
 		display: flex;
 		align-items: center;
-		width:44vw;
+		width: 44vw;
 		border-radius: 6px;
 		z-index: 1;
 }
-#four-quadrants .task .task-text{
+#four-quadrants .task .task-text {
 		font-size: 12px;
 		text-wrap: nowrap;
 		text-overflow: ellipsis;
 }
-#four-quadrants .task .info{
+#four-quadrants .task .info {
 		display: flex;
-		flex-flow: column nowrap; 
-		color:black;
+		flex-flow: column nowrap;
+		color: black;
 }
-#four-quadrants .task .info .text{
+#four-quadrants .task .info .text {
 		font-size: 10px;
 }
-#quadrant-1,#quadrant-2,#quadrant-3,#quadrant-4{
-}
+#quadrant-1,
+	#quadrant-2,
+	#quadrant-3,
+	#quadrant-4 {}
 #four-quadrants .task-edit {
 		position: relative;
 		height: 35vh;
@@ -791,8 +793,7 @@
 		font-size: 14px;
 		color: gray;
 }
-#four-quadrants .time .select-datetime
-	{
+#four-quadrants .time .select-datetime {
 		font-size: 12px;
 		height: 20px;
 		line-height: 20px;
@@ -860,10 +861,10 @@
 		text-align: center;
 		font-size: 14px;
 }
-#four-quadrants .mask{
+#four-quadrants .mask {
 		position: absolute;
 		width: 100%;
 		height: 100%;
 		z-index: 0;
-		background-color: rgb(25,35,25,.5);
+		background-color: rgb(25, 35, 25, .5);
 }

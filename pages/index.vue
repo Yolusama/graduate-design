@@ -176,10 +176,12 @@
 											v-if="task.state==TaskState.finished"
 											@click="finishTaskOrNot(index)">取消完成</button>
 									</view>
-									<view style="display: flex;align-items: center;position: relative;">
-										<uni-icons type="undo" :size="25" color="rgb(0,125,245)"
-											@click="recoverTask(index)"
-											v-if="state.currentLabel.labelId==IdOfBin"></uni-icons>
+								</template>
+								<template v-slot:right v-if="state.currentLabel.labelId==IdOfBin" >
+									<view style="display: flex;align-items: center;position: relative;width: 40px;"
+										 @click="recoverTask(index)">
+										<uni-icons type="undo" :size="25" color="rgb(0,125,245)" 
+											></uni-icons>
 									</view>
 								</template>
 								<view style="display: flex;justify-content: center;padding-right: 1%;
@@ -192,9 +194,9 @@
 												style="transform: scale(70%);">
 											</checkbox>
 										</checkbox-group>
-										<view class="close" v-if="state.currentLabel.labelId==IdOfBin">
+										<view class="close" v-if="state.currentLabel.labelId==IdOfBin" @click.stop="removeTask(index)">
 											<uni-icons type="close" color="red" :size="22"
-												@click="removeTask(index)"></uni-icons>
+												></uni-icons>
 										</view>
 										<view class="task-content">
 											<view class="title">
@@ -245,7 +247,7 @@
 		<task-editor ref="indexTaskEditor" :task="state.task" :isTaskUpdate="state.task!=null" v-if="state.show.task"
 			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :labelSet="true"
 			@removed="taskRemoved" @createdLabel="createdLabel" :userLabels="state.labels" :label="state.currentLabel"
-			:userLists="state.lists.filter(l=>l.userId!=null)">
+			:userLists="state.lists.filter(l=>!isSysLabel(l.labelId))">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
 			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished"></habit-detail>
@@ -258,7 +260,6 @@
 <script setup>
 	import {
 		nextTick,
-		onMounted,
 		reactive,
 		ref
 	} from 'vue';
@@ -292,7 +293,8 @@
 		HabitReminderKey,
 		CurrentAudioKey,
 		ValueText,
-		CurrentFinsihAudioKey
+		CurrentFinsihAudioKey,
+		isSysLabel
 	} from '../module/Common';
 	import {
 		imgSrc
@@ -305,6 +307,7 @@
 	import {
 		GetTaskReminders
 	} from '../api/Task';
+	import {onShow} from "@dcloudio/uni-app";
 
 	const pattern = ref({
 		color: '#7A7E83',
@@ -360,25 +363,26 @@
 		isList: true,
 		icon: "today.png"
 	});
-
-	onMounted(() => {
+	
+	//uniapptab页面使用onShow保证页面内容刷新
+	onShow(()=>{
 		const user = uni.getStorageSync("user");
 		state.user.id = user.uid;
 		state.user.avatar = user.avatar;
 		state.user.nickname = user.nickname;
-
+		
 		state.labelsExpandStyle = "-webkit-transform: rotateZ(90deg);";
-
+		
 		var label = uni.getStorageSync(currentLabel.value);
 		if (label == null || label == '')
 			label = todayLabel.value;
 		state.currentLabel = label;
 		getData(label.labelId);
-
+		
 		getLabels();
 		checkYesterdayTask();
 		checkContinuousDays();
-
+		
 		var audio = uni.getStorageSync(CurrentAudioKey);
 		if (audio == "" || audio == null) {
 			audio = new ValueText(0, "无");
@@ -460,7 +464,7 @@
 		if (isBaseDayLabel(labelId))
 			return task.state == TaskState.abondoned;
 		if (isStateLabel(labelId))
-			return dateGE(today.value, task.beginTime) && dateGE(today.value, task.endTime);
+			return !(dateGE(today.value, task.beginTime) && dateGE(today.value, task.endTime));
 		return false;
 	}
 
@@ -735,6 +739,9 @@
 			time.setDate(time.getDate() + 1);
 		else if (state.currentLabel.id == 3)
 			time.setDate(time.getDate() - 1);
+			
+		if(state.currentLabel.labelId==IdOfBin)
+		   return `<text style="color:rgb(0,75,235)">${getDateStr(endTime)}</text>`;
 
 		if (dateEquals(beginTime, endTime) && dateEquals(beginTime, time))
 			res =

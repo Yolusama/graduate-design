@@ -301,7 +301,6 @@
 <script setup>
 	import {
 		reactive,
-		onMounted,
 		ref,
 		nextTick
 	} from "vue";
@@ -344,6 +343,7 @@
 	import {
 		user
 	} from "../api/User";
+	import {onShow} from "@dcloudio/uni-app"
 	const popup = ref(null);
 	const frequencyPopup = ref(null);
 	const defRulePopup = ref(null);
@@ -422,8 +422,8 @@
 		isTaskCancel: false,
 		isTaskRemove:false
 	});
-
-	onMounted(function() {
+	
+	onShow(function() {
 		state.startTime.date = getDateStr(today.value);
 		state.startTime.time = timeWithoutSeconds(today.value);
 		if (user == '')
@@ -601,15 +601,15 @@
 					delayToRun(() => {
 						uni.hideLoading();
 						state.manualPopup = true;
-						popup.value.close();
 						if (taskPageOpt.value.data.length < taskPageOpt.value.size) {
 							const task = {};
 							copy(state.task, task);
 							task.taskId = res.data;
 							task.instanceId = res.data;
 							taskPageOpt.value.data.push(task);
+							taskPageOpt.value.total++;
 						}
-						taskPageOpt.value.total++;
+						popup.value.close();
 						uni.removeStorageSync(TaskReminderKey);
 					}, expire);
 				}
@@ -882,17 +882,38 @@
 
 	function openEditUI() {
 		if (!state.selectedTask.repeatable) {
-			copy(state.selectedTask, state.task);
-			state.task.changed = () => {
-				return state.task.title != state.selectedTask.title || state.task.description != state.selectedTask
-					.description ||
-					state.task.priority != state.selectedTask.priority || state.task.beginTime != state.selectedTask
-					.beginTime ||
-					state.task.endTime != state.selectedTask.endTime;
-			};
-			state.isTaskUpdate = true;
-			state.canCreateTask = true;
-			openToEdit();
+			state.mode = 0;
+			if(state.isTaskRemove){
+				uni.showModal({
+					title:"移除到回收站",
+					content:"是否移动回收站",
+					confirmColor:"确定",
+					cancelText:"取消",
+					success:(res)=>{
+						if(res.cancel)return;
+						openEditOrRemoveTaskOrCancelTask();
+					}
+				});
+			}
+			else if(state.isTaskCancel)
+			{
+				uni.showModal({
+					title:"取消任务",
+					content:"是否取消",
+					confirmColor:"是",
+					cancelText:"否",
+					success:(res)=>{
+						if(res.cancel)return;
+						openEditOrRemoveTaskOrCancelTask();
+					}
+				});
+			}
+			else{
+				copy(state.selectedTask, state.task);
+				state.isTaskUpdate = true;
+				state.canCreateTask = true;
+				openToEdit();
+			}
 		} else {
 			if (state.selectedTask.taskId == state.selectedTask.instanceId)
 				state.modeContent = [new ValueText(0, "全部重复任务"), new ValueText(1, "仅此任务")];
@@ -902,8 +923,6 @@
 				];
 			editModePopup.value.open();
 		}
-
-
 	}
 
 	function beginEndTimeStr(task) {

@@ -187,7 +187,7 @@
 				<uni-icons type="plusempty" color="white"></uni-icons>
 				<text style="font-size: 13px;">添加清单</text>
 			</button>
-			<scroll-view scroll-y style="max-width: 40vh;">
+			<scroll-view scroll-y style="max-height: 34vh;">
 				<view class="list-item" @click="changeTaskList(null)"
 					:style="state.listOpt.selected==null?'background-color:rgb(25,25,24,.25)':''">
 					<view style="display: flex;align-items: center;margin-left: 1%;">
@@ -485,7 +485,8 @@
 		}
 	}
 
-	function createNewLabel() {
+	function createNewLabel(e) {
+		if(e.trim().length==0)return;
 		const user = uni.getStorageSync("user");
 		CreateOrGetLabel(state.labelOpt.labelName, user.uid, response => {
 			const res = response.data;
@@ -939,7 +940,7 @@
 		flex-direction: column;
 		align-items: center;
 		width: 72vw;
-		height: 40vh;
+		height: 45vh;
 	}
 
 	.list .header {

@@ -14,7 +14,7 @@
 			</k-calendar>
 			<scroll-view class="content" :scroll-y="true">
 				<uni-collapse class="habit" v-for="(data,groupName) in state.data" :key="groupName" accordion="true"
-					v-model="state.model[groupName]"> 
+					v-model="state.model[groupName]">
 					<uni-collapse-item title-border="none" :show-animation="false" v-if="data.length>0">
 						<template v-slot:title>
 							<view style="display:flex;align-items: center;justify-content: space-between;">
@@ -92,7 +92,6 @@
 	import {
 		ref,
 		reactive,
-		onMounted,
 		nextTick
 	} from "vue";
 	import {
@@ -101,7 +100,8 @@
 		timeWithoutSeconds,
 		dateEquals,
 		HabitReminderKey,
-		delayToRun
+		delayToRun,
+		loading
 	} from "../module/Common";
 	import {
 		GetHabits,
@@ -112,6 +112,9 @@
 	import {
 		imgSrc
 	} from "../module/Request";
+	import {
+		onShow
+	} from "@dcloudio/uni-app"
 	const counter = ref(null);
 	const editor = ref(null);
 	const detail = ref(null);
@@ -144,7 +147,7 @@
 		model: {}
 	});
 
-	onMounted(() => {
+	onShow(() => {
 		uni.getStorage({
 			key: "user",
 			success: res => {
@@ -214,18 +217,16 @@
 		const data = e.item;
 		const oldGroupName = e.oldGroupName;
 		const newGroupName = e.newGroupName;
-		if(state.data[newGroupName]==undefined)
-		{
+		if (state.data[newGroupName] == undefined) {
 			state.model[newGroupName] = "0";
-			state.data[newGroupName]=[data];
+			state.data[newGroupName] = [data];
+		} else
+		if (oldGroupName == newGroupName)
+			state.data[oldGroupName][index] = data;
+		else {
+			state.data[oldGroupName].splice(index, 1);
+			state.data[newGroupName].push(data);
 		}
-		else
-		   if(oldGroupName==newGroupName)
-		     state.data[oldGroupName][index] = data;
-		   else{
-			   state.data[oldGroupName].splice(index,1);
-			   state.data[newGroupName].push(data);
-		   }	 
 		uni.removeStorageSync(HabitReminderKey);
 	}
 
@@ -251,9 +252,11 @@
 				});
 				return;
 			}
-			habitOption.value.data = res.data.data;
-			habitOption.value.total = res.data.total;
-			dataReogrized();
+			loading("", () => {
+				habitOption.value.data = res.data.data;
+				habitOption.value.total = res.data.total;
+				dataReogrized();
+			}, 550);
 		});
 	}
 
@@ -268,7 +271,7 @@
 
 	function habitFinished(e) {
 		const item = e.item;
-		const index = item.records.findIndex(r=>r.day.getTime()==onlyDate(state.selectedDay).getTime());
+		const index = item.records.findIndex(r => r.day.getTime() == onlyDate(state.selectedDay).getTime());
 		item.records[index].finished = true;
 		state.selectedHabit = item;
 	}

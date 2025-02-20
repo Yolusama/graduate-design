@@ -671,6 +671,8 @@
 		width: 100vw;
 		height: 94vh;
 		background-color: aliceblue;
+
+		padding-top: 3vh;
 }
 #hidden-label .list-content[data-v-c5f9b9a2],
 	#hidden-label .label-content[data-v-c5f9b9a2] {

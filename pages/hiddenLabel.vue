@@ -143,6 +143,9 @@ import { delayToRun } from '../module/Common';
 		width: 100vw;
 		height: 94vh;
 		background-color: aliceblue;
+		/*#ifndef H5*/
+		padding-top: 3vh;
+		/*#endif*/
 	}
 
 	#hidden-label .list-content,

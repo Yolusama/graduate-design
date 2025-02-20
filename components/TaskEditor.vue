@@ -393,35 +393,10 @@
 		}
 	});
 
-	function reloadModelData() {
-		state.task = {
-			title: "",
-			description: "",
-			priority: 4,
-			beginTime: "",
-			endTime: "",
-			userId: user == '' ? uni.getStorageSync("user").uid : user.uid,
-			reminderInfoModels: [],
-			period: null,
-			periodUnit: null,
-			custom: null,
-			count: null,
-			deadline: null,
-			repeatable: false
-		};
-		state.frequency.selected = [];
-		state.frequency.selection = 0;
-		state.rule.selected = [];
-		state.rule.selection = 0;
-		state.canCreateTask = false;
-	}
-
 	function beforeEditorClose(e) {
-		if (e.show) {
+		if (e.show) 
 			return;
-		}
 		emits("close");
-		reloadModelData();
 	}
 
 	function addReminderInfoModel(e) {

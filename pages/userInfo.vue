@@ -209,8 +209,6 @@
 					<text style="font-size: 14px;">共计
 					<text style="color: red;">{{habitPageoption.total}}</text>
 					条数据</text>
-					<text style="font-size: 14px;text-align: left;">每页
-					 <text style="color: cyan;">{{habitPageoption.size}}</text>条</text>
 				</view>
 			</view>
 		</uni-popup>
@@ -488,6 +486,7 @@
 			cancelColor: "red",
 			confirmText: "确定",
 			cancelText: "取消",
+			placeholderText:"新昵称",
 			editable: true,
 			success: res => {
 				if (res.cancel) return;

@@ -297,29 +297,6 @@
 		getGroups();
 	});
 
-	function reloadHabitModel() {
-		state.habit.beginDate = onlyDate(state.selectedDay);
-		state.habit.recordDay = onlyDate(state.selectedDay);
-		state.habit.groupId = state.groups[0].id;
-		state.habit.aimDays = -1;
-		state.habit.name = "";
-		state.habit.reminderModels = [];
-		state.habit.priority = 4;
-		state.habit.thumb = "habit.png";
-		state.thumbShow = imgSrc(state.habit.thumb);
-		state.thumbChangeCancelled = true;
-		state.selectedImgFile = null;
-		state.habit.userId = user == '' ? uni.getStorageSync("user").uid : user.uid;
-		state.habit.description = "";
-		state.habit.days = null;
-		state.habit.weekPersistDays = null;
-		state.habit.period = null;
-		state.groupCode = 1;
-		state.frequency.selcection = 0;
-		state.frequency.selcected = [0, 1, 2, 3, 4, 5, 6];
-		fillWeekdays();
-	}
-
 	function habitNameInput(current) {
 		state.canAddHabit = current.length > 0;
 	}
@@ -474,7 +451,6 @@
 	function popupClose(e) {
 		if (e.show) return;
 		emits("close");
-		reloadHabitModel();
 	}
 
 	function closePopup() {

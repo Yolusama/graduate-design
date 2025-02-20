@@ -583,8 +583,7 @@
 
 	function editTask() {
 		if (!state.isTaskUpdate) {
-			if (!state.task.changed() || !state.canCreateTask) return;
-			const date = state.task.beginTime;
+			if (!state.canCreateTask) return;
 			CreateTask(state.task, response => {
 				const res = response.data;
 				if (!res.succeeded) {
@@ -611,17 +610,12 @@
 							taskPageOpt.value.data.push(task);
 						}
 						taskPageOpt.value.total++;
-						reloadTaskModel();
 						uni.removeStorageSync(TaskReminderKey);
 					}, expire);
 				}
 			});
-		} else {
-			if (state.task.changed())
-				updateTask();
-			else
-				popup.value.close();
-		}
+		} else
+			updateTask();
 	}
 
 	function multiSelect(e) {

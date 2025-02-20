@@ -192,10 +192,10 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 if(!DateUtil.over(time,task.getBeginTime())&&!DateUtil.over(time,task.getEndTime()))
                     continue;
                 if (task.getCount()!=null&&task.getCount() > Constants.None) {
-                    LambdaQueryWrapper<Task> wrapper = new LambdaQueryWrapper<>();
-                    wrapper.eq(Task::getId,task.getTaskId());
-                    Long count = mapper.selectCount(wrapper);
-                    if(count>=task.getCount()+1)
+                    LambdaQueryWrapper<TaskInstance> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.eq(TaskInstance::getTaskId,task.getTaskId());
+                    Long count = instanceMapper.selectCount(wrapper);
+                    if(count>=task.getCount())
                         continue;
                 }
                 Task instance = new Task();

@@ -132,6 +132,7 @@
 			buildElById(quadrant4.value[0]);
 		});
 		//#endif
+		state.show = false;
 	});
 
 	function getData() {

@@ -451,6 +451,17 @@
 		];
 
 		getData();
+		nextTick(()=>{
+			popup.value.close();
+			detailPopup.value.close();
+			priorityPopup.value.close();
+			frequencyPopup.value.close();
+			defRulePopup.value.close();
+			detailPopup.value.close();
+			priorityPopup.value.close();
+			customPopup.value.close();
+			editModePopup.value.close();
+		});
 	});
 
 	function openToEdit() {

@@ -30,8 +30,8 @@ export function RemoveLabel(labelId,successCallback){
 	Delete(`/Api/Index/RemoveLabel/${labelId}`,auth,successCallback);
 }
 
-export function HideOrShowLabel(labelId,display,successCallback){
-	Patch(`/Api/Index/HideOrShowLabel/${labelId}?display=${display}`,auth,{},successCallback);
+export function HideOrShowLabel(userId,labelId,display,successCallback){
+	Patch(`/Api/Index/HideOrShowLabel/${userId}/${labelId}?display=${display}`,auth,{},successCallback);
 }
 
 export function FinishTaskOrNot(taskId,state,successCallback){

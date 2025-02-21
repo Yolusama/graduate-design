@@ -514,19 +514,28 @@
 
 
 	function logout(cancelAccount) {
-		Logout(cancelAccount, state.user.userId, state.user.email, response => {
-			const res1 = response.data;
-			if (!res1.succeeded) {
-				uni.showToast({
-					title: res.message,
-					icon: "none"
+		uni.showModal({
+			cancelText:"取消",
+			confirmText:"确定",
+			title:"注销",
+			content:"注销后将清除所有用户数据",
+			success:(res)=>{
+				if(res.cancel)return;
+				Logout(cancelAccount, state.user.userId, state.user.email, response => {
+					const res = response.data;
+					if (!res.succeeded) {
+						uni.showToast({
+							title: res.message,
+							icon: "none"
+						});
+						return;
+					}
+					uni.clearStorage();
+					uni.reLaunch({
+						url: "/pages/login"
+					});
 				});
-				return;
 			}
-			uni.clearStorage();
-			uni.reLaunch({
-				url: "/pages/login"
-			});
 		});
 	}
 

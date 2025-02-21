@@ -153,8 +153,12 @@
 			success: res => {
 				state.userId = res.data.uid;
 				getData();
+				state.show = {
+					detail:false,
+					editor:false
+				};
 			}
-		})
+		});
 	});
 
 	function seeDetail(groupName, index) {

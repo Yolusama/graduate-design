@@ -170,7 +170,7 @@
 			<view class="label">
 				<view style="width: 90%">
 					<uni-easyinput placeholder="新标签" v-model="state.labelOpt.labelName"
-						@change="createNewLabel"></uni-easyinput>
+						@change.once="createNewLabel"></uni-easyinput>
 				</view>
 				<uni-data-checkbox v-model="state.labelOpt.selected" :localdata="state.labelOpt.data" mode="tag"
 					@change="changeTaskLabels" multiple></uni-data-checkbox>
@@ -369,8 +369,10 @@
 		if (state.hasLabelSetter) {
 			if (!state.isTaskUpdate && label.value != undefined) {
 				if (label.value.isList) {
-					state.task.list = label.value;
-					state.listOpt.selected = label.value.labelId;
+					if (!isBaseLabel(label.value.labelId)) {
+						state.task.list = label.value;
+						state.listOpt.selected = label.value.labelId;
+					}
 					state.task.labels = [];
 				} else {
 					state.labelOpt.selected.push(label.value.labelId);
@@ -394,7 +396,7 @@
 	});
 
 	function beforeEditorClose(e) {
-		if (e.show) 
+		if (e.show)
 			return;
 		emits("close");
 	}
@@ -486,7 +488,7 @@
 	}
 
 	function createNewLabel(e) {
-		if(e.trim().length==0)return;
+		if (e.trim().length == 0) return;
 		const user = uni.getStorageSync("user");
 		CreateOrGetLabel(state.labelOpt.labelName, user.uid, response => {
 			const res = response.data;
@@ -498,22 +500,22 @@
 				return;
 			}
 			const data = res.data;
-			const index = userLabels.value.filter(l => l.labelId == data.labelId);
+			const index = userLabels.value.findIndex(l => l.labelId == data.labelId);
 			if (index < 0) {
-				state.labelOpt.data.push(data);
-				state.labelOpt.selected.push(state.labelOpt.data.length - 1);
+				loading("", () => {
+					state.labelOpt.labelName = "";
+						userLabels.value.push(data);
+						state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
+						state.labelOpt.selected.push(data.labelId);
+						state.task.labels.push(data);
+						emits("createdLabel", {
+							data: userLabels.value,
+							isList: false
+						});
+				}, 750);
 			}
-			loading("", () => {
-				state.labelOpt.labelName = "";
-				userLabels.value.push(data);
-				state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
-				state.labelOpt.selected.push(data.labelId);
-				state.task.labels.push(data);
-				emits("createdLabel", {
-					data: userLabels.value,
-					isList: false
-				});
-			}, 750);
+			else
+			    state.labelOpt.labelName = "";
 		});
 	}
 
@@ -737,7 +739,7 @@
 
 	function addList() {
 		uni.showModal({
-			title:"添加清单",
+			title: "添加清单",
 			cancelText: "取消",
 			confirmText: "确定",
 			editable: true,

@@ -88,7 +88,7 @@ import { delayToRun } from '../module/Common';
 	
 	function showLabel(index,isList){
 		const label = isList?state.lists[index]:state.labels[index];
-		HideOrShowLabel(label.labelId,true,response=>{
+		HideOrShowLabel(state.userId,label.labelId,true,response=>{
 			const res = response.data;
 			if(!res.succeeded){
 				uni.showToast({

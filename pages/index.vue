@@ -93,7 +93,7 @@
 							<text style="font-size: 13px;color:gray">{{state.data['habit'].length}}</text>
 						</view>
 					</template>
-					<scroll-view style="max-height: 40vh;" scroll-y>
+					<scroll-view style="max-height: 42vh;" scroll-y>
 						<view v-for="(habit,index) in state.data['habit']" class="habit" :key="index">
 							<uni-swipe-action>
 								<uni-swipe-action-item :disabled="habit.finished">
@@ -163,7 +163,7 @@
 							<text style="font-size: 13px;color:gray">{{state.data['task'].length}}</text>
 						</view>
 					</template>
-					<scroll-view style="max-height: 30vh;" scroll-y>
+					<scroll-view style="max-height: 42vh;" scroll-y>
 						<uni-swipe-action v-for="(task,index) in state.data['task']" :key="index">
 							<uni-swipe-action-item>
 								<template v-slot:left>
@@ -393,6 +393,12 @@
 			finishAudio = new ValueText(0, "无");
 			uni.setStorageSync(CurrentFinsihAudioKey, finishAudio);
 		}
+		
+		state.show = {
+			habit:false,
+			task:false,
+			label:false
+		};
 	});
 
 	function checkYesterdayTask() {
@@ -509,7 +515,19 @@
 		if (e.labelSet) {
 			state.labels = e.labels;
 		}
-		if (e.list != null && state.currentLabel.isList) {
+		if(isBaseDayLabel(state.currentLabel.labelId))
+		{
+			const beginTime = item.beginTime;
+			const endTime = item.endTime;
+			const time = onlyDate(new Date());
+			if(state.currentLabel.labelId==2)
+			    time.setDate(time.getDate()+1);
+			else if(state.currentLabel.labelId == 3)
+			    time.setDate(time.getDate()-1);
+			if(dateEquals(beginTime,time)||dateEquals(endTime,time))
+			   state.data["task"].push(item);
+		}
+		else if (e.list != null && state.currentLabel.isList) {
 			if (e.list.labelId == state.currentLabel.labelId)
 				state.data["task"].push(item);
 		} else if (!state.currentLabel.isList) {
@@ -630,7 +648,6 @@
 					habit.beginDate = new Date(habit.beginDate);
 				}
 			}
-
 		});
 	}
 
@@ -660,7 +677,7 @@
 
 	function hideOrShowLabel(index, isList, display) {
 		const label = isList ? state.lists[index] : state.labels[index];
-		HideOrShowLabel(label.labelId, display, response => {
+		HideOrShowLabel(state.user.id,label.labelId, display, response => {
 			const res = response.data;
 			if (!res.succeeded) {
 				uni.showToast({

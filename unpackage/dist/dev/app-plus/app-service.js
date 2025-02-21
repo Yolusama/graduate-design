@@ -1827,11 +1827,11 @@ if (uni.restoreGlobal) {
       let result = null;
       try {
         let callbackMessage = null;
-        const res2 = await rule.validateFunction(rule, value, allData || data, (message) => {
+        const res = await rule.validateFunction(rule, value, allData || data, (message) => {
           callbackMessage = message;
         });
-        if (callbackMessage || typeof res2 === "string" && res2 || res2 === false) {
-          result = this._getMessage(rule, callbackMessage || res2, vt2);
+        if (callbackMessage || typeof res === "string" && res || res === false) {
+          result = this._getMessage(rule, callbackMessage || res, vt2);
         }
       } catch (e2) {
         result = this._getMessage(rule, e2.message, vt2);
@@ -2869,7 +2869,7 @@ if (uni.restoreGlobal) {
         nvueAnimation.transition(ref, {
           styles,
           ...config
-        }, (res2) => {
+        }, (res) => {
           resolve();
         });
       });
@@ -3325,11 +3325,11 @@ if (uni.restoreGlobal) {
     },
     computed: {
       getStyles() {
-        let res2 = { backgroundColor: this.bg };
+        let res = { backgroundColor: this.bg };
         if (this.borderRadius || "0") {
-          res2 = Object.assign(res2, { borderRadius: this.borderRadius });
+          res = Object.assign(res, { borderRadius: this.borderRadius });
         }
-        return res2;
+        return res;
       },
       isDesktop() {
         return this.popupWidth >= 500 && this.popupHeight >= 500;
@@ -3664,7 +3664,7 @@ if (uni.restoreGlobal) {
   const baseUrl = "http://192.168.43.71:5225";
   const request = new GlobalRequest(baseUrl, timeout);
   const requestBaseUrl = baseUrl;
-  const defaultFailBack = (res2) => formatAppLog("log", "at module/Request.js:68", res2);
+  const defaultFailBack = (res) => formatAppLog("log", "at module/Request.js:68", res);
   function imgSrc(source) {
     return `${baseUrl}/img/${source}`;
   }
@@ -3736,7 +3736,7 @@ if (uni.restoreGlobal) {
     uni.setStorage({
       key: ModalDataKey,
       data: options,
-      success: (res2) => {
+      success: (res) => {
         uni.navigateTo({
           url: route,
           animationType: "none"
@@ -3958,37 +3958,37 @@ if (uni.restoreGlobal) {
   function getRuleText(task) {
     if (task.period == null || task.period == 0)
       return "不重复";
-    var res2 = "";
+    var res = "";
     if (task.custom == null) {
       const period = task.period;
       const innerStr = period == 1 ? "" : period;
       switch (task.periodUnit) {
         case 1:
-          res2 += `每${innerStr}天`;
+          res += `每${innerStr}天`;
           break;
         case 2:
-          res2 += `每${innerStr}周`;
+          res += `每${innerStr}周`;
           break;
         case 3:
-          res2 += `每${innerStr}个月`;
+          res += `每${innerStr}个月`;
           break;
         case 4:
-          res2 += `每${innerStr}年`;
+          res += `每${innerStr}年`;
           break;
       }
     } else {
       for (let pro in task.custom) {
-        res2 += `${weekDaySign(task.custom[pro])},`;
+        res += `${weekDaySign(task.custom[pro])},`;
       }
-      res2 = res2.substring(0, res2.length - 1);
+      res = res.substring(0, res.length - 1);
     }
     if (task.count != null && task.count > 0) {
-      res2 += `;重复${task.count}次`;
+      res += `;重复${task.count}次`;
     }
     if (task.deadline != null) {
-      res2 += `;截止到${getDateStr(task.deadline)}`;
+      res += `;截止到${getDateStr(task.deadline)}`;
     }
-    return res2;
+    return res;
   }
   const TaskState = {
     finished: 1,
@@ -3997,12 +3997,12 @@ if (uni.restoreGlobal) {
     abondoned: 4
   };
   function onlyDate(date) {
-    const res2 = new Date(date);
-    res2.setHours(0);
-    res2.setMinutes(0);
-    res2.setSeconds(0);
-    res2.setMilliseconds(0);
-    return res2;
+    const res = new Date(date);
+    res.setHours(0);
+    res.setMinutes(0);
+    res.setSeconds(0);
+    res.setMilliseconds(0);
+    return res;
   }
   function dateGE(date1, date2) {
     return onlyDate(date1).getTime() >= onlyDate(date2).getTime();
@@ -4030,8 +4030,8 @@ if (uni.restoreGlobal) {
   const ADayMillseconds = 1e3 * 60 * 60 * 24;
   function buildElById(ref) {
     const id = "#" + ref.attributes.id;
-    uni.createSelectorQuery().select(id).boundingClientRect().exec((res2) => {
-      const bound = res2[0];
+    uni.createSelectorQuery().select(id).boundingClientRect().exec((res) => {
+      const bound = res[0];
       const el = {
         offsetLeft: bound.left,
         offsetTop: bound.top,
@@ -4051,7 +4051,7 @@ if (uni.restoreGlobal) {
       confirmText: "关闭",
       cancelText: "完成",
       cancelColor: "rgb(0,75,235)",
-      success: (res2) => finishCallback(reminder, res2)
+      success: (res) => finishCallback(reminder, res)
     });
   }
   function notifyHabitWithModal(reminder) {
@@ -4105,6 +4105,9 @@ if (uni.restoreGlobal) {
   }
   function isStateLabel(labelId) {
     return [5, 6, 7, 8].findIndex((l2) => l2 == labelId) >= 0;
+  }
+  function isSysLabel(labelId) {
+    return [1, 2, 3, 4, 5, 6, 7, 8].findIndex((l2) => l2 == labelId) >= 0;
   }
   const AWeek = 7;
   const CurrentAudioKey = "current-notify-audio";
@@ -4180,16 +4183,16 @@ if (uni.restoreGlobal) {
           url: "/pages/index"
         });
       }
-      function afterLogin(res2) {
-        if (!res2.data.succeeded) {
+      function afterLogin(res) {
+        if (!res.data.succeeded) {
           uni.showToast({
-            title: res2.data.message,
+            title: res.data.message,
             icon: "none"
           });
           return;
         }
-        const message = res2.data.message;
-        const data = res2.data.data;
+        const message = res.data.message;
+        const data = res.data.data;
         const toStore = {};
         toStore.uid = data.id;
         toStore.token = data.token;
@@ -4212,10 +4215,10 @@ if (uni.restoreGlobal) {
       function bindEmail() {
         loading("绑定邮箱中...", () => {
           BindEmail(state.email, state.account, state.checkCode, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
@@ -4232,8 +4235,8 @@ if (uni.restoreGlobal) {
             state.hasLogan = false;
             return;
           }
-          VerifyToken(data.uid, data.token, (res2) => {
-            const data2 = res2.data;
+          VerifyToken(data.uid, data.token, (res) => {
+            const data2 = res.data;
             if (data2.succeeded) {
               if (data2.data) {
                 uni.switchTab({
@@ -4273,9 +4276,9 @@ if (uni.restoreGlobal) {
         }, 1e3);
       }
       function register() {
-        Register(state.email, state.password, state.checkCode, (res2) => {
+        Register(state.email, state.password, state.checkCode, (res) => {
           uni.showToast({
-            title: res2.data.message,
+            title: res.data.message,
             icon: "none"
           });
           state.isReg = false;
@@ -4891,9 +4894,9 @@ if (uni.restoreGlobal) {
       pageApi(api) {
         let callback = {
           url: this.to,
-          success: (res2) => {
+          success: (res) => {
             this.$emit("click", {
-              data: res2
+              data: res
             });
           },
           fail: (err) => {
@@ -6089,8 +6092,8 @@ if (uni.restoreGlobal) {
   function RemoveLabel(labelId, successCallback) {
     Delete(`/Api/Index/RemoveLabel/${labelId}`, auth, successCallback);
   }
-  function HideOrShowLabel(labelId, display, successCallback) {
-    Patch(`/Api/Index/HideOrShowLabel/${labelId}?display=${display}`, auth, {}, successCallback);
+  function HideOrShowLabel(userId, labelId, display, successCallback) {
+    Patch(`/Api/Index/HideOrShowLabel/${userId}/${labelId}?display=${display}`, auth, {}, successCallback);
   }
   function FinishTaskOrNot(taskId, state, successCallback) {
     FinishOrNot$1(taskId, state, successCallback);
@@ -6269,15 +6272,20 @@ if (uni.restoreGlobal) {
           finishAudio = new ValueText(0, "无");
           uni.setStorageSync(CurrentFinsihAudioKey, finishAudio);
         }
+        state.show = {
+          habit: false,
+          task: false,
+          label: false
+        };
       });
       function checkYesterdayTask() {
         const today2 = /* @__PURE__ */ new Date();
         const yesterday = onlyDate(new Date(today2.setDate(today2.getDate() - 1)));
         CheckYesterdayTask(state.user.id, yesterday, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -6288,10 +6296,10 @@ if (uni.restoreGlobal) {
         const yesterday = onlyDate(/* @__PURE__ */ new Date());
         yesterday.setDate(yesterday.getDate() - 1);
         CheckContinuousDays(state.user.id, yesterday, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -6305,29 +6313,29 @@ if (uni.restoreGlobal) {
         state.task = task;
         state.task.index = index;
         GetTaskReminders(task.instanceId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          task.reminderInfoModels = res2.data;
+          task.reminderInfoModels = res.data;
           for (let reminder of task.reminderInfoModels)
             reminder.timing = new Date(reminder.timing);
         });
         GetTaskLabels(state.user.id, task.instanceId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.task.labels = res2.data.labels;
-          state.task.list = res2.data.list;
+          state.task.labels = res.data.labels;
+          state.task.list = res.data.list;
           openToEdit();
         });
       }
@@ -6376,7 +6384,17 @@ if (uni.restoreGlobal) {
         if (e2.labelSet) {
           state.labels = e2.labels;
         }
-        if (e2.list != null && state.currentLabel.isList) {
+        if (isBaseDayLabel(state.currentLabel.labelId)) {
+          const beginTime = item.beginTime;
+          const endTime = item.endTime;
+          const time = onlyDate(/* @__PURE__ */ new Date());
+          if (state.currentLabel.labelId == 2)
+            time.setDate(time.getDate() + 1);
+          else if (state.currentLabel.labelId == 3)
+            time.setDate(time.getDate() - 1);
+          if (dateEquals(beginTime, time) || dateEquals(endTime, time))
+            state.data["task"].push(item);
+        } else if (e2.list != null && state.currentLabel.isList) {
           if (e2.list.labelId == state.currentLabel.labelId)
             state.data["task"].push(item);
         } else if (!state.currentLabel.isList) {
@@ -6417,16 +6435,16 @@ if (uni.restoreGlobal) {
       function seeHabitDetail(index) {
         const habit = state.data["habit"][index];
         GetHabitReminders(habit.habitId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           habit.oldGroupId = habit.groupId;
-          habit.reminderModels = res2.data;
+          habit.reminderModels = res.data;
           for (let reminder of habit.reminderModels)
             reminder.toDelete = false;
           GetHabitRecords(habit.habitId, (response1) => {
@@ -6470,15 +6488,15 @@ if (uni.restoreGlobal) {
         else if (lableId == 3)
           time.setDate(time.getDate() - 1);
         GetData(state.user.id, lableId, time.getTime(), (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.data = res2.data;
+          state.data = res.data;
           for (let task of state.data["task"]) {
             task.beginTime = new Date(task.beginTime);
             task.endTime = new Date(task.endTime);
@@ -6513,11 +6531,11 @@ if (uni.restoreGlobal) {
       }
       function hideOrShowLabel(index, isList, display) {
         const label = isList ? state.lists[index] : state.labels[index];
-        HideOrShowLabel(label.labelId, display, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+        HideOrShowLabel(state.user.id, label.labelId, display, (response) => {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -6534,10 +6552,10 @@ if (uni.restoreGlobal) {
       function removeLabel(index, isList) {
         const label = isList ? state.lists[index] : state.labels[index];
         RemoveLabel(label.labelId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -6561,16 +6579,16 @@ if (uni.restoreGlobal) {
       }
       function getLabels() {
         GetLabels(state.user.id, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.lists = res2.data.filter((l2) => l2.isList);
-          state.labels = res2.data.filter((l2) => !l2.isList);
+          state.lists = res.data.filter((l2) => l2.isList);
+          state.labels = res.data.filter((l2) => !l2.isList);
         });
       }
       function createdLabel(e2) {
@@ -6582,7 +6600,7 @@ if (uni.restoreGlobal) {
       function getTaskTimeStr(task) {
         const beginTime = task.beginTime;
         const endTime = task.endTime;
-        var res2;
+        var res;
         const time = onlyDate(/* @__PURE__ */ new Date());
         if (state.currentLabel.id == 2)
           time.setDate(time.getDate() + 1);
@@ -6591,20 +6609,20 @@ if (uni.restoreGlobal) {
         if (state.currentLabel.labelId == IdOfBin)
           return `<text style="color:rgb(0,75,235)">${getDateStr(endTime)}</text>`;
         if (dateEquals(beginTime, endTime) && dateEquals(beginTime, time))
-          res2 = `<text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text><text style="color:red">${timeWithoutSeconds(endTime)}</text>`;
+          res = `<text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text><text style="color:red">${timeWithoutSeconds(endTime)}</text>`;
         else if (dateEquals(beginTime, time) && !dateEquals(endTime, time))
-          res2 = `<text style="text-align:center">开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
+          res = `<text style="text-align:center">开始</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(beginTime)}</text>`;
         else if (!dateEquals(beginTime, time) && dateEquals(endTime, time))
-          res2 = `<text style="text-align:center">结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
+          res = `<text style="text-align:center">结束</text><text style="color:rgb(0,75,235)">${timeWithoutSeconds(endTime)}</text>`;
         else if (onlyDate(endTime).getTime() < time.getTime()) {
           if (!dateEquals(beginTime, endTime))
-            res2 = `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text>
+            res = `<text style="color:rgb(0,75,235)">${getDateStr(beginTime)}</text>
 				     <text style="color:red">${getDateStr(endTime)}</text>`;
           else
-            res2 = `<text style="font-size:15px">${getDateStr(endTime)}</text>`;
+            res = `<text style="font-size:15px">${getDateStr(endTime)}</text>`;
         } else
-          res2 = "<text>全天</text>";
-        return res2;
+          res = "<text>全天</text>";
+        return res;
       }
       function finishTaskOrNot(index) {
         const task = state.data["task"][index];
@@ -6614,10 +6632,10 @@ if (uni.restoreGlobal) {
         else
           taskState = TaskState.finished;
         FinishTaskOrNot(task.instanceId, taskState, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -6639,17 +6657,17 @@ if (uni.restoreGlobal) {
           habitId: habit.habitId
         };
         FinishOrNot(record, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           habit.finished = true;
           habit.finishTime = record.finishTime;
-          recordFinish(habit, res2.data);
+          recordFinish(habit, res.data);
         });
       }
       function unfinishHabit(habit) {
@@ -6665,17 +6683,17 @@ if (uni.restoreGlobal) {
           habitId: habit.habitId
         };
         FinishOrNot(record, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           habit.finished = false;
           habit.finishTime = record.finishTime;
-          recordFinish(habit, res2.data);
+          recordFinish(habit, res.data);
         });
       }
       function recordFinish(habit, data) {
@@ -6706,10 +6724,10 @@ if (uni.restoreGlobal) {
       function removeOrRecoverTask(index, isRemove) {
         const task = state.data["task"][index];
         RemoveOrRecoverTask(task.instanceId, isRemove, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -6726,10 +6744,10 @@ if (uni.restoreGlobal) {
       function removeOrRecoverHabit(index, isRemove) {
         const habit = state.data["habit"][index];
         RemoveOrRecoverHabit(habit.habitId, isRemove, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -6743,7 +6761,7 @@ if (uni.restoreGlobal) {
       function recoverHabit(index) {
         removeOrRecoverHabit(index, false);
       }
-      const __returned__ = { pattern: pattern2, fabPosition, today, state, indexTaskEditor, indexHabitDetail, indexLabelEditor, labelDrawer, currentLabel, todayLabel, checkYesterdayTask, checkContinuousDays, openTaskEditor, showMask, openToEdit, openLabelEditor, labelCreated, labelUpdated, taskCreated, taskUpdated, taskRemoved, seeHabitDetail, taskEditorClose, habitDetailClose, labelEditorClose, getData, habitUpdated, habitRemoved, habitFinished, hideOrShowLabel, removeLabel, getLabels, createdLabel, getTaskTimeStr, finishTaskOrNot, finishHabit, unfinishHabit, recordFinish, switchContent, seeHiddenLabels, goToSelfInfo, removeOrRecoverTask, removeTask, recoverTask, removeOrRecoverHabit, removeHabit, recoverHabit, nextTick: vue.nextTick, onMounted: vue.onMounted, reactive: vue.reactive, ref: vue.ref, get CheckYesterdayTask() {
+      const __returned__ = { pattern: pattern2, fabPosition, today, state, indexTaskEditor, indexHabitDetail, indexLabelEditor, labelDrawer, currentLabel, todayLabel, checkYesterdayTask, checkContinuousDays, openTaskEditor, showMask, openToEdit, openLabelEditor, labelCreated, labelUpdated, taskCreated, taskUpdated, taskRemoved, seeHabitDetail, taskEditorClose, habitDetailClose, labelEditorClose, getData, habitUpdated, habitRemoved, habitFinished, hideOrShowLabel, removeLabel, getLabels, createdLabel, getTaskTimeStr, finishTaskOrNot, finishHabit, unfinishHabit, recordFinish, switchContent, seeHiddenLabels, goToSelfInfo, removeOrRecoverTask, removeTask, recoverTask, removeOrRecoverHabit, removeHabit, recoverHabit, nextTick: vue.nextTick, reactive: vue.reactive, ref: vue.ref, get CheckYesterdayTask() {
         return CheckYesterdayTask;
       }, get FinishTaskOrNot() {
         return FinishTaskOrNot;
@@ -6799,6 +6817,8 @@ if (uni.restoreGlobal) {
         return ValueText;
       }, get CurrentFinsihAudioKey() {
         return CurrentFinsihAudioKey;
+      }, get isSysLabel() {
+        return isSysLabel;
       }, get imgSrc() {
         return imgSrc;
       }, get FinishOrNot() {
@@ -7113,7 +7133,7 @@ if (uni.restoreGlobal) {
               ]),
               default: vue.withCtx(() => [
                 vue.createElementVNode("scroll-view", {
-                  style: { "max-height": "40vh" },
+                  style: { "max-height": "42vh" },
                   "scroll-y": ""
                 }, [
                   (vue.openBlock(true), vue.createElementBlock(
@@ -7280,7 +7300,7 @@ if (uni.restoreGlobal) {
               ]),
               default: vue.withCtx(() => [
                 vue.createElementVNode("scroll-view", {
-                  style: { "max-height": "30vh" },
+                  style: { "max-height": "42vh" },
                   "scroll-y": ""
                 }, [
                   (vue.openBlock(true), vue.createElementBlock(
@@ -7522,7 +7542,7 @@ if (uni.restoreGlobal) {
         onCreatedLabel: $setup.createdLabel,
         userLabels: $setup.state.labels,
         label: $setup.state.currentLabel,
-        userLists: $setup.state.lists.filter((l2) => l2.userId != null)
+        userLists: $setup.state.lists.filter((l2) => !$setup.isSysLabel(l2.labelId))
       }, null, 8, ["task", "isTaskUpdate", "userLabels", "label", "userLists"])) : vue.createCommentVNode("v-if", true),
       $setup.state.show.habit ? (vue.openBlock(), vue.createBlock(_component_habit_detail, {
         key: 2,
@@ -7657,6 +7677,17 @@ if (uni.restoreGlobal) {
           new ValueText(2, "此任务及往后的任务")
         ];
         getData();
+        vue.nextTick(() => {
+          popup.value.close();
+          detailPopup.value.close();
+          priorityPopup.value.close();
+          frequencyPopup.value.close();
+          defRulePopup.value.close();
+          detailPopup.value.close();
+          priorityPopup.value.close();
+          customPopup.value.close();
+          editModePopup2.value.close();
+        });
       });
       function openToEdit() {
         popup.value.open();
@@ -7746,10 +7777,10 @@ if (uni.restoreGlobal) {
         state.task.changed = () => false;
         const task = taskPageOpt.value.data[index];
         GetTaskReminders(task.instanceId, (response) => {
-          const res2 = response.data;
-          if (res2.succeeded) {
+          const res = response.data;
+          if (res.succeeded) {
             state.selectedTask = task;
-            const notifications = res2.data;
+            const notifications = res.data;
             for (let datum of notifications)
               datum.timing = new Date(datum.timing);
             state.selectedTask.reminderInfoModels = notifications;
@@ -7765,7 +7796,7 @@ if (uni.restoreGlobal) {
             detailPopup.value.open();
           } else {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
           }
@@ -7781,16 +7812,16 @@ if (uni.restoreGlobal) {
           if (!state.canCreateTask)
             return;
           CreateTask(state.task, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
             } else {
               const expire = 500;
               uni.showLoading({
-                title: res2.message,
+                title: res.message,
                 duration: expire
               });
               delayToRun(() => {
@@ -7799,8 +7830,8 @@ if (uni.restoreGlobal) {
                 if (taskPageOpt.value.data.length < taskPageOpt.value.size) {
                   const task = {};
                   copy(state.task, task);
-                  task.taskId = res2.data;
-                  task.instanceId = res2.data;
+                  task.taskId = res.data;
+                  task.instanceId = res.data;
                   taskPageOpt.value.data.push(task);
                   taskPageOpt.value.total++;
                 }
@@ -7852,14 +7883,14 @@ if (uni.restoreGlobal) {
             state.mode = 0;
           instance.taskBeginTime = state.selectedTask.beginTime;
           AddReminder(instance, state.mode, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
             } else {
-              instance.reminderId = res2.data;
+              instance.reminderId = res.data;
               func();
               uni.removeStorageSync(TaskReminderKey);
             }
@@ -7928,16 +7959,16 @@ if (uni.restoreGlobal) {
         GetTasks$1(taskPageOpt.value, state.task.userId, state.selectedDay, getDataCallback);
       }
       function getDataCallback(response) {
-        const res2 = response.data;
-        if (!res2.succeeded) {
+        const res = response.data;
+        if (!res.succeeded) {
           uni.showToast({
-            title: res2.message,
+            title: res.message,
             icon: "none"
           });
         } else {
           loading("", () => {
-            taskPageOpt.value.data = res2.data.data;
-            taskPageOpt.value.total = res2.data.total;
+            taskPageOpt.value.data = res.data.data;
+            taskPageOpt.value.total = res.data.total;
             for (let task of taskPageOpt.value.data) {
               task.beginTime = new Date(task.beginTime);
               task.endTime = new Date(task.endTime);
@@ -7951,10 +7982,10 @@ if (uni.restoreGlobal) {
       }
       function updateTask() {
         FreshReminderTiming(state.selectedTask.instanceId, state.task.beginTime, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -7968,7 +7999,7 @@ if (uni.restoreGlobal) {
             const res1 = response1.data;
             if (!res1.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
             } else {
@@ -7997,10 +8028,10 @@ if (uni.restoreGlobal) {
           if (state.selectedTask.taskId == state.selectedTask.instanceId && state.mode == 1)
             state.mode = 0;
           RemoveReminder(reminder, state.mode, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
             } else {
@@ -8013,10 +8044,10 @@ if (uni.restoreGlobal) {
       function openEditOrRemoveTaskOrCancelTask() {
         if (state.isTaskCancel) {
           CancelTask(state.selectedTask, state.mode, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
             } else {
@@ -8030,10 +8061,10 @@ if (uni.restoreGlobal) {
         }
         if (state.isTaskRemove) {
           RemoveTask(state.selectedTask, state.mode, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
             } else {
@@ -8064,8 +8095,8 @@ if (uni.restoreGlobal) {
               content: "是否移动回收站",
               confirmColor: "确定",
               cancelText: "取消",
-              success: (res2) => {
-                if (res2.cancel)
+              success: (res) => {
+                if (res.cancel)
                   return;
                 openEditOrRemoveTaskOrCancelTask();
               }
@@ -8076,8 +8107,8 @@ if (uni.restoreGlobal) {
               content: "是否取消",
               confirmColor: "是",
               cancelText: "否",
-              success: (res2) => {
-                if (res2.cancel)
+              success: (res) => {
+                if (res.cancel)
                   return;
                 openEditOrRemoveTaskOrCancelTask();
               }
@@ -8103,16 +8134,16 @@ if (uni.restoreGlobal) {
       function beginEndTimeStr(task) {
         const beginTime = task.beginTime;
         const endTime = task.endTime;
-        var res2;
+        var res;
         if (dateEquals(beginTime, endTime))
-          res2 = `<text>${timeWithoutSeconds(beginTime)}</text></text>${timeWithoutSeconds(endTime)}</text>`;
+          res = `<text>${timeWithoutSeconds(beginTime)}</text></text>${timeWithoutSeconds(endTime)}</text>`;
         else if (dateEquals(beginTime, state.selectedDay) && !dateEquals(beginTime, endTime))
-          res2 = `<text style="color:rgb(0,75,225)">开始</text></text>${timeWithoutSeconds(beginTime)}</text>`;
+          res = `<text style="color:rgb(0,75,225)">开始</text></text>${timeWithoutSeconds(beginTime)}</text>`;
         else if (dateEquals(endTime, state.selectedDay) && !dateEquals(beginTime, endTime))
-          res2 = `<text text style="color:black">结束</text></text>${timeWithoutSeconds(endTime)}</text>`;
+          res = `<text text style="color:black">结束</text></text>${timeWithoutSeconds(endTime)}</text>`;
         else
-          res2 = `<text text style="color:black">全天</text>`;
-        return res2;
+          res = `<text text style="color:black">全天</text>`;
+        return res;
       }
       function changeRepeatRule() {
         if (state.selectedTask.period == state.task.period && state.selectedTask.periodUnit == state.task.periodUnit && state.selectedTask.deadline == state.task.deadline && state.selectedTask.count == state.task.count && state.selectedTask.custom == state.task.custom)
@@ -8127,10 +8158,10 @@ if (uni.restoreGlobal) {
           custom: state.task.custom,
           taskBeginTime: state.selectedTask.beginTime
         }, state.mode, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
           } else {
@@ -8153,10 +8184,10 @@ if (uni.restoreGlobal) {
         else if (task.state == TaskState.finished)
           state2 = TaskState.unfinished;
         FinishOrNot$1(task.instanceId, state2, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -9096,9 +9127,13 @@ if (uni.restoreGlobal) {
       onShow(() => {
         uni.getStorage({
           key: "user",
-          success: (res2) => {
-            state.userId = res2.data.uid;
+          success: (res) => {
+            state.userId = res.data.uid;
             getData();
+            state.show = {
+              detail: false,
+              editor: false
+            };
           }
         });
       });
@@ -9110,31 +9145,31 @@ if (uni.restoreGlobal) {
         state.selectedHabit.oldGroupId = state.selectedHabit.groupId;
         state.thumbShow = imgSrc(state.selectedHabit.thumb);
         GetHabitReminders(state.selectedHabit.habitId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          const reminders = res2.data;
+          const reminders = res.data;
           for (let i2 = 0; i2 < reminders.length; i2++)
             reminders[i2].toDelete = false;
           state.selectedHabit.reminderModels = reminders;
         });
         GetHabitRecords(state.selectedHabit.habitId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          for (let record of res2.data)
+          for (let record of res.data)
             record.day = new Date(record.day);
-          state.selectedHabit.records = res2.data;
+          state.selectedHabit.records = res.data;
           state.show.detail = true;
           vue.nextTick(() => {
             detail.value.open();
@@ -9179,17 +9214,17 @@ if (uni.restoreGlobal) {
       }
       function getData() {
         GetHabits(habitOption.value, state.userId, state.selectedDay.getTime(), (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           loading("", () => {
-            habitOption.value.data = res2.data.data;
-            habitOption.value.total = res2.data.total;
+            habitOption.value.data = res.data.data;
+            habitOption.value.total = res.data.total;
             dataReogrized();
           }, 550);
         });
@@ -9217,17 +9252,17 @@ if (uni.restoreGlobal) {
         if (!model.finished && !state.selectedHabit.finished)
           return;
         FinishOrNot(model, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           state.selectedHabit.finished = finished;
           state.selectedHabit.finishTime = model.finishTime;
-          recordFinish(res2.data);
+          recordFinish(res.data);
         });
       }
       function unfinishHabit(e2, habit) {
@@ -9238,16 +9273,16 @@ if (uni.restoreGlobal) {
           finished: false,
           day: onlyDate(state.selectedDay)
         }, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           habit.finished = false;
-          recordFinish(res2.data);
+          recordFinish(res.data);
         });
       }
       function recordFinish(data) {
@@ -9586,19 +9621,20 @@ if (uni.restoreGlobal) {
           buildElById(quadrant3.value[0]);
           buildElById(quadrant4.value[0]);
         });
+        state.show = false;
       });
       function getData() {
         GetTasks(state.userId, today.value, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           loading("", () => {
-            state.data = res2.data;
+            state.data = res.data;
             for (let pro in state.data) {
               for (let task of state.data[pro]) {
                 task.beginTime = new Date(task.beginTime);
@@ -9624,18 +9660,18 @@ if (uni.restoreGlobal) {
         const task = state.data[quadrantName][index];
         task.index = index;
         GetTaskReminders(task.instanceId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           state.selectedTask = task;
-          for (let reminder of res2.data)
+          for (let reminder of res.data)
             reminder.timing = new Date(reminder.timing);
-          state.selectedTask.reminderInfoModels = res2.data;
+          state.selectedTask.reminderInfoModels = res.data;
           state.show = true;
           vue.nextTick(() => {
             quadrantTaskEditor.value.open();
@@ -9693,10 +9729,10 @@ if (uni.restoreGlobal) {
         else if (task.state == TaskState.finished)
           state2 = TaskState.unfinished;
         FinishOrNot$1(task.instanceId, state2, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -9772,10 +9808,10 @@ if (uni.restoreGlobal) {
           priority: priority2,
           repeatable: task.repeatable
         }, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -10013,15 +10049,15 @@ if (uni.restoreGlobal) {
           options = null;
         vue.nextTick(() => {
           if (options != null)
-            options.success = (res2) => notifyHabitCallback({ habitId: options.habitId }, res2);
+            options.success = (res) => notifyHabitCallback({ habitId: options.habitId }, res);
           modal.value.show(options);
         });
       });
-      function notifyHabitCallback(reminder, res2) {
-        if (res2.cancel) {
+      function notifyHabitCallback(reminder, res) {
+        if (res.cancel) {
           return;
         }
-        if (res2.confirm) {
+        if (res.confirm) {
           const today = /* @__PURE__ */ new Date();
           FinishHabit({
             habitId: reminder.habitId,
@@ -10035,7 +10071,7 @@ if (uni.restoreGlobal) {
       function closing() {
         uni.removeStorage({
           key: ModalDataKey,
-          success: (res2) => {
+          success: (res) => {
             uni.navigateBack({
               delta: 1,
               animationType: "none"
@@ -10094,25 +10130,25 @@ if (uni.restoreGlobal) {
       });
       function getLabels() {
         GetHiddenLabels(state.userId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.labels = res2.data.filter((l2) => !l2.isList);
-          state.lists = res2.data.filter((l2) => l2.isList);
+          state.labels = res.data.filter((l2) => !l2.isList);
+          state.lists = res.data.filter((l2) => l2.isList);
         });
       }
       function showLabel(index, isList) {
         const label = isList ? state.lists[index] : state.labels[index];
-        HideOrShowLabel(label.labelId, true, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+        HideOrShowLabel(state.userId, label.labelId, true, (response) => {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -13782,8 +13818,8 @@ ${i3}
     },
     methods: {
       loadData() {
-        this.mixinDatacomGet().then((res2) => {
-          this.mixinDatacomResData = res2.result.data;
+        this.mixinDatacomGet().then((res) => {
+          this.mixinDatacomResData = res.result.data;
           if (this.mixinDatacomResData.length === 0) {
             this.isLocal = false;
             this.mixinDatacomErrorMessage = this.emptyText;
@@ -15394,8 +15430,8 @@ ${i3}
       vue.onMounted(() => {
         uni.getStorage({
           key: "user",
-          success: (res2) => {
-            const data = res2.data;
+          success: (res) => {
+            const data = res.data;
             state.user = {
               userId: data.uid
             };
@@ -15439,10 +15475,10 @@ ${i3}
           return;
         }
         ChangeNickname(state.user.nickname, state.user.userId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             state.user.nickname = user2.nickname;
@@ -15452,7 +15488,7 @@ ${i3}
           uni.setStorage({
             key: "user",
             data: user2,
-            success: (res3) => {
+            success: (res2) => {
               state.modify.nickname = false;
             }
           });
@@ -15460,10 +15496,10 @@ ${i3}
       }
       function changeEmail() {
         ChangeEmail(state.user.email, state.newEmail, state.checkCode, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -15474,7 +15510,7 @@ ${i3}
           uni.setStorage({
             key: "user",
             data: user2,
-            success: (res3) => {
+            success: (res2) => {
               loading("修改中...", () => emailPopup.value.close(), 750);
             }
           });
@@ -15508,10 +15544,10 @@ ${i3}
           checkCode: state.checkCode,
           email: state.user.email
         }, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -15530,24 +15566,24 @@ ${i3}
       function changeAvatar() {
         uni.chooseImage({
           count: 1,
-          success: (res2) => {
-            const filePath = res2.tempFilePaths[0];
+          success: (res) => {
+            const filePath = res.tempFilePaths[0];
             ChangeAvatar(state.user.avatar, filePath, state.user.userId, changeAvatarCallback);
           }
         });
       }
       function changeAvatarCallback(response) {
-        const res2 = JSON.parse(response.data);
-        if (!res2.succeeded) {
+        const res = JSON.parse(response.data);
+        if (!res.succeeded) {
           uni.showToast({
-            title: res2.message,
+            title: res.message,
             icon: "none"
           });
           return;
         }
-        state.user.avatar = res2.data;
+        state.user.avatar = res.data;
         const user2 = uni.getStorageSync("user");
-        user2.avatar = res2.data;
+        user2.avatar = res.data;
         uni.setStorage({
           key: "user",
           data: user2
@@ -15564,10 +15600,10 @@ ${i3}
             break;
         }
         GetCheckCode(email, length, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -15595,12 +15631,12 @@ ${i3}
           cancelText: "取消",
           placeholderText: "新昵称",
           editable: true,
-          success: (res2) => {
-            if (res2.cancel)
+          success: (res) => {
+            if (res.cancel)
               return;
-            if (res2.content == state.user.nickname)
+            if (res.content == state.user.nickname)
               return;
-            ChangeNickname(res2.content, state.user.userId, (response) => {
+            ChangeNickname(res.content, state.user.userId, (response) => {
               const res1 = response.data;
               if (!res1.succeeded) {
                 uni.showToast({
@@ -15610,7 +15646,7 @@ ${i3}
                 return;
               }
               const user2 = uni.getStorageSync("user");
-              state.user.nickname = res2.content;
+              state.user.nickname = res.content;
               user2.nickname = state.user.nickname;
               uni.setStorage({
                 key: "user",
@@ -15621,19 +15657,29 @@ ${i3}
         });
       }
       function logout(cancelAccount) {
-        Logout(cancelAccount, state.user.userId, state.user.email, (response) => {
-          const res1 = response.data;
-          if (!res1.succeeded) {
-            uni.showToast({
-              title: res.message,
-              icon: "none"
+        uni.showModal({
+          cancelText: "取消",
+          confirmText: "确定",
+          title: "注销",
+          content: "注销后将清除所有用户数据",
+          success: (res) => {
+            if (res.cancel)
+              return;
+            Logout(cancelAccount, state.user.userId, state.user.email, (response) => {
+              const res2 = response.data;
+              if (!res2.succeeded) {
+                uni.showToast({
+                  title: res2.message,
+                  icon: "none"
+                });
+                return;
+              }
+              uni.clearStorage();
+              uni.reLaunch({
+                url: "/pages/login"
+              });
             });
-            return;
           }
-          uni.clearStorage();
-          uni.reLaunch({
-            url: "/pages/login"
-          });
         });
       }
       function goBack() {
@@ -15684,29 +15730,29 @@ ${i3}
       }
       function getTaskCountOption() {
         GetFinishedTaskCount(state.user.userId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.finishCount = res2.data;
+          state.finishCount = res.data;
         });
         getFinishTaskCounts();
       }
       function getFinishTaskCounts() {
         GetFinishedTaskCounts(state.user.userId, state.taskCheck.mode, today.value, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.finishCounts = res2.data;
+          state.finishCounts = res.data;
         });
       }
       function getTaskCountDateStr(time, index) {
@@ -15734,18 +15780,18 @@ ${i3}
         state.pageLoading = true;
         delayToRun(() => {
           GetUserHabits(habitPageoption.value, state.user.userId, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
             }
-            habitPageoption.value.total = res2.data.total;
-            for (let habit of res2.data.data)
+            habitPageoption.value.total = res.data.total;
+            for (let habit of res.data.data)
               habit.beginDate = new Date(habit.beginDate);
-            habitPageoption.value.data = res2.data.data;
+            habitPageoption.value.data = res.data.data;
             state.pageLoading = false;
           });
         }, 350);
@@ -16546,17 +16592,17 @@ ${i3}
       onShow(() => {
         uni.getStorage({
           key: "user",
-          success: (res2) => {
-            state.user = res2.data;
+          success: (res) => {
+            state.user = res.data;
           }
         });
       });
       function logout() {
         Logout(false, state.user.uid, state.user.email, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -16582,10 +16628,10 @@ ${i3}
           token: state.user.token
         };
         Feedback(state.user.email, state.userFeedback, authorization, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -16594,7 +16640,7 @@ ${i3}
         });
       }
       function seeAppHelp() {
-        plus.runtime.openURL(appSrc.value, (res2) => formatAppLog("log", "at pages/setting.vue:158", res2));
+        plus.runtime.openURL(appSrc.value, (res) => formatAppLog("log", "at pages/setting.vue:158", res));
       }
       function beforePopupClose(e2) {
         if (e2.show)
@@ -16821,15 +16867,15 @@ ${i3}
       });
       function getCurrentVersion() {
         GetCurrentVersion(state.userId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.version = res2.data;
+          state.version = res.data;
         });
       }
       function showVersionDescription() {
@@ -16843,15 +16889,15 @@ ${i3}
       }
       function checkUpdate() {
         GetLatestVersion((response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          const version = res2.data;
+          const version = res.data;
           if (version.id == state.version.id) {
             uni.showToast({
               title: "已经是最新版本~",
@@ -16876,20 +16922,20 @@ ${i3}
           title: "版本更新"
         });
         const fileUrl = `${requestBaseUrl}/download/${newVersion.value.fileName}`;
-        const downloadTask = plus.downloader.createDownload(fileUrl, {}, (res2, status) => {
+        const downloadTask = plus.downloader.createDownload(fileUrl, {}, (res, status) => {
           if (status == 200) {
-            plus.runtime.install(res2.filename, { force: true }, (res1) => {
+            plus.runtime.install(res.filename, { force: true }, (res1) => {
               const version = {};
               copy(newVersion.value, version);
               resetCurrentVersion(version);
               uni.removeSavedFile({
-                filePath: res2.filename
+                filePath: res.filename
               });
               newVersion.value = null;
             });
           } else {
             uni.removeSavedFile({
-              filePath: res2.filename
+              filePath: res.filename
             });
             newVersion.value = null;
           }
@@ -16898,10 +16944,10 @@ ${i3}
       }
       function resetCurrentVersion(version) {
         ResetCurrentVersion(state.userId, version, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -17082,16 +17128,16 @@ ${i3}
       });
       function getNotifyAudios() {
         GetNotifyAudios((response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           const audios = [new ValueText(0, "无")];
-          const data = res2.data;
+          const data = res.data;
           let i2 = 1;
           for (let audio of data) {
             const toAdd = new ValueText(i2++, audio.substring(0, audio.indexOf(".")));
@@ -26859,16 +26905,16 @@ ${i3}
         }
         uni.navigateTo({
           url: path,
-          fail(res2) {
-            if (res2.errMsg.indexOf("tabbar") > -1) {
+          fail(res) {
+            if (res.errMsg.indexOf("tabbar") > -1) {
               uni.switchTab({
                 url: path,
-                fail(res22) {
-                  console.error(res22.errMsg);
+                fail(res2) {
+                  console.error(res2.errMsg);
                 }
               });
             } else {
-              console.error(res2.errMsg);
+              console.error(res.errMsg);
             }
           }
         });
@@ -26888,41 +26934,41 @@ ${i3}
     }
     GtPush.init({
       appid,
-      onError: (res2) => {
-        console.error(res2.error);
+      onError: (res) => {
+        console.error(res.error);
         const data = {
           type: "clientId",
           cid: "",
-          errMsg: res2.error
+          errMsg: res.error
         };
         uni.invokePushCallback(data);
       },
-      onClientId: (res2) => {
+      onClientId: (res) => {
         const data = {
           type: "clientId",
-          cid: res2.cid
+          cid: res.cid
         };
         uni.invokePushCallback(data);
       },
-      onlineState: (res2) => {
+      onlineState: (res) => {
         const data = {
           type: "lineState",
-          online: res2.online
+          online: res.online
         };
         uni.invokePushCallback(data);
       },
-      onPushMsg: (res2) => {
+      onPushMsg: (res) => {
         const data = {
           type: "pushMsg",
-          message: res2.message
+          message: res.message
         };
         uni.invokePushCallback(data);
       }
     });
-    uni.onPushMessage((res2) => {
-      if (res2.type === "receive" && res2.data && res2.data.force_notification) {
-        uni.createPushMessage(res2.data);
-        res2.stopped = true;
+    uni.onPushMessage((res) => {
+      if (res.type === "receive" && res.data && res.data.force_notification) {
+        uni.createPushMessage(res.data);
+        res.stopped = true;
       }
     });
   }
@@ -26963,7 +27009,7 @@ ${i3}
           const reminder = msg.payload;
           uni.reLaunch({
             url: reminder.route,
-            success: (res2) => {
+            success: (res) => {
               plus.push.remove(msg);
               playAudio();
               if (reminder.isTaskReminder)
@@ -27040,7 +27086,7 @@ ${i3}
               uni.setStorage({
                 key: notifyOpt.value.key_HR,
                 data: reminders,
-                success: (res2) => {
+                success: (res) => {
                   notifyHabit(isBackGround.value, reminder, playAudio);
                 }
               });
@@ -27049,15 +27095,15 @@ ${i3}
         }
       }
       function getRemindersCallback(response, reminders, isTaskReminder, isHabitReminder) {
-        const res2 = response.data;
-        if (!res2.succeeded) {
+        const res = response.data;
+        if (!res.succeeded) {
           uni.showToast({
-            title: res2.message,
+            title: res.message,
             icon: "none"
           });
           return;
         }
-        reminders = res2.data;
+        reminders = res.data;
         for (let reminder of reminders) {
           reminder.worked = false;
           reminder.isTaskReminder = isTaskReminder;
@@ -27068,11 +27114,11 @@ ${i3}
         if (isHabitReminder)
           uni.setStorageSync(notifyOpt.value.key_HR, reminders);
       }
-      function notifyTaskCallback(reminder, res2) {
-        if (res2.confirm) {
+      function notifyTaskCallback(reminder, res) {
+        if (res.confirm) {
           return;
         }
-        if (res2.cancel) {
+        if (res.cancel) {
           reminder.worked = true;
           FinishTask(reminder.taskId);
         }
@@ -28358,10 +28404,10 @@ ${i3}
       function remove(index) {
         const group = data.value[index];
         RemoveGroup(group.id, state.userId, group.code, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -28374,16 +28420,16 @@ ${i3}
         if (!state.canAdd)
           return;
         CreateGroup(state.userId, state.groupName, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           const group = {
-            id: res2.data,
+            id: res.data,
             name: state.groupName,
             userId: state.userId
           };
@@ -28568,8 +28614,8 @@ ${i3}
         state.scrollBaseStyle = `height:${height.value * 1.1}px;width:${height.value * 1.1}px`;
         state.scrollStyle = state.scrollBaseStyle;
         vue.nextTick(() => {
-          getElBound(".k-swiper", (res2) => {
-            width.value = res2[0].width;
+          getElBound(".k-swiper", (res) => {
+            width.value = res[0].width;
           });
         });
       });
@@ -28724,15 +28770,15 @@ ${i3}
         if (day.record.result) {
           const record = records.value[day.record.index];
           DayInFrequency(habitId.value, date.getTime(), beginDate.value.getTime(), (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
             }
-            if (!res2.data) {
+            if (!res.data) {
               uni.showToast({
                 title: "非习惯执行频率区段或在当前习惯执行频率区段中，习惯已执行完毕",
                 icon: "none"
@@ -28743,15 +28789,15 @@ ${i3}
               content: "完成/不完成",
               confirmText: "完成",
               cancelText: "不完成",
-              success: (res3) => {
+              success: (res2) => {
                 const model = {};
                 copy(record, model);
-                if (res3.confirm) {
+                if (res2.confirm) {
                   if (record.finsihed)
                     return;
                   model.finished = true;
                 }
-                if (res3.cancel) {
+                if (res2.cancel) {
                   if (!record.finished)
                     return;
                   model.finished = false;
@@ -28782,15 +28828,15 @@ ${i3}
         } else {
           if (date.getTime() <= today.value.getTime() && date.getTime() >= beginDate.value.getTime()) {
             DayInFrequency(habitId.value, date.getTime(), beginDate.value.getTime(), (response) => {
-              const res2 = response.data;
-              if (!res2.succeeded) {
+              const res = response.data;
+              if (!res.succeeded) {
                 uni.showToast({
-                  title: res2.message,
+                  title: res.message,
                   icon: "none"
                 });
                 return;
               }
-              if (!res2.data) {
+              if (!res.data) {
                 uni.showToast({
                   title: "在当前习惯执行频率区段中，习惯已执行完毕",
                   icon: "none"
@@ -29372,8 +29418,10 @@ ${i3}
         if (state.hasLabelSetter) {
           if (!state.isTaskUpdate && label.value != void 0) {
             if (label.value.isList) {
-              state.task.list = label.value;
-              state.listOpt.selected = label.value.labelId;
+              if (!isBaseLabel(label.value.labelId)) {
+                state.task.list = label.value;
+                state.listOpt.selected = label.value.labelId;
+              }
               state.task.labels = [];
             } else {
               state.labelOpt.selected.push(label.value.labelId);
@@ -29475,34 +29523,35 @@ ${i3}
           state.notifyOpt[0] = remindModeValues(detail.value + 1);
         }
       }
-      function createNewLabel() {
+      function createNewLabel(e2) {
+        if (e2.trim().length == 0)
+          return;
         const user2 = uni.getStorageSync("user");
         CreateOrGetLabel(state.labelOpt.labelName, user2.uid, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          const data = res2.data;
-          const index = userLabels.value.filter((l2) => l2.labelId == data.labelId);
+          const data = res.data;
+          const index = userLabels.value.findIndex((l2) => l2.labelId == data.labelId);
           if (index < 0) {
-            state.labelOpt.data.push(data);
-            state.labelOpt.selected.push(state.labelOpt.data.length - 1);
-          }
-          loading("", () => {
+            loading("", () => {
+              state.labelOpt.labelName = "";
+              userLabels.value.push(data);
+              state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
+              state.labelOpt.selected.push(data.labelId);
+              state.task.labels.push(data);
+              emits("createdLabel", {
+                data: userLabels.value,
+                isList: false
+              });
+            }, 750);
+          } else
             state.labelOpt.labelName = "";
-            userLabels.value.push(data);
-            state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
-            state.labelOpt.selected.push(data.labelId);
-            state.task.labels.push(data);
-            emits("createdLabel", {
-              data: userLabels.value,
-              isList: false
-            });
-          }, 750);
         });
       }
       function changeTaskLabels() {
@@ -29577,17 +29626,17 @@ ${i3}
         state.task.endTime = /* @__PURE__ */ new Date(`${endTime.value.date} ${endTime.value.time}`);
         if (!state.isTaskUpdate) {
           CreateTask(state.task, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
             }
             loading("创建中...", () => {
-              state.task.taskId = res2.data;
-              state.task.instanceId = res2.data;
+              state.task.taskId = res.data;
+              state.task.instanceId = res.data;
               const task2 = {};
               task2.style = "";
               copy(state.task, task2);
@@ -29631,17 +29680,17 @@ ${i3}
           if (state.task.title.length == 0)
             state.task.title = "无标题";
           FreshReminderTiming(state.task.instanceId, state.task.beginTime, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
             }
             UpdateTask(state.task, (response1) => {
               const res1 = response1.data;
-              if (!res2.succeeded) {
+              if (!res.succeeded) {
                 uni.showToast({
                   title: res1.message,
                   icon: "none"
@@ -29688,10 +29737,10 @@ ${i3}
       }
       function removeTask() {
         RemoveTask(state.task, 1, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
@@ -29724,20 +29773,20 @@ ${i3}
           confirmText: "确定",
           editable: true,
           placeholderText: "清单名",
-          success: (res2) => {
-            if (res2.cancel)
+          success: (res) => {
+            if (res.cancel)
               return;
             const user2 = uni.getStorageSync("user");
-            CreateList(user2.uid, res2.content, (response) => {
-              const res3 = response.data;
-              if (!res3.succeeded) {
+            CreateList(user2.uid, res.content, (response) => {
+              const res2 = response.data;
+              if (!res2.succeeded) {
                 uni.showToast({
-                  title: res3.message,
+                  title: res2.message,
                   icon: "none"
                 });
                 return;
               }
-              const newList = res3.data;
+              const newList = res2.data;
               state.listOpt.selected = newList.labelId;
               state.task.list = newList;
               userLists.value.push(newList);
@@ -30322,7 +30371,7 @@ ${i3}
                       placeholder: "新标签",
                       modelValue: $setup.state.labelOpt.labelName,
                       "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $setup.state.labelOpt.labelName = $event),
-                      onChange: $setup.createNewLabel
+                      onChangeOnce: $setup.createNewLabel
                     }, null, 8, ["modelValue"])
                   ]),
                   vue.createVNode(_component_uni_data_checkbox, {
@@ -30373,7 +30422,7 @@ ${i3}
                 ]),
                 vue.createElementVNode("scroll-view", {
                   "scroll-y": "",
-                  style: { "max-width": "40vh" }
+                  style: { "max-height": "34vh" }
                 }, [
                   vue.createElementVNode(
                     "view",
@@ -30645,18 +30694,18 @@ ${i3}
           if (!state.canAddHabit)
             return;
           CreateHabit(state.habit, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
             } else {
               if (state.selectedImgFile == null) {
-                afterCreating("", res2.data, state.habit.thumb);
+                afterCreating("", res.data, state.habit.thumb);
                 return;
               }
-              UploadThumb(state.selectedImgFile, res2.data, null, (response1) => {
+              UploadThumb(state.selectedImgFile, res.data, null, (response1) => {
                 const res1 = JSON.parse(response1.data);
                 if (!res1.succeeded) {
                   uni.showToast({
@@ -30665,22 +30714,22 @@ ${i3}
                   });
                   return;
                 }
-                afterCreating(res2.message, res2.data, res1.data);
+                afterCreating(res.message, res.data, res1.data);
               });
             }
           });
         } else {
           UpdateHabit(state.habit, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
             }
             if (state.selectedImgFile == null)
-              afterUpdating(res2.data);
+              afterUpdating(res.data);
             else {
               UploadThumb(
                 state.selectedImgFile,
@@ -30690,13 +30739,13 @@ ${i3}
                   const res1 = JSON.parse(response1.data);
                   if (!res1.succeeded) {
                     uni.showToast({
-                      title: res2.message,
+                      title: res.message,
                       icon: "none"
                     });
                     return;
                   }
-                  res2.data.thumb = res1.data;
-                  afterUpdating(res2.data);
+                  res.data.thumb = res1.data;
+                  afterUpdating(res.data);
                 }
               );
             }
@@ -30747,15 +30796,15 @@ ${i3}
       }
       function getGroups() {
         GetHabitGroups(state.habit.userId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          state.groups = res2.data;
+          state.groups = res.data;
           if (state.isHabitUpdate)
             state.groupCode = state.groups.filter((g2) => g2.id == state.habit.groupId)[0].code;
           else {
@@ -30766,15 +30815,15 @@ ${i3}
       }
       function getDefaultThumbs() {
         GetDefaultThumbs((response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
-          defaultThumbs.value = res2.data;
+          defaultThumbs.value = res.data;
         });
       }
       function popupClose(e2) {
@@ -31486,17 +31535,17 @@ ${i3}
         if (!model.finished && !state.selectedHabit.finished)
           return;
         FinishOrNot(model, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             return;
           }
           state.selectedHabit.finished = finished;
           state.selectedHabit.finishTime = model.finishTime;
-          recordFinish(res2.data);
+          recordFinish(res.data);
           emits("finished", { item: state.selectedHabit });
         });
       }
@@ -31516,13 +31565,13 @@ ${i3}
           cancelText: "取消",
           title: "删除习惯",
           content: "习惯将移至回收站",
-          success: (res2) => {
-            if (res2.confirm) {
+          success: (res) => {
+            if (res.confirm) {
               RemoveHabit(state.selectedHabit.habitId, (response) => {
-                const res3 = response.data;
-                if (!res3.succeeded) {
+                const res2 = response.data;
+                if (!res2.succeeded) {
                   uni.showToast({
-                    title: res3.message,
+                    title: res2.message,
                     icon: "none"
                   });
                   return;
@@ -31811,37 +31860,37 @@ ${i3}
           return;
         if (!state.isLabelUpdate) {
           CreateLabel(state.label, state.selectedFile, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
             }
-            state.label.labelId = res2.data;
+            state.label.labelId = res.data;
             if (state.selectedFile == null)
               afterCreating(null);
             else {
               UploadLabelIcon(state.label, state.selectedFile, (response2) => {
-                const res3 = JSON.parse(response2.data);
-                if (!res3.succeeded) {
+                const res2 = JSON.parse(response2.data);
+                if (!res2.succeeded) {
                   uni.showToast({
-                    title: res3.message,
+                    title: res2.message,
                     icon: "none"
                   });
                   return;
                 }
-                afterCreating(res3.data);
+                afterCreating(res2.data);
               });
             }
           });
         } else {
           UpdateLabel(state.label.labelId, state.label.labelName, (response) => {
-            const res2 = response.data;
-            if (!res2.succeeded) {
+            const res = response.data;
+            if (!res.succeeded) {
               uni.showToast({
-                title: res2.message,
+                title: res.message,
                 icon: "none"
               });
               return;
@@ -31850,15 +31899,15 @@ ${i3}
               afterUpdating(null);
             else {
               UploadLabelIcon(state.label, state.selectedFile, (response2) => {
-                const res3 = JSON.parse(response2.data);
-                if (!res3.succeeded) {
+                const res2 = JSON.parse(response2.data);
+                if (!res2.succeeded) {
                   uni.showToast({
-                    title: res3.message,
+                    title: res2.message,
                     icon: "none"
                   });
                   return;
                 }
-                afterUpdating(res3.data);
+                afterUpdating(res2.data);
               });
             }
           });
@@ -31889,16 +31938,16 @@ ${i3}
         if (isList.value)
           return;
         CheckLabelNameExists(e2, state.userId, (response) => {
-          const res2 = response.data;
-          if (!res2.succeeded) {
+          const res = response.data;
+          if (!res.succeeded) {
             uni.showToast({
-              title: res2.message,
+              title: res.message,
               icon: "none"
             });
             state.label.labelName = e2 = "";
             return;
           }
-          if (res2.data)
+          if (res.data)
             state.label.labelName = e2 = "";
         });
       }

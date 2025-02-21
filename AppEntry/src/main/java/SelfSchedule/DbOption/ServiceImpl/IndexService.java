@@ -198,9 +198,10 @@ public class IndexService implements IndexServiceInterface {
 
     @Override
     @Transactional
-    public int hideOrShowLabel(Boolean display, Long labelId) {
+    public int hideOrShowLabel(String userId, Boolean display, Long labelId) {
         LambdaUpdateWrapper<UserTaskLabel> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(UserTaskLabel::getDisplay,display).eq(UserTaskLabel::getLabelId,labelId);
+        wrapper.set(UserTaskLabel::getDisplay,display).eq(UserTaskLabel::getLabelId,labelId)
+                .eq(UserTaskLabel::getUserId,userId);
         return userTaskLabelMapper.update(wrapper);
     }
 

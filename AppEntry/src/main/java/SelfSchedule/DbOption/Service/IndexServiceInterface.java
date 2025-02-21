@@ -19,7 +19,7 @@ public interface IndexServiceInterface {
     int updateLabel(Long labelId,String labelName);
     String uploadLabelIcon(Long labelId,String icon,boolean isList,MultipartFile file,FileService fileService);
     boolean checkLabelNameExists(String labelName,String userId);
-    int hideOrShowLabel(Boolean display,Long labelId);
+    int hideOrShowLabel(String userId,Boolean display,Long labelId);
     int removeLabel(Long labelId,FileService fileService);
     TaskLabelVO createOrCheckLabel(String labelName, String userId);
     List<TaskLabelVO> getHiddenLabels(String userId,RedisCache redis);

@@ -95,11 +95,13 @@ public class IndexController extends ControllerBase{
         return successWithData(indexService.checkLabelNameExists(labelName,userId));
     }
 
-    @PatchMapping("/HideOrShowLabel/{labelId}")
+    @PatchMapping("/HideOrShowLabel/{userId}/{labelId}")
     @ApiOperation(value="隐藏或显示标签",notes = "显示或隐藏标签/清单")
     @ClearRedisCache(keys = {CachingKeys.GetTaskLabels,CachingKeys.GetHiddenLabels})
-    public ActionResult HideOrShowLabel(@PathVariable Long labelId,@RequestParam Boolean display,HttpServletRequest request){
-        int res = indexService.hideOrShowLabel(display,labelId);
+    public ActionResult HideOrShowLabel(@PathVariable String userId,
+                                        @PathVariable Long labelId,
+                                        @RequestParam Boolean display,HttpServletRequest request){
+        int res = indexService.hideOrShowLabel(userId,display,labelId);
         if(res== Constants.AbNormalState)
             return fail("操作失败！");
         return ok("已隐藏标签/清单");

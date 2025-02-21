@@ -20,8 +20,8 @@
     </select>
 
     <select id="getUserTaskLabelIds" resultType="java.lang.Long">
-        select l.id from TaskLabel join UserTaskLabel ul on l.id = ul.id
-        where ul.userId = #{userId} and l.notCutstom = 0
+        select l.id from TaskLabel l join UserTaskLabel ul on l.id = ul.id
+        where ul.userId = #{userId} and l.notCustom = 0
     </select>
 
 

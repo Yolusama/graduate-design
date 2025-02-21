@@ -8,6 +8,7 @@
         where i.taskId=(select taskId from TaskInstance where instanceId=#{taskId} limit 1)
             and r.mode = #{mode} and r.value = #{value}
     </select>
+
     <select id="getRepeatIdsUnder" resultType="java.lang.Long">
         select i.instanceId from Task t join TaskInstance i on i.instanceId = t.id and i.instanceId!=i.taskId where
             i.taskId = #{taskId} and (t.beginTime &gt;= #{timeLimit} or t.endTime &gt;= #{timeLimit})

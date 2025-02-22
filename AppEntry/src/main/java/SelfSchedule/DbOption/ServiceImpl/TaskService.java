@@ -9,6 +9,7 @@ import SelfSchedule.Entity.*;
 import SelfSchedule.Entity.Enum.*;
 import SelfSchedule.Entity.VO.*;
 import SelfSchedule.Model.*;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import SelfSchedule.Utils.DateUtil;
 import SelfSchedule.Utils.ObjectUtil;
@@ -735,11 +736,14 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     }
 
     @Override
-    public void removeAllAbout(String userId) {
+    public void removeAllAbout(String userId, FileService fileService) {
         List<Long> taskIds = mapper.getUserTaskIds(userId);
-        instanceMapper.delete(new LambdaQueryWrapper<TaskInstance>().in(TaskInstance::getTaskId,taskIds));
-        reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,taskIds));
-        ruleMapper.delete(new LambdaQueryWrapper<TaskRepeatRule>().in(TaskRepeatRule::getTaskId,taskIds));
+        if(taskIds.size()>Constants.None)
+        {
+            instanceMapper.delete(new LambdaQueryWrapper<TaskInstance>().in(TaskInstance::getTaskId,taskIds));
+            reminderMapper.delete(new LambdaQueryWrapper<TaskReminder>().in(TaskReminder::getTaskId,taskIds));
+            ruleMapper.delete(new LambdaQueryWrapper<TaskRepeatRule>().in(TaskRepeatRule::getTaskId,taskIds));
+        }
         mapper.delete(new LambdaQueryWrapper<Task>().eq(Task::getUserId,userId));
     }
 

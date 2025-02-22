@@ -444,12 +444,20 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     }
 
     @Override
-    public void removeAllAbout(String userId) {
+    public void removeAllAbout(String userId, FileService fileService) {
         List<String> habitIds = mapper.getUserHabitIds(userId);
-        optionMapper.delete(new LambdaQueryWrapper<HabitOption>().in(HabitOption::getHabitId,habitIds));
-        reminderMapper.delete(new LambdaQueryWrapper<HabitReminder>().in(HabitReminder::getHabitId,habitIds));
-        recordMapper.delete(new LambdaQueryWrapper<HabitRecord>().in(HabitRecord::getHabitId,habitIds));
-        frequencyMapper.delete(new LambdaQueryWrapper<HabitFrequency>().in(HabitFrequency::getHabitId,habitIds));
+        if(habitIds.size()>Constants.None)
+        {
+            optionMapper.delete(new LambdaQueryWrapper<HabitOption>().in(HabitOption::getHabitId, habitIds));
+            reminderMapper.delete(new LambdaQueryWrapper<HabitReminder>().in(HabitReminder::getHabitId, habitIds));
+            recordMapper.delete(new LambdaQueryWrapper<HabitRecord>().in(HabitRecord::getHabitId, habitIds));
+            frequencyMapper.delete(new LambdaQueryWrapper<HabitFrequency>().in(HabitFrequency::getHabitId, habitIds));
+        }
+        List<String> thumbs = mapper.getUserHabitThumbs(userId);
+        for(String thumb:thumbs){
+            if(!thumb.equals(Constants.DefaultThumb))
+                fileService.removeImage(thumb);
+        }
         groupMapper.delete(new LambdaQueryWrapper<HabitGroup>().eq(HabitGroup::getUserId,userId));
         mapper.delete(new LambdaQueryWrapper<Habit>().eq(Habit::getUserId,userId));
     }

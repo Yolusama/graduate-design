@@ -149,7 +149,7 @@ public class IndexController extends ControllerBase{
     @PostMapping("/Logout/{userId}")
     @ApiOperation(value="退出登录/注销账号",notes = "cancelAccount为真时注销账号")
     public ActionResult Logout(@PathVariable String userId,@RequestParam String email, @RequestParam Boolean cancelAccount){
-        indexService.logout(cancelAccount,userId,email,redis);
+        indexService.logout(cancelAccount,userId,email,redis,fileService);
         if(cancelAccount)
             return ok("已注销账号！");
         else

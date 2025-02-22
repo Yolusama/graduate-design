@@ -20,8 +20,13 @@
     </select>
 
     <select id="getUserTaskLabelIds" resultType="java.lang.Long">
-        select l.id from TaskLabel l join UserTaskLabel ul on l.id = ul.id
+        select l.id from TaskLabel l join UserTaskLabel ul on l.id = ul.labelId
         where ul.userId = #{userId} and l.notCustom = 0
+    </select>
+
+    <select id="getUserLabelIcons" resultType="java.lang.String">
+        select l.icon from TaskLabel l join UserTaskLabel ul on ul.labelId = l.id
+           where ul.userId = #{userId} and l.notCustom = 0
     </select>
 
 

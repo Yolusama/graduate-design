@@ -8,6 +8,7 @@
             (null,#{reminder.habitId},#{reminder.time},null)
         </foreach>
     </insert>
+
     <select id="getUserReminders" resultType="SelfSchedule.Entity.VO.HabitReminderInfoVO">
         select r.habitId,r.time,h.name as habitName,h.description as habitDescription,h.beginDate
             as habitBeginDate,h.thumb as habitThumb

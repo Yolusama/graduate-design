@@ -4,7 +4,7 @@
 <mapper namespace="SelfSchedule.DbOption.Mapper.UserTaskLabelMapper">
     <insert id="batchInsert">
         insert into UserTaskLabel values
-        <foreach collection="userLabels" item="label" separator="," >
+        <foreach collection="userTaskLabels" item="label" separator="," >
             (null,#{label.userId},#{label.labelId},#{label.display},null)
         </foreach>
     </insert>

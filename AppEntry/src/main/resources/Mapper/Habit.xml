@@ -21,5 +21,4 @@
         where h.deleteFlag = 1 and h.userId = #{userId}
     </select>
 
-
 </mapper>

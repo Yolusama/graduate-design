@@ -13,7 +13,7 @@ import java.util.List;
 
 @Mapper
 public interface UserTaskLabelMapper extends BaseMapper<UserTaskLabel> {
-    Integer batchInsert(@Param("labels") List<UserTaskLabel> userLabels);
+    Integer batchInsert(@Param("userTaskLabels") List<UserTaskLabel> userTaskLabels);
     TaskLabel getLabel(@Param("userId")String userId, @Param("labelName")String labelName);
 
     @Update("update UserTaskLabel set ${ew.sqlSet} ${ew.customSqlSegment}")

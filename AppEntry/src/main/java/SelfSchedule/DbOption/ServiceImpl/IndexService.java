@@ -299,7 +299,7 @@ public class IndexService implements IndexServiceInterface {
 
     @Override
     @Transactional
-    public void logout(boolean cancelAccount, String userId, String email, RedisCache redis) {
+    public void logout(boolean cancelAccount, String userId, String email, RedisCache redis, FileService fileService) {
         String key = String.format("%s_token",userId);
         redis.remove(key);
         String checkCodeKey = String.format("%s_CheckCode",email);
@@ -307,11 +307,23 @@ public class IndexService implements IndexServiceInterface {
             redis.remove(checkCodeKey);
         if(cancelAccount){
             List<Long> userLabelIds = labelMapper.getUserTaskLabelIds(userId);
-            labelMapper.delete(new LambdaQueryWrapper<TaskLabel>().in(TaskLabel::getId,userLabelIds));
+            List<String> userLabelIcons = labelMapper.getUserLabelIcons(userId);
+            for (String icon:userLabelIcons){
+                if(icon.equals(Constants.DefaultLabelIcon)||icon.equals(Constants.DefaultListIcon))
+                    continue;
+                fileService.removeImage(icon);
+            }
+            if(userLabelIds.size()>Constants.None) {
+                labelMapper.delete(new LambdaQueryWrapper<TaskLabel>().in(TaskLabel::getId, userLabelIds));
+                labelOptionMapper.delete(new LambdaQueryWrapper<TaskLabelOption>().in(TaskLabelOption::getLabelId, userLabelIds));
+            }
             userTaskLabelMapper.delete(new LambdaQueryWrapper<UserTaskLabel>().eq(UserTaskLabel::getUserId,userId));
-            labelOptionMapper.delete(new LambdaQueryWrapper<TaskLabelOption>().in(TaskLabelOption::getLabelId,userLabelIds));
-            taskService.removeAllAbout(userId);
-            habitService.removeAllAbout(userId);
+
+            taskService.removeAllAbout(userId,fileService);
+            habitService.removeAllAbout(userId,fileService);
+            String avatar = userMapper.getUserAvatar(userId);
+            if(!avatar.equals(Constants.DefaultAvatar))
+                fileService.removeImage(avatar);
             userMapper.deleteById(userId);
         }
     }

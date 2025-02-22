@@ -7,6 +7,7 @@ import SelfSchedule.Model.TaskModel;
 import SelfSchedule.Model.TaskPriorityModel;
 import SelfSchedule.Model.TaskReminderModel;
 import SelfSchedule.Model.TaskRepeatRuleModel;
+import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -30,7 +31,7 @@ public interface ITaskService extends IService<Task> {
    int changePriority(TaskPriorityModel model);
    List<TaskReminderInfoVO> getCurrentTaskReminders(String userId, Date currentTime);
    boolean freshReminderTiming(Long taskId,Date taskBeginTime);
-   void removeAllAbout(String userId);
+   void removeAllAbout(String userId,FileService fileService);
    int remove(Long taskId);
    int recover(Long taskId);
    Long getFinishedTaskCount(String userId);

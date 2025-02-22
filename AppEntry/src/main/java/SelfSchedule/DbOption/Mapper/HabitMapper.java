@@ -25,4 +25,6 @@ public interface HabitMapper extends BaseMapper<Habit> {
     List<String> getUserHabitIds(@Param("userId")String userId);
     @Select("select beginDate from Habit where id=#{habitId}")
     Date getHabitBeginDate(@Param("habitId")String habitId);
+    @Select("select thumb from Habit where userId = #{userId}")
+    List<String> getUserHabitThumbs(@Param("userId")String userId);
 }

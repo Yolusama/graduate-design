@@ -17,6 +17,7 @@ public interface TaskLabelMapper extends BaseMapper<TaskLabel> {
     List<TaskLabelVO> getHiddenLabels(@Param("userId")String userId);
     Long labelExists(@Param("userId")String userId,@Param("labelName")String labelName);
     List<Long> getUserTaskLabelIds(@Param("userId")String userId);
+    List<String> getUserLabelIcons(@Param("userId")String userId);
 
     @Update("update TaskLabel set ${ew.sqlSet} ${ew.customSqlSegment}")
     int update(@Param(Constants.WRAPPER) Wrapper<TaskLabel> wrapper);

@@ -25,7 +25,7 @@ public interface IndexServiceInterface {
     List<TaskLabelVO> getHiddenLabels(String userId,RedisCache redis);
     void checkYesterdayTask(Date yesterday,String userId,RedisCache redis);
     void checkHabitContinuousDays(Date yesterday, String userId, RedisCache redis);
-    void logout(boolean cancelAccount,String userId,String email, RedisCache redis);
+    void logout(boolean cancelAccount,String userId,String email, RedisCache redis,FileService fileService);
     int removeOrRecoverTask(Long taskId,Boolean isRemove);
     int removeOrRecoverHabit(String habitId,Boolean isRemove);
     void takeTaskLabelsFor(String userId, Long taskId,Long listId,Boolean isUpdate, ArrayDataModel<Long> model);

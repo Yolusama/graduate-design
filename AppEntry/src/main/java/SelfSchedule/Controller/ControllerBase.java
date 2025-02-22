@@ -18,13 +18,13 @@ public abstract class ControllerBase
 
     public ActionResult ok(String message)
     {
-       return new ActionResult(message, HttpStatus.OK.value());
+       return makeResult(message,HttpStatus.OK);
     }
 
     public<T> ActionResult<T> successWithData(T data)
     {
          HttpStatus status = HttpStatus.OK;
-         return new ActionResult<>(status.toString(),status.value(),data);
+         return makeResult(status.toString(),status,data);
     }
 
     public<T> ActionResult<T> successWithData(String message,T data)

@@ -307,7 +307,7 @@
 	import {
 		GetTaskReminders
 	} from '../api/Task';
-	import {onShow} from "@dcloudio/uni-app";
+	import {onShow,onTabItemTap} from "@dcloudio/uni-app";
 
 	const pattern = ref({
 		color: '#7A7E83',
@@ -392,14 +392,17 @@
 		if (finishAudio == "" || finishAudio == null) {
 			finishAudio = new ValueText(0, "无");
 			uni.setStorageSync(CurrentFinsihAudioKey, finishAudio);
-		}
-		
-		state.show = {
-			habit:false,
-			task:false,
-			label:false
-		};
+		}	
 	});
+	
+	onTabItemTap(()=>{
+		state.show.task = false;
+		state.show.label = false;
+		state.show.habit = false;
+		nextTick(()=>{
+			labelDrawer.value.close();
+		});
+	})
 
 	function checkYesterdayTask() {
 		const today = new Date();

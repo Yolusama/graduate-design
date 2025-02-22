@@ -193,6 +193,7 @@
 		HabitReminder,
 		ValueText,
 		copy,
+		delayToRun,
 		getDateStr,
 		loading,
 		onlyDate,
@@ -582,7 +583,7 @@
 	function open() {
 		popup.value.open();
 	}
-
+	
 	defineExpose({
 		open
 	});
@@ -594,7 +595,7 @@
 		display: flex;
 		flex-flow: column nowrap;
 		width: 100vw;
-		height: 90vh;
+		height: 92vh;
 		/*#ifdef H5*/
 		padding-top: 5px;
 		/*#endif*/

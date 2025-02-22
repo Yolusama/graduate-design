@@ -32,6 +32,7 @@ if (uni.restoreGlobal) {
 (function(vue) {
   "use strict";
   const ON_SHOW = "onShow";
+  const ON_TAB_ITEM_TAP = "onTabItemTap";
   function requireNativePlugin(name) {
     return weex.requireModule(name);
   }
@@ -49,6 +50,7 @@ if (uni.restoreGlobal) {
     !vue.isInSSRComponentSetup && vue.injectHook(lifecycle, hook, target);
   };
   const onShow = /* @__PURE__ */ createHook(ON_SHOW);
+  const onTabItemTap = /* @__PURE__ */ createHook(ON_TAB_ITEM_TAP);
   const fontData = [
     {
       "font_class": "arrow-down",
@@ -3900,7 +3902,7 @@ if (uni.restoreGlobal) {
   function getDateStr(date = /* @__PURE__ */ new Date()) {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   }
-  function getDateTimeStr(date = /* @__PURE__ */ new Date(), thisYear) {
+  function getDateTimeStr$1(date = /* @__PURE__ */ new Date(), thisYear) {
     if (date.getFullYear() == thisYear)
       return `${date.getMonth() + 1}月${date.getDate()}日 ${timeWithoutSeconds(date)}`;
     else
@@ -4282,6 +4284,11 @@ if (uni.restoreGlobal) {
             icon: "none"
           });
           state.isReg = false;
+          state.password = "";
+          state.checkCode = "";
+          state.email = "";
+          state.hasGotCode = false;
+          state.checkCodeText = "获取验证码";
         });
       }
       const __returned__ = { state, rules, bindEmailPopup, popupClose, login, setDataAndGoIndex, afterLogin, bindEmail, checkToken, getCheckCode, register, reactive: vue.reactive, ref: vue.ref, onMounted: vue.onMounted, onBeforeMount: vue.onBeforeMount, get GetCheckCode() {
@@ -4344,7 +4351,7 @@ if (uni.restoreGlobal) {
             _: 1
             /* STABLE */
           })) : vue.createCommentVNode("v-if", true),
-          !$setup.state.useCheckCode || $setup.state.isReg ? (vue.openBlock(), vue.createBlock(_component_uni_forms_item, {
+          !$setup.state.useCheckCode && !$setup.state.isReg ? (vue.openBlock(), vue.createBlock(_component_uni_forms_item, {
             key: 1,
             label: "账户",
             name: "email",
@@ -6272,11 +6279,14 @@ if (uni.restoreGlobal) {
           finishAudio = new ValueText(0, "无");
           uni.setStorageSync(CurrentFinsihAudioKey, finishAudio);
         }
-        state.show = {
-          habit: false,
-          task: false,
-          label: false
-        };
+      });
+      onTabItemTap(() => {
+        state.show.task = false;
+        state.show.label = false;
+        state.show.habit = false;
+        vue.nextTick(() => {
+          labelDrawer.value.close();
+        });
       });
       function checkYesterdayTask() {
         const today2 = /* @__PURE__ */ new Date();
@@ -6831,6 +6841,8 @@ if (uni.restoreGlobal) {
         return GetTaskReminders;
       }, get onShow() {
         return onShow;
+      }, get onTabItemTap() {
+        return onTabItemTap;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -7677,15 +7689,15 @@ if (uni.restoreGlobal) {
           new ValueText(2, "此任务及往后的任务")
         ];
         getData();
+      });
+      onTabItemTap(() => {
         vue.nextTick(() => {
-          popup.value.close();
           detailPopup.value.close();
-          priorityPopup.value.close();
           frequencyPopup.value.close();
           defRulePopup.value.close();
-          detailPopup.value.close();
           priorityPopup.value.close();
           customPopup.value.close();
+          popup.value.close();
           editModePopup2.value.close();
         });
       });
@@ -7966,18 +7978,16 @@ if (uni.restoreGlobal) {
             icon: "none"
           });
         } else {
-          loading("", () => {
-            taskPageOpt.value.data = res.data.data;
-            taskPageOpt.value.total = res.data.total;
-            for (let task of taskPageOpt.value.data) {
-              task.beginTime = new Date(task.beginTime);
-              task.endTime = new Date(task.endTime);
-              if (!dateEquals(state.selectedDay, today.value) && task.deadline != null) {
-                task.deadline = new Date(task.deadline);
-              }
+          taskPageOpt.value.data = res.data.data;
+          taskPageOpt.value.total = res.data.total;
+          for (let task of taskPageOpt.value.data) {
+            task.beginTime = new Date(task.beginTime);
+            task.endTime = new Date(task.endTime);
+            if (!dateEquals(state.selectedDay, today.value) && task.deadline != null) {
+              task.deadline = new Date(task.deadline);
             }
-            uni.removeStorageSync(TaskReminderKey);
-          }, 750);
+          }
+          uni.removeStorageSync(TaskReminderKey);
         }
       }
       function updateTask() {
@@ -8220,7 +8230,7 @@ if (uni.restoreGlobal) {
       }, get copy() {
         return copy;
       }, get getDateTimeStr() {
-        return getDateTimeStr;
+        return getDateTimeStr$1;
       }, get remindModeValues() {
         return remindModeValues;
       }, get ReminderInfo() {
@@ -8263,6 +8273,8 @@ if (uni.restoreGlobal) {
         return user;
       }, get onShow() {
         return onShow;
+      }, get onTabItemTap() {
+        return onTabItemTap;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -9125,17 +9137,13 @@ if (uni.restoreGlobal) {
         model: {}
       });
       onShow(() => {
-        uni.getStorage({
-          key: "user",
-          success: (res) => {
-            state.userId = res.data.uid;
-            getData();
-            state.show = {
-              detail: false,
-              editor: false
-            };
-          }
-        });
+        const user2 = uni.getStorageSync("user");
+        state.userId = user2.uid;
+        getData();
+      });
+      onTabItemTap(() => {
+        state.show.editor = false;
+        state.show.detail = false;
       });
       function seeDetail(groupName, index) {
         state.selectedHabit = state.data[groupName][index];
@@ -9181,9 +9189,10 @@ if (uni.restoreGlobal) {
         const groupName = e2.groupName;
         if (habitOption.value.data.length < habitOption.value.size) {
           habitOption.value.data.push(item);
-          if (state.data[groupName] == void 0)
+          if (state.data[groupName] == void 0) {
             state.data[groupName] = [item];
-          else
+            state.model[groupName] = "0";
+          } else
             state.data[groupName].push(item);
         }
         uni.removeStorageSync(HabitReminderKey$1);
@@ -9222,11 +9231,9 @@ if (uni.restoreGlobal) {
             });
             return;
           }
-          loading("", () => {
-            habitOption.value.data = res.data.data;
-            habitOption.value.total = res.data.total;
-            dataReogrized();
-          }, 550);
+          habitOption.value.data = res.data.data;
+          habitOption.value.total = res.data.total;
+          dataReogrized();
         });
       }
       function editorClose() {
@@ -9325,8 +9332,6 @@ if (uni.restoreGlobal) {
         return HabitReminderKey$1;
       }, get delayToRun() {
         return delayToRun;
-      }, get loading() {
-        return loading;
       }, get GetHabits() {
         return GetHabits;
       }, get FinishOrNot() {
@@ -9339,6 +9344,8 @@ if (uni.restoreGlobal) {
         return imgSrc;
       }, get onShow() {
         return onShow;
+      }, get onTabItemTap() {
+        return onTabItemTap;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -9605,22 +9612,26 @@ if (uni.restoreGlobal) {
         priority: []
       });
       const quadrant = vue.ref("quadrant");
-      onShow(() => {
+      vue.onMounted(() => {
         for (let i2 = 0; i2 < 4; i2++)
           state.priority.push(new ValueText(i2 + 1, ""));
         state.priority[0].text = "Ⅰ " + priority[0].text;
         state.priority[1].text = "Ⅱ " + priority[1].text;
         state.priority[2].text = "Ⅲ " + priority[2].text;
         state.priority[3].text = "Ⅳ " + priority[3].text;
-        const user2 = uni.getStorageSync("user");
-        state.userId = user2.uid;
-        getData();
         vue.nextTick(() => {
           buildElById(quadrant1.value[0]);
           buildElById(quadrant2.value[0]);
           buildElById(quadrant3.value[0]);
           buildElById(quadrant4.value[0]);
         });
+      });
+      onShow(() => {
+        const user2 = uni.getStorageSync("user");
+        state.userId = user2.uid;
+        getData();
+      });
+      onTabItemTap(() => {
         state.show = false;
       });
       function getData() {
@@ -9633,19 +9644,17 @@ if (uni.restoreGlobal) {
             });
             return;
           }
-          loading("", () => {
-            state.data = res.data;
-            for (let pro in state.data) {
-              for (let task of state.data[pro]) {
-                task.beginTime = new Date(task.beginTime);
-                task.endTime = new Date(task.endTime);
-                if (task.deadline != null)
-                  task.deadline = new Date(task.deadline);
-                task.style = "";
-              }
-              state.dataOption[pro] = false;
+          state.data = res.data;
+          for (let pro in state.data) {
+            for (let task of state.data[pro]) {
+              task.beginTime = new Date(task.beginTime);
+              task.endTime = new Date(task.endTime);
+              if (task.deadline != null)
+                task.deadline = new Date(task.deadline);
+              task.style = "";
             }
-          }, 450);
+            state.dataOption[pro] = false;
+          }
           uni.removeStorageSync(TaskReminderKey);
         });
       }
@@ -9877,10 +9886,6 @@ if (uni.restoreGlobal) {
         return dateEquals;
       }, get timeWithoutSeconds() {
         return timeWithoutSeconds;
-      }, get getDateTimeStr() {
-        return getDateTimeStr;
-      }, get loading() {
-        return loading;
       }, get GetTaskReminders() {
         return GetTaskReminders;
       }, get FinishOrNot() {
@@ -9891,6 +9896,8 @@ if (uni.restoreGlobal) {
         return GetTasks;
       }, get onShow() {
         return onShow;
+      }, get onTabItemTap() {
+        return onTabItemTap;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -16589,7 +16596,7 @@ ${i3}
       });
       const feedbackPopup = vue.ref(null);
       const appSrc = vue.ref("https://github.com/Yolusama/graduate-design/tree/front");
-      onShow(() => {
+      vue.onMounted(() => {
         uni.getStorage({
           key: "user",
           success: (res) => {
@@ -16640,7 +16647,7 @@ ${i3}
         });
       }
       function seeAppHelp() {
-        plus.runtime.openURL(appSrc.value, (res) => formatAppLog("log", "at pages/setting.vue:158", res));
+        plus.runtime.openURL(appSrc.value, (res) => formatAppLog("log", "at pages/setting.vue:157", res));
       }
       function beforePopupClose(e2) {
         if (e2.show)
@@ -16652,14 +16659,12 @@ ${i3}
           url: "/pages/notifyAudio"
         });
       }
-      const __returned__ = { state, feedbackPopup, appSrc, logout, goToSelfInfo, showAbout, feedback, seeAppHelp, beforePopupClose, goSetNotifyAudio, reactive: vue.reactive, ref: vue.ref, get imgSrc() {
+      const __returned__ = { state, feedbackPopup, appSrc, logout, goToSelfInfo, showAbout, feedback, seeAppHelp, beforePopupClose, goSetNotifyAudio, onMounted: vue.onMounted, reactive: vue.reactive, ref: vue.ref, get imgSrc() {
         return imgSrc;
       }, get Logout() {
         return Logout;
       }, get Feedback() {
         return Feedback;
-      }, get onShow() {
-        return onShow;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -30958,6 +30963,8 @@ ${i3}
         return ValueText;
       }, get copy() {
         return copy;
+      }, get delayToRun() {
+        return delayToRun;
       }, get getDateStr() {
         return getDateStr;
       }, get loading() {
@@ -31968,6 +31975,8 @@ ${i3}
         return DefaultListIcon;
       }, get copy() {
         return copy;
+      }, get delayToRun() {
+        return delayToRun;
       }, get CheckLabelNameExists() {
         return CheckLabelNameExists;
       }, get CreateLabel() {

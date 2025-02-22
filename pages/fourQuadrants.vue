@@ -66,9 +66,7 @@
 		priority,
 		ValueText,
 		dateEquals,
-		timeWithoutSeconds,
-		getDateTimeStr,
-		loading
+		timeWithoutSeconds
 	} from '../module/Common';
 	import {
 		GetTaskReminders,
@@ -79,7 +77,7 @@
 		GetTasks
 	} from '../api/FourQuadrants';
 	import {
-		onShow
+		onShow,onTabItemTap
 	} from "@dcloudio/uni-app"
 	const pattern = ref({
 		color: '#7A7E83',
@@ -114,16 +112,13 @@
 	});
 	const quadrant = ref("quadrant");
 
-	onShow(() => {
+	onMounted(() => {
 		for (let i = 0; i < 4; i++)
 			state.priority.push(new ValueText(i + 1, ""));
 		state.priority[0].text = "Ⅰ " + priority[0].text;
 		state.priority[1].text = "Ⅱ " + priority[1].text;
 		state.priority[2].text = "Ⅲ " + priority[2].text;
 		state.priority[3].text = "Ⅳ " + priority[3].text;
-		const user = uni.getStorageSync("user");
-		state.userId = user.uid;
-		getData();
 		//#ifndef H5
 		nextTick(() => {
 			buildElById(quadrant1.value[0]);
@@ -132,6 +127,15 @@
 			buildElById(quadrant4.value[0]);
 		});
 		//#endif
+	});
+
+	onShow(() => {
+		const user = uni.getStorageSync("user");
+		state.userId = user.uid;
+		getData();
+	});
+	
+	onTabItemTap(()=>{
 		state.show = false;
 	});
 
@@ -145,19 +149,17 @@
 				});
 				return;
 			}
-			loading("", () => {
-				state.data = res.data;
-				for (let pro in state.data) {
-					for (let task of state.data[pro]) {
-						task.beginTime = new Date(task.beginTime);
-						task.endTime = new Date(task.endTime);
-						if (task.deadline != null)
-							task.deadline = new Date(task.deadline);
-						task.style = "";
-					}
-					state.dataOption[pro] = false;
+			state.data = res.data;
+			for (let pro in state.data) {
+				for (let task of state.data[pro]) {
+					task.beginTime = new Date(task.beginTime);
+					task.endTime = new Date(task.endTime);
+					if (task.deadline != null)
+						task.deadline = new Date(task.deadline);
+					task.style = "";
 				}
-			}, 450);
+				state.dataOption[pro] = false;
+			}
 			uni.removeStorageSync(TaskReminderKey);
 		});
 	}

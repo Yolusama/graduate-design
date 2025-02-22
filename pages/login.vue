@@ -4,7 +4,7 @@
 			<uni-forms-item label="电子邮箱" name="email" class="item" v-if="state.useCheckCode||state.isReg">
 				<uni-easyinput type="email" v-model="state.email" maxlength="25" />
 			</uni-forms-item>
-			<uni-forms-item label="账户" name="email" class="item" v-if="!state.useCheckCode||state.isReg">
+			<uni-forms-item label="账户" name="email" class="item" v-if="!state.useCheckCode&&!state.isReg">
 				<uni-easyinput v-model="state.account" maxlength="25" placeholder="电子邮箱/账号" />
 			</uni-forms-item>
 			<uni-forms-item name="password" label="密码" v-if="!state.useCheckCode||state.isReg" maxlength="20"
@@ -261,6 +261,11 @@
 				icon: "none"
 			});
 			state.isReg = false;
+			state.password = "";
+			state.checkCode = "";
+			state.email = "";
+			state.hasGotCode = false;
+			state.checkCodeText = "获取验证码";
 		});
 	}
 </script>

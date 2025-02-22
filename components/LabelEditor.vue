@@ -33,7 +33,8 @@
 	import {
 		DefaultLabelIcon,
 		DefaultListIcon,
-		copy
+		copy,
+		delayToRun
 	} from '../module/Common';
 	import {
 		CheckLabelNameExists,
@@ -218,7 +219,7 @@
 	function open() {
 		popup.value.open();
 	}
-
+	
 	defineExpose({
 		open
 	});

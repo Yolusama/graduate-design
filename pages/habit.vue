@@ -100,8 +100,7 @@
 		timeWithoutSeconds,
 		dateEquals,
 		HabitReminderKey,
-		delayToRun,
-		loading
+		delayToRun
 	} from "../module/Common";
 	import {
 		GetHabits,
@@ -113,7 +112,7 @@
 		imgSrc
 	} from "../module/Request";
 	import {
-		onShow
+		onShow,onTabItemTap
 	} from "@dcloudio/uni-app"
 	const counter = ref(null);
 	const editor = ref(null);
@@ -148,17 +147,14 @@
 	});
 
 	onShow(() => {
-		uni.getStorage({
-			key: "user",
-			success: res => {
-				state.userId = res.data.uid;
-				getData();
-				state.show = {
-					detail:false,
-					editor:false
-				};
-			}
-		});
+		const user = uni.getStorageSync("user");
+		state.userId = user.uid;
+		getData();
+	});
+	
+	onTabItemTap(()=>{
+		state.show.editor = false;
+		state.show.detail = false;
 	});
 
 	function seeDetail(groupName, index) {
@@ -209,7 +205,10 @@
 		if (habitOption.value.data.length < habitOption.value.size) {
 			habitOption.value.data.push(item);
 			if (state.data[groupName] == undefined)
-				state.data[groupName] = [item];
+				{
+					state.data[groupName] = [item];
+					state.model[groupName] = "0";
+				}
 			else
 				state.data[groupName].push(item);
 		}
@@ -256,11 +255,9 @@
 				});
 				return;
 			}
-			loading("", () => {
-				habitOption.value.data = res.data.data;
-				habitOption.value.total = res.data.total;
-				dataReogrized();
-			}, 550);
+			habitOption.value.data = res.data.data;
+			habitOption.value.total = res.data.total;
+			dataReogrized();
 		});
 	}
 

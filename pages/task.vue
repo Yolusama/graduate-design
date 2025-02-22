@@ -98,7 +98,7 @@
 								</picker>
 								&nbsp;
 								<picker mode="time" :value="state.endTime.time" :start="state.endTime.time" end="23:59"
-									@change="pick($event,'end-time')" :disabled="state.allday" >
+									@change="pick($event,'end-time')" :disabled="state.allday">
 									<text class="time-str">{{state.endTime.time}}</text>
 								</picker>
 							</view>
@@ -164,7 +164,7 @@
 					@onChange="notify">
 				</k-radio-group>
 			</uni-popup>
-			<uni-popup ref="defRulePopup" type="center" background-color="#fff" >
+			<uni-popup ref="defRulePopup" type="center" background-color="#fff">
 				<scroll-view :scroll-y="true" class="popup">
 					<view class="header" style="justify-content: flex-start;"><uni-icons type="closeempty"
 							@click="defRulePopup.close()"></uni-icons>
@@ -199,7 +199,7 @@
 												{{state.defOpt.mode}}
 											</text>
 											<picker mode="date" v-if="state.defOpt.val==1" :value="state.task.deadline"
-												 @change="takeDeadline">
+												@change="takeDeadline">
 												<text class="def-text">
 													{{state.task.deadline==null?getDateStr(today):
 											getDateStr(state.task.deadline)}}
@@ -276,7 +276,7 @@
 					<uni-icons type="trash" :size="30"></uni-icons>
 					<text>删除</text>
 				</view>
-				
+
 			</view>
 		</scroll-view>
 	</uni-popup>
@@ -294,8 +294,8 @@
 		</k-radio-group>
 	</uni-popup>
 
-	<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" :horizontal="fabPosition.value()" @fabClick="openToEdit" 
-	@longpress="fabPosition.left=!fabPosition.left"/>
+	<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" :horizontal="fabPosition.value()"
+		@fabClick="openToEdit" @longpress="fabPosition.left=!fabPosition.left" />
 </template>
 
 <script setup>
@@ -343,7 +343,9 @@
 	import {
 		user
 	} from "../api/User";
-	import {onShow} from "@dcloudio/uni-app"
+	import {
+		onShow,onTabItemTap
+	} from "@dcloudio/uni-app"
 	const popup = ref(null);
 	const frequencyPopup = ref(null);
 	const defRulePopup = ref(null);
@@ -361,11 +363,11 @@
 		iconColor: '#fff'
 	});
 	const fabPosition = ref({
-		left:false,
-		value:function(){
-			return this.left? "left":"right";
+		left: false,
+		value: function() {
+			return this.left ? "left" : "right";
 		}
-	})
+	});
 	const state = reactive({
 		showWay: CalendarDisplayWay.week,
 		canCreateTask: false,
@@ -420,9 +422,9 @@
 		modeContent: [],
 		isTaskUpdate: false,
 		isTaskCancel: false,
-		isTaskRemove:false
+		isTaskRemove: false
 	});
-	
+
 	onShow(function() {
 		state.startTime.date = getDateStr(today.value);
 		state.startTime.time = timeWithoutSeconds(today.value);
@@ -451,15 +453,16 @@
 		];
 
 		getData();
+	});
+	
+	onTabItemTap(()=>{
 		nextTick(()=>{
-			popup.value.close();
 			detailPopup.value.close();
-			priorityPopup.value.close();
 			frequencyPopup.value.close();
 			defRulePopup.value.close();
-			detailPopup.value.close();
 			priorityPopup.value.close();
 			customPopup.value.close();
+			popup.value.close();
 			editModePopup.value.close();
 		});
 	});
@@ -512,7 +515,7 @@
 		state.canCreateTask = false;
 		state.isTaskUpdate = false;
 		state.task.repeatable = false;
-		state.mode = -1;	
+		state.mode = -1;
 	}
 
 	function pick(event, sign) {
@@ -639,10 +642,10 @@
 
 	function addReminderInfoModel(e) {
 		const data = state.task.reminderInfoModels;
-		if(data.length == 5){
+		if (data.length == 5) {
 			uni.showToast({
-				title:"最多只能有五个提醒",
-				icon:"none"
+				title: "最多只能有五个提醒",
+				icon: "none"
 			});
 			return;
 		}
@@ -764,29 +767,27 @@
 				icon: "none"
 			});
 		} else {
-			loading("", () => {
-				taskPageOpt.value.data = res.data.data;
-				taskPageOpt.value.total = res.data.total;
+			taskPageOpt.value.data = res.data.data;
+			taskPageOpt.value.total = res.data.total;
 
-				for (let task of taskPageOpt.value.data) {
-					task.beginTime = new Date(task.beginTime);
-					task.endTime = new Date(task.endTime);
-					if (!dateEquals(state.selectedDay, today.value) && task.deadline != null) {
-						task.deadline = new Date(task.deadline);
-					}
+			for (let task of taskPageOpt.value.data) {
+				task.beginTime = new Date(task.beginTime);
+				task.endTime = new Date(task.endTime);
+				if (!dateEquals(state.selectedDay, today.value) && task.deadline != null) {
+					task.deadline = new Date(task.deadline);
 				}
-				uni.removeStorageSync(TaskReminderKey);
-			}, 750);
+			}
+			uni.removeStorageSync(TaskReminderKey);
 		}
 	}
 
 	function updateTask() {
 		FreshReminderTiming(state.selectedTask.instanceId, state.task.beginTime, response => {
 			const res = response.data;
-			if(!res.succeeded){
+			if (!res.succeeded) {
 				uni.showToast({
-					title:res.message,
-					icon:"none"
+					title: res.message,
+					icon: "none"
 				});
 				return;
 			}
@@ -894,32 +895,29 @@
 	function openEditUI() {
 		if (!state.selectedTask.repeatable) {
 			state.mode = 0;
-			if(state.isTaskRemove){
+			if (state.isTaskRemove) {
 				uni.showModal({
-					title:"移除到回收站",
-					content:"是否移动回收站",
-					confirmColor:"确定",
-					cancelText:"取消",
-					success:(res)=>{
-						if(res.cancel)return;
+					title: "移除到回收站",
+					content: "是否移动回收站",
+					confirmColor: "确定",
+					cancelText: "取消",
+					success: (res) => {
+						if (res.cancel) return;
 						openEditOrRemoveTaskOrCancelTask();
 					}
 				});
-			}
-			else if(state.isTaskCancel)
-			{
+			} else if (state.isTaskCancel) {
 				uni.showModal({
-					title:"取消任务",
-					content:"是否取消",
-					confirmColor:"是",
-					cancelText:"否",
-					success:(res)=>{
-						if(res.cancel)return;
+					title: "取消任务",
+					content: "是否取消",
+					confirmColor: "是",
+					cancelText: "否",
+					success: (res) => {
+						if (res.cancel) return;
 						openEditOrRemoveTaskOrCancelTask();
 					}
 				});
-			}
-			else{
+			} else {
 				copy(state.selectedTask, state.task);
 				state.isTaskUpdate = true;
 				state.canCreateTask = true;
@@ -946,7 +944,7 @@
 			res = `<text style="color:rgb(0,75,225)">开始</text></text>${timeWithoutSeconds(beginTime)}</text>`;
 		else if (dateEquals(endTime, state.selectedDay) && !dateEquals(beginTime, endTime))
 			res = `<text text style="color:black">结束</text></text>${timeWithoutSeconds(endTime)}</text>`;
-	    else res =  `<text text style="color:black">全天</text>`;		
+		else res = `<text text style="color:black">全天</text>`;
 		return res;
 	}
 

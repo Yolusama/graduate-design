@@ -22,7 +22,7 @@ public class StringEncryptUtil {
     }
 
     /**
-     * 生成字符串的md5校验值
+     * 生成字符串的sha-256校验值
      *
      * @param s
      * @return
@@ -32,7 +32,7 @@ public class StringEncryptUtil {
     }
 
     /**
-     * 判断字符串的md5校验码是否与一个已知的md5码相匹配
+     * 判断字符串的sha-256校验码是否与一个已知的md5码相匹配
      *
      * @param password  要校验的字符串
      * @param encryptedPwd 加密后校验码

@@ -16,7 +16,6 @@ public class ObjectUtil {
         Field[] fields = toType.getDeclaredFields();
         List<Field> srcFields = Arrays.stream(srcType.getDeclaredFields()).collect(Collectors.toList());
         try {
-
          for(Field field: fields)
            {
              if(!srcType.equals(toType)) {

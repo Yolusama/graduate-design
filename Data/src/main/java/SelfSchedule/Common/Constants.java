@@ -17,6 +17,7 @@ public final class Constants {
     public static final String CheckCodeTitle = "验证码";
     public static final String Quadrant = "quadrant";
     public static final String TokenExpireSign = "TokenExpire";
+    public static final String EmailError = "EmailError";
     public static final int None = 0;
     public static final int EOF = -1;
     public static final Integer Week = 7;
@@ -36,7 +37,7 @@ public final class Constants {
     public static final Duration CachingExpire = Duration.ofMinutes(3);
     public static final Duration AdminTokenExpire = Duration.ofDays(15);
     public static final Duration MonthExpire = Duration.ofDays(30);
-    public static Date Now(){
+    public static Date now(){
         return new Date();
     }
     public static boolean isDefaultThumb(String thumbName){

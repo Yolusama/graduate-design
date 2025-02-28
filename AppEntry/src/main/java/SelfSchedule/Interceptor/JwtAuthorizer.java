@@ -3,7 +3,6 @@ package SelfSchedule.Interceptor;
 import SelfSchedule.Common.Constants;
 import SelfSchedule.Service.JwtService;
 import SelfSchedule.Service.RedisCache;
-import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -48,7 +47,7 @@ public class JwtAuthorizer implements HandlerInterceptor
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 return false;
             }
-            String userId = jwtService.GetUserIdFromToken(token);
+            String userId = jwtService.getUserIdFromToken(token);
             if(userId==null){
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 return false;

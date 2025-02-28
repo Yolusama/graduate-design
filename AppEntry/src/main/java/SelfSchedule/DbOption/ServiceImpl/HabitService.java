@@ -53,7 +53,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
     @Transactional
     public String createHabit(HabitModel model) {
         Habit habit = new Habit(RandomGenerator.generateHabitId());
-        habit.setCreateTime(Constants.Now());
+        habit.setCreateTime(Constants.now());
         habit.setBeginDate(model.getBeginDate());
         habit.setDeleteFlag(false);
         habit.setDescription(model.getDescription());
@@ -118,7 +118,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
         }
         List<HabitVO> habits = mapper.getHabits(page,userId);
         Date date = DateUtil.onlyDate(time);
-        Date today = DateUtil.onlyDate(Constants.Now());
+        Date today = DateUtil.onlyDate(Constants.now());
         boolean flag = false;
         for(HabitVO habit:habits){
             if(date.getTime()<habit.getBeginDate().getTime())
@@ -280,7 +280,7 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
                 if(!reminderModel.getToDelete()){
                     LambdaUpdateWrapper<HabitReminder> wrapper2 = new LambdaUpdateWrapper<>();
                     wrapper2.set(HabitReminder::getTime,reminderModel.getTime())
-                            .set(HabitReminder::getUpdateTime,Constants.Now())
+                            .set(HabitReminder::getUpdateTime,Constants.now())
                             .eq(HabitReminder::getId,reminderModel.getReminderId());
                     reminderMapper.update(wrapper2);
                 }

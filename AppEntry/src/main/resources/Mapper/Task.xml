@@ -44,13 +44,12 @@
                r.id,r.period,r.periodUnit,r.count,r.deadline,r.custom,i.taskId as taskId from Task t
                           join TaskInstance i on i.instanceId = t.id and i.instanceId = i.taskId
                      left join TaskRepeatRule r on t.id = r.taskId
-        where i.flag = 1 and userId=#{userId} and t.state &lt;= 2 order by t.priority
+        where i.flag = 1 and userId=#{userId} order by t.priority
     </select>
 
     <select id="getTaskCount" resultType="java.lang.Long">
         select count(1) from Task t join TaskInstance i on t.id = i.instanceId and i.flag = 0
                    where  t.userId = #{userId} and t.state = #{state}
-
     </select>
 
     <select id="getDurationTaskCounts" resultType="java.lang.Long">

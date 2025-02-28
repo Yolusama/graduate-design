@@ -46,7 +46,11 @@ public class UserController extends ControllerBase{
         if(res==null)
             return fail("验证码已存在，1分钟内无法再次获取");
         else
+        {
+            if(res.equals(Constants.EmailError))
+                return fail(HttpStatus.BAD_GATEWAY);
             return ok();
+        }
     }
 
     @PutMapping("/Register/{checkCode}")

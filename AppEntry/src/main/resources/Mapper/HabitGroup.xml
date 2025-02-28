@@ -8,5 +8,4 @@
             (null,#{group.userId},#{group.name},#{group.code},null)
         </foreach>
     </insert>
-
 </mapper>

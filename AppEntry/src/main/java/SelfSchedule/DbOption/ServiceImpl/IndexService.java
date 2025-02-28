@@ -151,7 +151,7 @@ public class IndexService implements IndexServiceInterface {
        TaskLabel label = new TaskLabel();
        label.setName(labelName);
        label.setIsList(isList);
-       label.setCreateTime(Constants.Now());
+       label.setCreateTime(Constants.now());
        label.setNotCustom(false);
        label.setIcon(isList?Constants.DefaultListIcon:Constants.DefaultLabelIcon);
        labelMapper.insert(label);
@@ -230,7 +230,7 @@ public class IndexService implements IndexServiceInterface {
         {
            label = new TaskLabel();
            label.setIcon(Constants.DefaultLabelIcon);
-           label.setCreateTime(Constants.Now());
+           label.setCreateTime(Constants.now());
            label.setIsList(false);
            label.setName(labelName);
            labelMapper.insert(label);
@@ -254,12 +254,12 @@ public class IndexService implements IndexServiceInterface {
         Pair<Date,Date> bound = DateUtil.bound(yesterday);
         LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(Task::getState,TaskState.ABANDONED.value()).
-                eq(Task::getUserId,userId).and(q->q.ge(Task::getEndTime,bound.getItem1()).lt(Task::getEndTime,bound.getItem2()))
+                eq(Task::getUserId,userId).lt(Task::getEndTime,bound.getItem2())
                 .eq(Task::getState,TaskState.UNFINISHED.value());
         taskMapper().update(wrapper);
         Date rightBound = bound.getItem2();
         rightBound.setDate(rightBound.getDate()+1);
-        long expire = bound.getItem2().getTime() - Constants.Now().getTime();
+        long expire = bound.getItem2().getTime() - Constants.now().getTime();
         redis.set(key,Constants.NormalState,Duration.ofMillis(expire));
     }
 
@@ -277,7 +277,7 @@ public class IndexService implements IndexServiceInterface {
         }
         Date time = new Date(yesterday.getTime());
         time.setDate(yesterday.getDate()+2);
-        long expire = time.getTime() - Constants.Now().getTime();
+        long expire = time.getTime() - Constants.now().getTime();
         redis.set(key,Constants.NormalState,Duration.ofMillis(expire));
     }
 
@@ -421,7 +421,7 @@ public class IndexService implements IndexServiceInterface {
         TaskLabel label = new TaskLabel();
         label.setIsList(true);
         label.setNotCustom(false);
-        label.setCreateTime(Constants.Now());
+        label.setCreateTime(Constants.now());
         label.setIcon(Constants.DefaultListIcon);
         label.setName(listName);
         labelMapper.insert(label);

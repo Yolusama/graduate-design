@@ -8,7 +8,7 @@ import SelfSchedule.Model.VersionModel;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
-import SelfSchedule.annotation.ClearRedisCache;
+import SelfSchedule.Annotation.ClearRedisCache;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

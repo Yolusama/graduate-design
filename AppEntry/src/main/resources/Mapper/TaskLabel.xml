@@ -28,6 +28,4 @@
         select l.icon from TaskLabel l join UserTaskLabel ul on ul.labelId = l.id
            where ul.userId = #{userId} and l.notCustom = 0
     </select>
-
-
 </mapper>

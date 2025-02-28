@@ -71,7 +71,7 @@ public class FileService {
     public void writeFeedbackFile(String email,String content){
        try {
           String fileName = String.format("%s%s_%s.txt",feedbackFilePath,
-                  DateUtil.fileNameFormatString(Constants.Now()),email);
+                  DateUtil.fileNameFormatString(Constants.now()),email);
           FileOutputStream stream = new FileOutputStream(fileName);
           OutputStreamWriter writer = new OutputStreamWriter(stream);
           writer.write(content);

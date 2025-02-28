@@ -12,6 +12,8 @@ public class EMailSender {
   private EMailSender(){}
   private String from;
   private String password;
+  private final Integer ok = 1;
+  private final Integer error = -1;
 
   public EMailSender(String host,String authorizationCode)
   {
@@ -19,7 +21,7 @@ public class EMailSender {
       password = authorizationCode;
   }
 
-  public  void sendTo(String to,String subject,String msg){
+  public Integer sendTo(String to,String subject,String msg){
       Properties properties = System.getProperties();
 
       // 连接协议
@@ -53,9 +55,11 @@ public class EMailSender {
           multipart.addBodyPart(messageBodyPart);
           message.setContent(multipart);
           Transport.send(message);
+          return ok;
       }
       catch (Exception ex){
           ex.printStackTrace();
+          return error;
       }
   }
 }

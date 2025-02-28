@@ -34,7 +34,7 @@ public class VersionStatusService extends ServiceImpl<VersionStatusMapper,Versio
     @Transactional
     public String publish(VersionModel model, String adminId) {
         VersionStatus version = new VersionStatus(RandomGenerator.generateVersionId());
-        version.setCreateTime(Constants.Now());
+        version.setCreateTime(Constants.now());
         version.setPublishDate(model.getPublishDate());
         version.setType(model.getVersionType());
         version.setFileName(model.getFileName());

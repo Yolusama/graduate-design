@@ -3,7 +3,7 @@ package SelfSchedule.Aspect;
 import SelfSchedule.Common.Constants;
 import SelfSchedule.Functional.JwtParser;
 import SelfSchedule.Service.RedisCache;
-import SelfSchedule.annotation.ClearRedisCache;
+import SelfSchedule.Annotation.ClearRedisCache;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,7 +25,7 @@ public class RedisCachingAspect {
     @Value("${jwt.secretKey}")
     private String secretKey;
 
-    @Pointcut("@annotation(SelfSchedule.annotation.ClearRedisCache)")
+    @Pointcut("@annotation(SelfSchedule.Annotation.ClearRedisCache)")
     private void aspect(){}
 
     @Before("aspect()")

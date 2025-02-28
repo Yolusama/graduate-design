@@ -20,5 +20,4 @@
                      left join HabitFrequency f on h.id = f.habitId
         where h.deleteFlag = 1 and h.userId = #{userId}
     </select>
-
 </mapper>

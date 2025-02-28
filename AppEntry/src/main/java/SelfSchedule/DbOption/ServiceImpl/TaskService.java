@@ -49,7 +49,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     @Override
     public Long createTask(TaskModel model) {
         Task task = new Task();
-        task.setCreateTime(Constants.Now());
+        task.setCreateTime(Constants.now());
         task.setBeginTime(model.getBeginTime());
         task.setEndTime(model.getEndTime());
         task.setPriority(model.getPriority());
@@ -148,7 +148,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                return instanceMapper.update(wrapper);
            }
            else if(mode.equals(TaskEditMode.THISNALL.value())){
-               ruleMapper.setDeadline(Constants.Now(),model.getTaskId());
+               ruleMapper.setDeadline(Constants.now(),model.getTaskId());
                wrapper.in(TaskInstance::getInstanceId,instanceMapper.getRepeatIdsUnder(model.getBeginTime(),model.getTaskId()));
                return instanceMapper.update(wrapper);
            }
@@ -179,8 +179,6 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
 
         boolean flag = true;
         for(TaskRuleComboVO task:tasks){
-            if(task.getDeadline()!=null&&task.getDeadline().getTime()<time.getTime())
-                continue;
             if(!task.getRepeatable()){
                 if(DateUtil.onlyDateEquals(task.getBeginTime(),time)||DateUtil.onlyDateEquals(task.getEndTime(),time)
                 ||(task.getBeginTime().getTime()<time.getTime()&&task.getEndTime().getTime()>=time.getTime())) {
@@ -189,6 +187,8 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 }
                 continue;
             }
+            if(task.getDeadline()!=null&&task.getDeadline().getTime()<time.getTime())
+                continue;
             TaskRuleComboVO queryTask = mapper.getTask(userId,task.getTaskId(),time,bound.getItem1(),bound.getItem2());
             if(queryTask==null) {
                 if(!DateUtil.over(time,task.getBeginTime())&&!DateUtil.over(time,task.getEndTime()))
@@ -275,8 +275,8 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                     if(!isDayCustom)
                         continue;
                 }
-                instance.setCreateTime(Constants.Now());
-                if(DateUtil.over(instance.getEndTime(),Constants.Now()))
+                instance.setCreateTime(Constants.now());
+                if(DateUtil.over(instance.getEndTime(),Constants.now()))
                     instance.setState(TaskState.UNFINISHED.value());
                 else
                     instance.setState(TaskState.ABANDONED.value());
@@ -673,7 +673,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
        LambdaUpdateWrapper<Task> wrapper = new LambdaUpdateWrapper<>();
        wrapper.set(Task::getState,state);
        if(state.equals(TaskState.FINISHED.value()))
-           wrapper.set(Task::getFinishTime,Constants.Now());
+           wrapper.set(Task::getFinishTime,Constants.now());
        else if(state.equals(TaskState.UNFINISHED.value()))
            wrapper.set(Task::getFinishTime,null);
        wrapper.eq(Task::getId,taskId);

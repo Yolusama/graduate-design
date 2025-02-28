@@ -26,13 +26,13 @@ public class JwtService {
         this.jwtConfig = jwtConfig;
     }
 
-    public String GenerateToken(String userId, Duration expire)
+    public String generateToken(String userId, Duration expire)
     {
         return JwtGenerator.generateToken(jwtConfig.getSecretKey(),
                 userId,expire,jwtConfig.getIssuer(),jwtConfig.getAudience());
     }
 
-    public String GetUserIdFromToken(String token)
+    public String getUserIdFromToken(String token)
     {
         try {
             return JwtParser.parse(jwtConfig.getSecretKey(), token);

@@ -59,8 +59,10 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         String key1 = String.format("%s_CheckCode_Get",email);
         if(redis.has(key1))
             return null;
-        emailService.sendTo(email,Constants.CheckCodeTitle,String.format
+        int res = emailService.sendTo(email,Constants.CheckCodeTitle,String.format
                 ("您正在使用电子邮箱%s进行个人信息修改或者用户注册,验证码%s,于五分钟内有效,请及时使用。",email,code));
+        if(res==Constants.EOF)
+            return Constants.EmailError;
         redis.set(key,code,Constants.CheckCodeExpire);
         redis.set(key1,code,Constants.CheckCodeGetExpire);
         return code;
@@ -82,7 +84,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         user.setAccount(RandomGenerator.generateUserAccount());
         user.setNickname(String.format("用户%s",user.getId()));
         user.setPassword(StringEncryptUtil.getString(model.getPassword()));
-        user.setCreateTime(Constants.Now());
+        user.setCreateTime(Constants.now());
         addUserHabitGroups(user.getId());
         addUserDefaultLabels(user.getId());
         redis.remove(key);
@@ -113,12 +115,12 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             return res;
         }
         String key =String.format("%s_token",user.getId());
-        String token = jwtService.GenerateToken(user.getId(),Constants.TokenExpire);
+        String token = jwtService.generateToken(user.getId(),Constants.TokenExpire);
         redis.set(key,token,Constants.TokenExpire);
         ObjectUtil.copy(user,res);
         res.setLoginStatus(UserLoginStatus.SUCCESS);
         res.setToken(token);
-        user.setLastLoginTime(Constants.Now());
+        user.setLastLoginTime(Constants.now());
         mapper.updateById(user);
         return res;
     }
@@ -145,12 +147,12 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             return res;
         }
         String key =String.format("%s_token",user.getId());
-        String token = jwtService.GenerateToken(user.getId(),Constants.TokenExpire);
+        String token = jwtService.generateToken(user.getId(),Constants.TokenExpire);
         redis.set(key,token,Constants.TokenExpire);
         ObjectUtil.copy(user,res);
         res.setToken(token);
         res.setLoginStatus(UserLoginStatus.SUCCESS);
-        user.setLastLoginTime(Constants.Now());
+        user.setLastLoginTime(Constants.now());
         mapper.updateById(user);
         return res;
     }
@@ -164,7 +166,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         boolean res = redis.get(key).equals(token);
         if(res){
            LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
-           wrapper.set(User::getLastLoginTime,Constants.Now()).eq(User::getId,userId);
+           wrapper.set(User::getLastLoginTime,Constants.now()).eq(User::getId,userId);
            mapper.update(wrapper);
         }
         else
@@ -262,15 +264,15 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             res.setLoginStatus(UserLoginStatus.NOT_ADMIN);
             return res;
         }
-        user.setLastLoginTime(Constants.Now());
+        user.setLastLoginTime(Constants.now());
         String key = String.format("%s_token",user.getId());
         if(redis.has(key))
             redis.remove(key);
-        String token = jwtService.GenerateToken(user.getId(),Constants.AdminTokenExpire);
+        String token = jwtService.generateToken(user.getId(),Constants.AdminTokenExpire);
         ObjectUtil.copy(user,res);
         res.setLoginStatus(UserLoginStatus.SUCCESS);
         res.setToken(token);
-        user.setLastLoginTime(Constants.Now());
+        user.setLastLoginTime(Constants.now());
         mapper.updateById(user);
         redis.set(key,token,Constants.AdminTokenExpire);
         return res;
@@ -313,7 +315,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
         user.setAccount(RandomGenerator.generateUserAccount());
         user.setPassword(StringEncryptUtil.getString(user.getDefaultPassword()));
         user.setNickname(model.getNickname());
-        user.setCreateTime(Constants.Now());
+        user.setCreateTime(Constants.now());
         user.setRole(model.getRole());
         user.setStatus(true);
         user.setAvatar(model.getAvatar());

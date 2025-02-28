@@ -6,7 +6,7 @@
 		</view>
 		<!--#endif-->
 		<!--#ifdef H5-->
-		<k-calendar :unchangalbe="true" @onChange="dateChange" style="top:0;height: 120px;">
+		<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;">
 			<!--#endif-->
 			<!--#ifndef H5-->
 			<k-calendar :unchangable="true" @onChange="dateChange" style="top:4vh;height: 120px;">
@@ -112,7 +112,8 @@
 		imgSrc
 	} from "../module/Request";
 	import {
-		onShow,onTabItemTap
+		onShow,
+		onTabItemTap
 	} from "@dcloudio/uni-app"
 	const counter = ref(null);
 	const editor = ref(null);
@@ -151,8 +152,8 @@
 		state.userId = user.uid;
 		getData();
 	});
-	
-	onTabItemTap(()=>{
+
+	onTabItemTap(() => {
 		state.show.editor = false;
 		state.show.detail = false;
 	});
@@ -202,15 +203,15 @@
 	function habitCreated(e) {
 		const item = e.item;
 		const groupName = e.groupName;
-		if (habitOption.value.data.length < habitOption.value.size) {
-			habitOption.value.data.push(item);
-			if (state.data[groupName] == undefined)
-				{
+		if (dateEquals(item.beginDate, state.selectedDay)) {
+			if (habitOption.value.data.length < habitOption.value.size) {
+				habitOption.value.data.push(item);
+				if (state.data[groupName] == undefined) {
 					state.data[groupName] = [item];
 					state.model[groupName] = "0";
-				}
-			else
-				state.data[groupName].push(item);
+				} else
+					state.data[groupName].push(item);
+			}
 		}
 		uni.removeStorageSync(HabitReminderKey);
 	}

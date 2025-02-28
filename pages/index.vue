@@ -522,11 +522,7 @@
 		{
 			const beginTime = item.beginTime;
 			const endTime = item.endTime;
-			const time = onlyDate(new Date());
-			if(state.currentLabel.labelId==2)
-			    time.setDate(time.getDate()+1);
-			else if(state.currentLabel.labelId == 3)
-			    time.setDate(time.getDate()-1);
+			const time = getBaseDayLabelTime();
 			if(dateEquals(beginTime,time)||dateEquals(endTime,time))
 			   state.data["task"].push(item);
 		}
@@ -548,10 +544,17 @@
 			state.labels = e.labels;
 		}
 		if (isBaseLabel(state.currentLabel.labelId)) {
-			state.data["task"][index] = item;
-			return;
+			if(isBaseDayLabel(state.currentLabel.labelId)){
+				const beginTime = item.beginTime;
+				const endTime = item.endTime;
+				const time = getBaseDayLabelTime();
+				if(dateEquals(beginTime,time)||dateEquals(endTime,time))
+				   state.data["task"][index] = item;
+				else state.data["task"][index] = item;
+			}
+			else state.data["task"][index] = item;
 		}
-		if (state.currentLabel.isList && e.list != null) {
+		else if (state.currentLabel.isList && e.list != null) {
 			{
 				if (e.list.labelId == state.currentLabel.labelId)
 					state.data["task"][index] = item;
@@ -657,7 +660,6 @@
 	function habitUpdated(e) {
 		const index = e.index;
 		const item = e.item;
-
 		state.data["habit"][index] = item;
 		uni.removeStorageSync(HabitReminderKey);
 	}
@@ -669,11 +671,7 @@
 
 	function habitFinished(e) {
 		const item = e.item;
-		const time = onlyDate(new Date());
-		if (state.currentLabel.id == 2)
-			time.setDate(time.getDate() + 1);
-		else if (state.currentLabel.id == 3)
-			time.setDate(time.getDate() - 1);
+		const time = getBaseDayLabelTime();
 		const index = item.records.findIndex(r => r.day.getTime() == time.getTime());
 		item.records[index].finished = true;
 	}
@@ -754,11 +752,7 @@
 		const beginTime = task.beginTime;
 		const endTime = task.endTime;
 		var res;
-		const time = onlyDate(new Date());
-		if (state.currentLabel.id == 2)
-			time.setDate(time.getDate() + 1);
-		else if (state.currentLabel.id == 3)
-			time.setDate(time.getDate() - 1);
+		const time = getBaseDayLabelTime();
 			
 		if(state.currentLabel.labelId==IdOfBin)
 		   return `<text style="color:rgb(0,75,235)">${getDateStr(endTime)}</text>`;
@@ -804,11 +798,7 @@
 	}
 
 	function finishHabit(index) {
-		const time = onlyDate(new Date());
-		if (state.currentLabel.id == 2)
-			time.setDate(time.getDate() + 1);
-		else if (state.currentLabel.id == 3)
-			time.setDate(time.getDate() - 1);
+		const time = getBaseDayLabelTime();
 		const habit = state.data['habit'][index];
 		const record = {
 			finished: true,
@@ -833,11 +823,7 @@
 	}
 
 	function unfinishHabit(habit) {
-		const time = onlyDate(new Date());
-		if (state.currentLabel.id == 2)
-			time.setDate(time.getDate() + 1);
-		else if (state.currentLabel.id == 3)
-			time.setDate(time.getDate() - 1);
+		const time = getBaseDayLabelTime();
 
 		const record = {
 			finished: false,
@@ -932,6 +918,15 @@
 
 	function recoverHabit(index) {
 		removeOrRecoverHabit(index, false);
+	}
+	
+	function getBaseDayLabelTime(){
+		const time = onlyDate(new Date());
+		if(state.currentLabel.labelId==2)
+		    time.setDate(time.getDate()+1);
+		else if(state.currentLabel.labelId == 3)
+		    time.setDate(time.getDate()-1);
+	    return time;
 	}
 </script>
 

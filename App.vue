@@ -237,6 +237,5 @@
 	.quadrant-4 {
 		color: springgreen;
 	}
-
 	/*每个页面公共css */
 </style>

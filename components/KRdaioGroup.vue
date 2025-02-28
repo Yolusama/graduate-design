@@ -6,7 +6,7 @@
 						<template v-slot:body>
 							<label class="check" v-if="checkMode">
 								<checkbox :value="item.value" style="transform: scale(0.7);" 
-								:checked="model.indexOf(item.value)>0">	
+								:checked="model.indexOf(item.value)>=0">	
 								</checkbox>
 								<text>{{item.text}}</text>
 							</label>

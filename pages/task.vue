@@ -2,7 +2,8 @@
 	<view id="task">
 		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange"></k-calendar>
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
-			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
+			<view class="todo" v-for="(task,index) in taskPageOpt.data"
+				:key="index" @click="seeTaskDetail(index)">
 				<view class="mask" v-if="task.state==TaskState.abondoned"></view>
 				<uni-swipe-action style="width: 100%;">
 					<uni-swipe-action-item>
@@ -21,6 +22,9 @@
 							</view>
 							<view style="display: flex;align-items: center;">
 								<k-split :width="4" :height="18"></k-split>
+								<text :class="'quadrant-'+task.priority" style="margin-right:3px">
+									{{getPriorityText(task)}}
+								</text>
 								<view class="title-text">
 									<view class="title-content">{{task.title}}</view>
 									<view class="title-description">{{task.description}}</view>
@@ -206,7 +210,7 @@
 												</text>
 											</picker>
 
-											<picker :range="state.frequency.multiData[2]" v-if="state.defOpt.val==2"
+											<picker :range="state.frequency.counts" v-if="state.defOpt.val==2"
 												@change="takeCount">
 												<text class="def-text">{{state.task.count}}次</text>
 											</picker>
@@ -285,7 +289,8 @@
 		<k-radio-group :data="state.priority" v-model="state.task.priority" @onChange="priorityPopup.close()">
 		</k-radio-group>
 	</uni-popup>
-	<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="customPopup">
+	<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="customPopup"
+		style="z-index: 101;">
 		<k-radio-group :data="state.defOpt.data" v-model="state.defOpt.val" @onChange="takeCustomMode">
 		</k-radio-group>
 	</uni-popup>
@@ -302,7 +307,8 @@
 	import {
 		reactive,
 		ref,
-		nextTick
+		nextTick,
+		onMounted
 	} from "vue";
 	import {
 		timeWithoutSeconds,
@@ -344,7 +350,8 @@
 		user
 	} from "../api/User";
 	import {
-		onShow,onTabItemTap
+		onShow,
+		onTabItemTap
 	} from "@dcloudio/uni-app"
 	const popup = ref(null);
 	const frequencyPopup = ref(null);
@@ -400,7 +407,8 @@
 			data: frequency,
 			multiData: [],
 			selectedOne: [],
-			selection: 0
+			selection: 0,
+			counts: []
 		},
 		notifications: [],
 		notifyIntervals: [],
@@ -426,12 +434,16 @@
 	});
 
 	onShow(function() {
-		state.startTime.date = getDateStr(today.value);
-		state.startTime.time = timeWithoutSeconds(today.value);
 		if (user == '')
 			state.task.userId = uni.getStorageSync("user").uid;
 		else
 			state.task.userId = user.uid;
+		getData();
+	});
+
+	onMounted(() => {
+		state.startTime.date = getDateStr(today.value);
+		state.startTime.time = timeWithoutSeconds(today.value);
 		const date = new Date(today.value);
 		date.setHours(date.getHours() + 1);
 		state.endTime.date = getDateStr(date);
@@ -444,19 +456,17 @@
 		const counts = [];
 		for (let i = 1; i <= 1000; i++)
 			counts.push(i);
-		state.frequency.multiData.push(counts);
+		state.frequency.counts = counts;
 		state.notifyOpt[0] = remindModeValues(1);
 		state.task.beginTime = new Date(today.value);
 		state.task.endTime = date;
 		state.modeContent = [new ValueText(0, "全部重复任务"), new ValueText(1, "仅此任务"),
 			new ValueText(2, "此任务及往后的任务")
 		];
-
-		getData();
 	});
-	
-	onTabItemTap(()=>{
-		nextTick(()=>{
+
+	onTabItemTap(() => {
+		nextTick(() => {
 			detailPopup.value.close();
 			frequencyPopup.value.close();
 			defRulePopup.value.close();
@@ -520,19 +530,18 @@
 
 	function pick(event, sign) {
 		const detail = event.detail;
-		const modified = detail.value.replace(/-/g, "/");
 		switch (sign) {
 			case "begin-date":
-				state.startTime.date = modified;
+				state.startTime.date = getDateStr(new Date(detail.value));
 				break;
 			case "begin-time":
-				state.startTime.time = modified;
+				state.startTime.time = detail.value;
 				break;
 			case "end-date":
-				state.endTime.date = modified;
+				state.endTime.date = getDateStr(new Date(detail.value));
 				break;
 			case "end-time":
-				state.endTime.time = modified;
+				state.endTime.time = detail.value;
 				break;
 		}
 		state.task.beginTime = new Date(state.startTime.date + " " + state.startTime.time);
@@ -617,11 +626,15 @@
 						state.manualPopup = true;
 						if (taskPageOpt.value.data.length < taskPageOpt.value.size) {
 							const task = {};
-							copy(state.task, task);
-							task.taskId = res.data;
-							task.instanceId = res.data;
-							taskPageOpt.value.data.push(task);
-							taskPageOpt.value.total++;
+							if (dateEquals(state.task.beginTime, state.selectedDay) && dateEquals(state
+									.task
+									.endTime, state.selectedDay)) {
+								copy(state.task, task);
+								task.taskId = res.data;
+								task.instanceId = res.data;
+								taskPageOpt.value.data.push(task);
+								taskPageOpt.value.total++;
+							}
 						}
 						popup.value.close();
 						uni.removeStorageSync(TaskReminderKey);
@@ -804,8 +817,12 @@
 						icon: "none"
 					});
 				} else {
-					for (let pro in state.task)
-						state.selectedTask[pro] = state.task[pro];
+					if (dateEquals(state.task.beginTime, state.selectedDay) && dateEquals(state.task
+							.endTime, state.selectedDay)) {
+						for (let pro in state.task)
+							state.selectedTask[pro] = state.task[pro];
+					} else
+						taskPageOpt.value.data.splice(state.selectedTask.index, 1);
 					loading("", () => {
 						popup.value.close();
 						detailPopup.value.close();
@@ -1000,6 +1017,19 @@
 			}
 			task.state = state;
 		});
+	}
+
+	function getPriorityText(task) {
+		switch (task.priority) {
+			case 1:
+				return "Ⅰ";
+			case 2:
+				return "Ⅱ"
+			case 3:
+				return "Ⅲ";
+			case 4:
+				return "Ⅵ";
+		}
 	}
 </script>
 

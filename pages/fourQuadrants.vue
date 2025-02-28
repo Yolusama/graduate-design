@@ -11,7 +11,7 @@
 		</view>
 		<view class="content">
 			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)"
-				:id="getQuadrant(index)" :style="state.dataOption[getQuadrant(index)]?'border:1.5px solid blue;':''">
+				:id="getQuadrant(index)" :style="state.dataOption[getQuadrant(index)]?getBorderStyle(index):''">
 				<text :class="getQuadrant(index)">{{item.text}}</text>
 				<view :scroll-y="true" style="width:100%;">
 					<view class="item-content" v-for="(task,index1) in state.data[getQuadrant(index)]" :key="index1"
@@ -77,7 +77,8 @@
 		GetTasks
 	} from '../api/FourQuadrants';
 	import {
-		onShow,onTabItemTap
+		onShow,
+		onTabItemTap
 	} from "@dcloudio/uni-app"
 	const pattern = ref({
 		color: '#7A7E83',
@@ -134,8 +135,8 @@
 		state.userId = user.uid;
 		getData();
 	});
-	
-	onTabItemTap(()=>{
+
+	onTabItemTap(() => {
 		state.show = false;
 	});
 
@@ -210,6 +211,7 @@
 
 	function taskCreated(e) {
 		const task = e.item;
+		if (!dateEquals(task.beginTime, today.value)) return;
 		const quadrantTo = `${quadrant.value}-${task.priority}`;
 		state.data[quadrantTo].push(task);
 	}
@@ -217,25 +219,28 @@
 	function taskUpdated(e) {
 		const index = e.index;
 		const task = e.item;
-
-		const quadrantFrom = `${quadrant.value}-${state.selectedTask.priority}`;
-		const quadrantTo = `${quadrant.value}-${task.priority}`;
-		if (quadrantFrom != quadrantTo) {
-			state.data[quadrantFrom].splice(index, 1);
-			const data = state.data[quadrantTo];
-			if (data.length == 0)
-				data.push(task);
-			else {
-				var i;
-				for (i = 0; i < data.length; i++) {
-					if (data[i].createTime <= task.createTime) {
-						data.splice(i, 0, task);
-						break;
-					}
-				}
-				if (i == data.length)
+      const quadrantFrom = `${quadrant.value}-${state.selectedTask.priority}`;
+		if (!dateEquals(task.beginTime, today.value)) 
+              state.data[quadrantFrom].splice(index,1);
+	     else {
+			const quadrantTo = `${quadrant.value}-${task.priority}`;
+			if (quadrantFrom != quadrantTo) {
+				state.data[quadrantFrom].splice(index, 1);
+				const data = state.data[quadrantTo];
+				if (data.length == 0)
 					data.push(task);
-				uni.removeStorageSync(TaskReminderKey);
+				else {
+					var i;
+					for (i = 0; i < data.length; i++) {
+						if (data[i].createTime <= task.createTime) {
+							data.splice(i, 0, task);
+							break;
+						}
+					}
+					if (i == data.length)
+						data.push(task);
+					uni.removeStorageSync(TaskReminderKey);
+				}
 			}
 		}
 	}
@@ -404,6 +409,16 @@
 			return timeWithoutSeconds(date);
 		const year = today.value.getFullYear();
 		return getDateTimeStr(date, year);
+	}
+	
+	function getBorderStyle(index){
+		const priority = index + 1;
+		switch(priority){
+			case 1: return "border:1.5px solid red";
+			case 2: return "border:1.5px solid rgb(255, 195, 0)";
+			case 3: return "border:1.5px solid blue";
+			case 4: return "border:1.5px solid springgreen";
+		}
 	}
 </script>
 

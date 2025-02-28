@@ -459,13 +459,13 @@
 		const value = event.detail.value;
 		switch (sign) {
 			case "begin-date":
-				startTime.value.date = value.replace(/-/g, "/");
+				startTime.value.date = getDateStr(new Date(value));
 				break
 			case "begin-time":
 				startTime.value.time = value;
 				break;
 			case "end-date":
-				endTime.value.date = value.replace(/-/g, "/");
+				endTime.value.date = getDateStr(new Date(value));
 				break
 			case "end-time":
 				endTime.value.time = value;

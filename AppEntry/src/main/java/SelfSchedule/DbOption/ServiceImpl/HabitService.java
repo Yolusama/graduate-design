@@ -134,24 +134,26 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
                 Date temp = new Date(time.getTime());
                 temp.setDate(temp.getDate()-temp.getDay());
                 Date leftBound = new Date(temp.getTime());
-                temp.setDate(temp.getDate()+Constants.Week);
+                temp.setDate(temp.getDate()+Constants.Week+1);
                 Date rightBound = new Date(temp.getTime());
                 LambdaQueryWrapper<HabitRecord> wrapper1 = new LambdaQueryWrapper<>();
-                wrapper1.eq(HabitRecord::getFinished,true).and(q->q.ge(HabitRecord::getFinishTime,leftBound)
+                wrapper1.eq(HabitRecord::getFinished,true).eq(HabitRecord::getHabitId,habit.getHabitId())
+                        .and(q->q.ge(HabitRecord::getFinishTime,leftBound)
                         .lt(HabitRecord::getFinishTime,rightBound));
                 List<HabitRecord> records = recordMapper.selectList(wrapper1);
                 if(records.size()<habit.getWeekPersistDays())
                     res.getData().add(habit);
                 else
                 {
-                    Optional<HabitRecord> currentRecord = records.stream().filter(r->r.getDay().getTime()==date.getTime())
-                            .findFirst();
-                    if(!currentRecord.isEmpty()){
-                        habit.setFinished(true);
-                        habit.setFinishTime(currentRecord.get().getFinishTime());
-                       res.getData().add(habit);
+                    Optional<HabitRecord> optional = records.stream().filter(r->r.getDay().getTime()==time.getTime()).
+                            findFirst();
+                    if(optional.isPresent()){
+                        habit.setFinished(optional.get().getFinished());
+                        habit.setFinishTime(optional.get().getFinishTime());
+                        res.getData().add(habit);
                     }
-                    continue;
+                    else
+                        continue;
                 }
             }
             if(habit.getPeriod()!=null)
@@ -167,14 +169,18 @@ public class HabitService extends ServiceImpl<HabitMapper, Habit> implements IHa
                 }
             }
             if(habit.getDays()!=null){
+                boolean isIn = false;
                 Map<String,Integer> days = habit.getDays();
                 for(String day:days.keySet()){
                     if(days.get(day).equals(time.getDay()))
                     {
                        res.getData().add(habit);
+                       isIn = true;
                        break;
                     }
                 }
+                if(!isIn)
+                    continue;
             }
             if(today.getTime()>=date.getTime()) {
                 LambdaQueryWrapper<HabitRecord> wrapper = new LambdaQueryWrapper<>();

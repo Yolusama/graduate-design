@@ -9,14 +9,12 @@ import javax.mail.MessagingException;
 
 @Service
 public class EmailService {
-    private final EmailConfig config;
     private final EMailSender host;
     private final String feedback = "已收到用户反馈";
 
     @Autowired
     public EmailService(EmailConfig config)
     {
-        this.config = config;
         host = new EMailSender(config.getHost(),config.getAuthorizationCode());
     }
 

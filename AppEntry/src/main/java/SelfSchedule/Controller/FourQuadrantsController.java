@@ -58,6 +58,4 @@ public class FourQuadrantsController extends ControllerBase {
             return fail();
         return ok();
     }
-
-
 }

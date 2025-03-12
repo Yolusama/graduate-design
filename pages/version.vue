@@ -27,6 +27,7 @@
 				<view class="header">
 					<uni-icons type="closeempty" @click="versionPopupClose"></uni-icons>
 				</view>
+				<uni-title type="h4" title="版本更新"></uni-title>
 				<view class="content" v-html="newVersion.description">
 				</view>
 				<view class="btns">
@@ -233,7 +234,7 @@ import { copy } from '../module/Common';
 		flex-flow: column nowrap;
         align-items: center;
 		max-height: 32vh;
-		width: 60vw;
+		width: 75vw;
 	} 
 	
 	.version-update .header{
@@ -248,15 +249,15 @@ import { copy } from '../module/Common';
 	.version-update .content{
 		max-height: 20vh;
 		overflow:hidden auto;
-		text-align: left;
+		text-align: center;
 		width: 92%;
 	}
 	
 	.version-update .btns{
 		display: flex;
-		width: 80%;
+		width: 60%;
 		justify-content: center;
-		margin-top: 2%;
+		margin-top: 4vh;
 		margin-bottom: 3%;
 	}
 	/*#endif*/

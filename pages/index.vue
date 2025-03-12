@@ -96,7 +96,7 @@
 					<scroll-view style="max-height: 42vh;" scroll-y>
 						<view v-for="(habit,index) in state.data['habit']" class="habit" :key="index">
 							<uni-swipe-action>
-								<uni-swipe-action-item :disabled="habit.finished">
+								<uni-swipe-action-item :disabled="habit.finished||state.currentLabel.labelId==TomorrowLabelId">
 									<template v-slot:right>
 										<view class="finishBtn" @click.stop="finishHabit(index)"
 											v-if="state.currentLabel.labelId!=IdOfBin">完成</view>
@@ -134,7 +134,7 @@
 									<view class="finish" v-if="habit.finished">
 										<text style="font-weight: normal;font-size: 14px;color:blue;
 							  margin-left: 4px;margin-right: 4px;">
-											{{dateEquals(habit.finishTime,new Date())?timeWithoutSeconds(habit.finishTime):
+											{{dateEquals(habit.finishTime,getBaseDayLabelTime())?timeWithoutSeconds(habit.finishTime):
 							  getDateStr(habit.finishTime)}}&nbsp;
 											完成</text>
 										<!--#ifndef H5-->
@@ -167,7 +167,7 @@
 						<uni-swipe-action v-for="(task,index) in state.data['task']" :key="index">
 							<uni-swipe-action-item>
 								<template v-slot:left>
-									<view style="display: flex;align-items: center;position: relative;"
+									<view style="display: flex;align-items: center;position: relative;right:3px"
 										v-if="state.currentLabel.labelId!=IdOfBin">
 										<button size="mini" style="background-color: rgb(0,255,0);color: white;"
 											v-if="task.state!=TaskState.finished"
@@ -250,7 +250,7 @@
 			:userLists="state.lists.filter(l=>!isSysLabel(l.labelId))">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
-			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished"></habit-detail>
+			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished" :date="getBaseDayLabelTime()"></habit-detail>
 		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false"
 			@fabClick="openToEdit" v-if="!isStateLabel(state.currentLabel.labelId)"
 			@longpress="fabPosition.left=!fabPosition.left" />
@@ -294,7 +294,8 @@
 		CurrentAudioKey,
 		ValueText,
 		CurrentFinsihAudioKey,
-		isSysLabel
+		isSysLabel,
+		TomorrowLabelId
 	} from '../module/Common';
 	import {
 		imgSrc
@@ -574,6 +575,13 @@
 	}
 
 	function seeHabitDetail(index) {
+		if(state.currentLabel.labelId==TomorrowLabelId){
+			uni.showToast({
+				title:"现在还不能操作！",
+				icon:"none"
+			});
+			return;
+		}
 		const habit = state.data["habit"][index];
 		GetHabitReminders(habit.habitId, response => {
 			const res = response.data;
@@ -971,6 +979,7 @@
 		justify-content: flex-start;
 		width: 100%;
 		margin-bottom: 2%;
+		padding-left: 2%;
 	}
 
 	#task-labels .header .avatar {

@@ -19,11 +19,11 @@
 					<k-swiper @finish="finishHabit" :height="60" v-if="!state.selectedHabit.finished"></k-swiper>
 					<view class="content-show" v-if="state.selectedHabit.finished">
 						<view class="show-content">
-							<text>当前坚持</text>
+							<text>当前连续</text>
 							<text>{{state.selectedHabit.continuousDays}}天</text>
 						</view>
 						<view class="show-content">
-							<text>最多坚持</text>
+							<text>最多连续</text>
 							<text>{{state.selectedHabit.mostDays}}天</text>
 						</view>
 						<view class="show-content">
@@ -32,6 +32,7 @@
 						</view>
 					</view>
 				</view>
+				<view class="frequency-text">{{getFrequencyText(state.selectedHabit)}}</view>
 				<text @click="openRecord" class="open-record">习惯记录详情</text>
 			</view>
 		</view>
@@ -65,7 +66,8 @@
 	} from "vue";
 	import {
 		onlyDate,
-		delayToRun
+		delayToRun,
+		getFrequencyText
 	} from "../module/Common";
 	import {
 		FinishOrNot,
@@ -122,7 +124,7 @@
 			habitId: state.selectedHabit.habitId,
 			finishTime: new Date(),
 			finished: finished,
-			day: onlyDate(state.selectedDay)
+			day: onlyDate(date.value)
 		};
 		if (!model.finished && !state.selectedHabit.finished) return;
 		FinishOrNot(model, response => {
@@ -268,6 +270,12 @@
 		font-size: 18px;
 		margin-left: 15px;
 	}
+	
+	.detail .frequency-text{
+		font-size: 14px;
+		color: gray;
+		margin-top: 2%;
+	}
 
 	.open-record {
 		color: rgb(0, 75, 235);
@@ -289,7 +297,7 @@
 		width: 90%;
 		background-color: rgb(99%, 99%, 99%);
 		border-radius: 10px;
-		height: 220px;
+		height: 250px;
 	}
 
 	.finishBtn {

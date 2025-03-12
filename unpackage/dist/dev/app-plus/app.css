@@ -20,7 +20,6 @@
 .quadrant-4 {
 		color: springgreen;
 }
-
 	/*每个页面公共css */
 
 /**
@@ -2456,6 +2455,11 @@
 		font-size: 18px;
 		margin-left: 15px;
 }
+.detail .frequency-text[data-v-e6c3bf42]{
+		font-size: 14px;
+		color: gray;
+		margin-top: 2%;
+}
 .open-record[data-v-e6c3bf42] {
 		color: rgb(0, 75, 235);
 		margin-top: 2%;
@@ -2473,7 +2477,7 @@
 		width: 90%;
 		background-color: rgb(99%, 99%, 99%);
 		border-radius: 10px;
-		height: 220px;
+		height: 250px;
 }
 .finishBtn[data-v-e6c3bf42] {
 		position: relative;

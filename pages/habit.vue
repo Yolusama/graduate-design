@@ -26,7 +26,8 @@
 							<view v-for="(habit,index) in data" style="display: flex;flex-flow: column nowrap;"
 								:key="index">
 								<uni-swipe-action>
-									<uni-swipe-action-item :disabled="habit.finished">
+									<uni-swipe-action-item :disabled="habit.finished
+									||onlyDate(today).getTime()<state.selectedDay.getTime()">
 										<template v-slot:right>
 											<view style="display: flex;align-items: center;">
 												<view class="finishBtn" @click.stop="
@@ -81,7 +82,7 @@
 				@close="editorClose" @created="habitCreated">
 			</habit-editor>
 			<habit-detail :habit="state.selectedHabit" ref="detail" @finished="habitFinished" v-if="state.show.detail"
-				@updated="habitUpdated" @close="detailClose" @removed="habitRemoved">
+				@updated="habitUpdated" @close="detailClose" @removed="habitRemoved" :date="state.selectedDay">
 			</habit-detail>
 			<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" :horizontal="fabPosition.value()"
 				@fabClick="openToEdit" @longpress="fabPosition.left=!fabPosition.left" />
@@ -100,7 +101,8 @@
 		timeWithoutSeconds,
 		dateEquals,
 		HabitReminderKey,
-		delayToRun
+		delayToRun,
+		getDateStr
 	} from "../module/Common";
 	import {
 		GetHabits,
@@ -159,6 +161,14 @@
 	});
 
 	function seeDetail(groupName, index) {
+		if(onlyDate(today.value).getTime()<state.selectedDay.getTime())
+		{
+			uni.showToast({
+				title:"现在还不能操作!",
+				icon:"none"
+			})
+			return;
+		}
 		state.selectedHabit = state.data[groupName][index];
 		if (state.selectedDay.getTime() < state.selectedHabit
 			.beginDate

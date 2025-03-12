@@ -9,7 +9,7 @@
 			<uni-icons type="right" @click="transformRight"></uni-icons>
 		</view>
 		<swiper :current="state.current" @transition="toTransform" @change="transformed"
-			@animationfinish="backTransform" style="height: 230px">
+			@animationfinish="backTransform" style="height: 250px">
 			<swiper-item v-for="(item,index) in state.data" :key="index">
 				<view class="day-label">
 					<text class="day-text" v-for="(day,index1) in ['日','一','二','三','四','五','六']"

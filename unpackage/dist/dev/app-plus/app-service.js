@@ -3979,9 +3979,11 @@ if (uni.restoreGlobal) {
           break;
       }
     } else {
-      for (let pro in task.custom) {
-        res += `${weekDaySign(task.custom[pro])},`;
-      }
+      const values = [];
+      for (let pro in task.custom)
+        values.push(task.custom[pro]);
+      for (let day of values.sort())
+        res += `${weekDaySign(day)},`;
       res = res.substring(0, res.length - 1);
     }
     if (task.count != null && task.count > 0) {
@@ -4111,6 +4113,7 @@ if (uni.restoreGlobal) {
   function isSysLabel(labelId) {
     return [1, 2, 3, 4, 5, 6, 7, 8].findIndex((l2) => l2 == labelId) >= 0;
   }
+  const TomorrowLabelId = 2;
   const AWeek = 7;
   const CurrentAudioKey = "current-notify-audio";
   const CurrentFinsihAudioKey = "current-finish-audio";
@@ -4119,6 +4122,23 @@ if (uni.restoreGlobal) {
     context.src = audio;
     context.play();
     context.onEnded((result) => context.destroy());
+  }
+  function getFrequencyText(habit) {
+    let res = "";
+    if (habit.days != null) {
+      const values = [];
+      for (let key in habit.days)
+        values.push(habit.days[key]);
+      values.sort();
+      for (let day of values)
+        res += `${weekDaySign(day)};`;
+      res = res.substring(0, res.length - 1);
+    }
+    if (habit.weekPersistDays)
+      res = `每周${habit.weekPersistDays}天`;
+    if (habit.period != null)
+      res = `每隔${habit.period}天`;
+    return res;
   }
   const _imports_0$4 = "/static/login.gif";
   const _sfc_main$G = {
@@ -6397,11 +6417,7 @@ if (uni.restoreGlobal) {
         if (isBaseDayLabel(state.currentLabel.labelId)) {
           const beginTime = item.beginTime;
           const endTime = item.endTime;
-          const time = onlyDate(/* @__PURE__ */ new Date());
-          if (state.currentLabel.labelId == 2)
-            time.setDate(time.getDate() + 1);
-          else if (state.currentLabel.labelId == 3)
-            time.setDate(time.getDate() - 1);
+          const time = getBaseDayLabelTime();
           if (dateEquals(beginTime, time) || dateEquals(endTime, time))
             state.data["task"].push(item);
         } else if (e2.list != null && state.currentLabel.isList) {
@@ -6421,10 +6437,17 @@ if (uni.restoreGlobal) {
           state.labels = e2.labels;
         }
         if (isBaseLabel(state.currentLabel.labelId)) {
-          state.data["task"][index] = item;
-          return;
-        }
-        if (state.currentLabel.isList && e2.list != null) {
+          if (isBaseDayLabel(state.currentLabel.labelId)) {
+            const beginTime = item.beginTime;
+            const endTime = item.endTime;
+            const time = getBaseDayLabelTime();
+            if (dateEquals(beginTime, time) || dateEquals(endTime, time))
+              state.data["task"][index] = item;
+            else
+              state.data["task"][index] = item;
+          } else
+            state.data["task"][index] = item;
+        } else if (state.currentLabel.isList && e2.list != null) {
           {
             if (e2.list.labelId == state.currentLabel.labelId)
               state.data["task"][index] = item;
@@ -6443,6 +6466,13 @@ if (uni.restoreGlobal) {
         uni.removeStorageSync(TaskReminderKey);
       }
       function seeHabitDetail(index) {
+        if (state.currentLabel.labelId == TomorrowLabelId) {
+          uni.showToast({
+            title: "现在还不能操作！",
+            icon: "none"
+          });
+          return;
+        }
         const habit = state.data["habit"][index];
         GetHabitReminders(habit.habitId, (response) => {
           const res = response.data;
@@ -6531,11 +6561,7 @@ if (uni.restoreGlobal) {
       }
       function habitFinished(e2) {
         const item = e2.item;
-        const time = onlyDate(/* @__PURE__ */ new Date());
-        if (state.currentLabel.id == 2)
-          time.setDate(time.getDate() + 1);
-        else if (state.currentLabel.id == 3)
-          time.setDate(time.getDate() - 1);
+        const time = getBaseDayLabelTime();
         const index = item.records.findIndex((r2) => r2.day.getTime() == time.getTime());
         item.records[index].finished = true;
       }
@@ -6611,11 +6637,7 @@ if (uni.restoreGlobal) {
         const beginTime = task.beginTime;
         const endTime = task.endTime;
         var res;
-        const time = onlyDate(/* @__PURE__ */ new Date());
-        if (state.currentLabel.id == 2)
-          time.setDate(time.getDate() + 1);
-        else if (state.currentLabel.id == 3)
-          time.setDate(time.getDate() - 1);
+        const time = getBaseDayLabelTime();
         if (state.currentLabel.labelId == IdOfBin)
           return `<text style="color:rgb(0,75,235)">${getDateStr(endTime)}</text>`;
         if (dateEquals(beginTime, endTime) && dateEquals(beginTime, time))
@@ -6654,11 +6676,7 @@ if (uni.restoreGlobal) {
         });
       }
       function finishHabit(index) {
-        const time = onlyDate(/* @__PURE__ */ new Date());
-        if (state.currentLabel.id == 2)
-          time.setDate(time.getDate() + 1);
-        else if (state.currentLabel.id == 3)
-          time.setDate(time.getDate() - 1);
+        const time = getBaseDayLabelTime();
         const habit = state.data["habit"][index];
         const record = {
           finished: true,
@@ -6681,11 +6699,7 @@ if (uni.restoreGlobal) {
         });
       }
       function unfinishHabit(habit) {
-        const time = onlyDate(/* @__PURE__ */ new Date());
-        if (state.currentLabel.id == 2)
-          time.setDate(time.getDate() + 1);
-        else if (state.currentLabel.id == 3)
-          time.setDate(time.getDate() - 1);
+        const time = getBaseDayLabelTime();
         const record = {
           finished: false,
           day: time,
@@ -6771,7 +6785,15 @@ if (uni.restoreGlobal) {
       function recoverHabit(index) {
         removeOrRecoverHabit(index, false);
       }
-      const __returned__ = { pattern: pattern2, fabPosition, today, state, indexTaskEditor, indexHabitDetail, indexLabelEditor, labelDrawer, currentLabel, todayLabel, checkYesterdayTask, checkContinuousDays, openTaskEditor, showMask, openToEdit, openLabelEditor, labelCreated, labelUpdated, taskCreated, taskUpdated, taskRemoved, seeHabitDetail, taskEditorClose, habitDetailClose, labelEditorClose, getData, habitUpdated, habitRemoved, habitFinished, hideOrShowLabel, removeLabel, getLabels, createdLabel, getTaskTimeStr, finishTaskOrNot, finishHabit, unfinishHabit, recordFinish, switchContent, seeHiddenLabels, goToSelfInfo, removeOrRecoverTask, removeTask, recoverTask, removeOrRecoverHabit, removeHabit, recoverHabit, nextTick: vue.nextTick, reactive: vue.reactive, ref: vue.ref, get CheckYesterdayTask() {
+      function getBaseDayLabelTime() {
+        const time = onlyDate(/* @__PURE__ */ new Date());
+        if (state.currentLabel.labelId == 2)
+          time.setDate(time.getDate() + 1);
+        else if (state.currentLabel.labelId == 3)
+          time.setDate(time.getDate() - 1);
+        return time;
+      }
+      const __returned__ = { pattern: pattern2, fabPosition, today, state, indexTaskEditor, indexHabitDetail, indexLabelEditor, labelDrawer, currentLabel, todayLabel, checkYesterdayTask, checkContinuousDays, openTaskEditor, showMask, openToEdit, openLabelEditor, labelCreated, labelUpdated, taskCreated, taskUpdated, taskRemoved, seeHabitDetail, taskEditorClose, habitDetailClose, labelEditorClose, getData, habitUpdated, habitRemoved, habitFinished, hideOrShowLabel, removeLabel, getLabels, createdLabel, getTaskTimeStr, finishTaskOrNot, finishHabit, unfinishHabit, recordFinish, switchContent, seeHiddenLabels, goToSelfInfo, removeOrRecoverTask, removeTask, recoverTask, removeOrRecoverHabit, removeHabit, recoverHabit, getBaseDayLabelTime, nextTick: vue.nextTick, reactive: vue.reactive, ref: vue.ref, get CheckYesterdayTask() {
         return CheckYesterdayTask;
       }, get FinishTaskOrNot() {
         return FinishTaskOrNot;
@@ -6829,6 +6851,8 @@ if (uni.restoreGlobal) {
         return CurrentFinsihAudioKey;
       }, get isSysLabel() {
         return isSysLabel;
+      }, get TomorrowLabelId() {
+        return TomorrowLabelId;
       }, get imgSrc() {
         return imgSrc;
       }, get FinishOrNot() {
@@ -7162,7 +7186,7 @@ if (uni.restoreGlobal) {
                           {
                             default: vue.withCtx(() => [
                               vue.createVNode(_component_uni_swipe_action_item, {
-                                disabled: habit.finished
+                                disabled: habit.finished || $setup.state.currentLabel.labelId == $setup.TomorrowLabelId
                               }, vue.createSlots({
                                 right: vue.withCtx(() => [
                                   $setup.state.currentLabel.labelId != $setup.IdOfBin ? (vue.openBlock(), vue.createElementBlock("view", {
@@ -7236,7 +7260,7 @@ if (uni.restoreGlobal) {
                                     vue.createElementVNode(
                                       "text",
                                       { style: { "font-weight": "normal", "font-size": "14px", "color": "blue", "margin-left": "4px", "margin-right": "4px" } },
-                                      vue.toDisplayString($setup.dateEquals(habit.finishTime, /* @__PURE__ */ new Date()) ? $setup.timeWithoutSeconds(habit.finishTime) : $setup.getDateStr(habit.finishTime)) + "  完成",
+                                      vue.toDisplayString($setup.dateEquals(habit.finishTime, $setup.getBaseDayLabelTime()) ? $setup.timeWithoutSeconds(habit.finishTime) : $setup.getDateStr(habit.finishTime)) + "  完成",
                                       1
                                       /* TEXT */
                                     ),
@@ -7331,7 +7355,7 @@ if (uni.restoreGlobal) {
                                 left: vue.withCtx(() => [
                                   $setup.state.currentLabel.labelId != $setup.IdOfBin ? (vue.openBlock(), vue.createElementBlock("view", {
                                     key: 0,
-                                    style: { "display": "flex", "align-items": "center", "position": "relative" }
+                                    style: { "display": "flex", "align-items": "center", "position": "relative", "right": "3px" }
                                   }, [
                                     task.state != $setup.TaskState.finished ? (vue.openBlock(), vue.createElementBlock("button", {
                                       key: 0,
@@ -7563,8 +7587,9 @@ if (uni.restoreGlobal) {
         ref: "indexHabitDetail",
         onClose: $setup.habitDetailClose,
         onRemoved: $setup.habitRemoved,
-        onFinished: $setup.habitFinished
-      }, null, 8, ["habit"])) : vue.createCommentVNode("v-if", true),
+        onFinished: $setup.habitFinished,
+        date: $setup.getBaseDayLabelTime()
+      }, null, 8, ["habit", "date"])) : vue.createCommentVNode("v-if", true),
       !$setup.isStateLabel($setup.state.currentLabel.labelId) ? (vue.openBlock(), vue.createBlock(_component_uni_fab, {
         key: 3,
         pattern: $setup.pattern,
@@ -7636,7 +7661,8 @@ if (uni.restoreGlobal) {
           data: frequency,
           multiData: [],
           selectedOne: [],
-          selection: 0
+          selection: 0,
+          counts: []
         },
         notifications: [],
         notifyIntervals: [],
@@ -7661,12 +7687,15 @@ if (uni.restoreGlobal) {
         isTaskRemove: false
       });
       onShow(function() {
-        state.startTime.date = getDateStr(today.value);
-        state.startTime.time = timeWithoutSeconds(today.value);
         if (user == "")
           state.task.userId = uni.getStorageSync("user").uid;
         else
           state.task.userId = user.uid;
+        getData();
+      });
+      vue.onMounted(() => {
+        state.startTime.date = getDateStr(today.value);
+        state.startTime.time = timeWithoutSeconds(today.value);
         const date = new Date(today.value);
         date.setHours(date.getHours() + 1);
         state.endTime.date = getDateStr(date);
@@ -7679,7 +7708,7 @@ if (uni.restoreGlobal) {
         const counts = [];
         for (let i2 = 1; i2 <= 1e3; i2++)
           counts.push(i2);
-        state.frequency.multiData.push(counts);
+        state.frequency.counts = counts;
         state.notifyOpt[0] = remindModeValues(1);
         state.task.beginTime = new Date(today.value);
         state.task.endTime = date;
@@ -7688,7 +7717,6 @@ if (uni.restoreGlobal) {
           new ValueText(1, "仅此任务"),
           new ValueText(2, "此任务及往后的任务")
         ];
-        getData();
       });
       onTabItemTap(() => {
         vue.nextTick(() => {
@@ -7748,19 +7776,18 @@ if (uni.restoreGlobal) {
       }
       function pick(event, sign) {
         const detail = event.detail;
-        const modified = detail.value.replace(/-/g, "/");
         switch (sign) {
           case "begin-date":
-            state.startTime.date = modified;
+            state.startTime.date = getDateStr(new Date(detail.value));
             break;
           case "begin-time":
-            state.startTime.time = modified;
+            state.startTime.time = detail.value;
             break;
           case "end-date":
-            state.endTime.date = modified;
+            state.endTime.date = getDateStr(new Date(detail.value));
             break;
           case "end-time":
-            state.endTime.time = modified;
+            state.endTime.time = detail.value;
             break;
         }
         state.task.beginTime = /* @__PURE__ */ new Date(state.startTime.date + " " + state.startTime.time);
@@ -7841,11 +7868,13 @@ if (uni.restoreGlobal) {
                 state.manualPopup = true;
                 if (taskPageOpt.value.data.length < taskPageOpt.value.size) {
                   const task = {};
-                  copy(state.task, task);
-                  task.taskId = res.data;
-                  task.instanceId = res.data;
-                  taskPageOpt.value.data.push(task);
-                  taskPageOpt.value.total++;
+                  if (dateEquals(state.task.beginTime, state.selectedDay) && dateEquals(state.task.endTime, state.selectedDay)) {
+                    copy(state.task, task);
+                    task.taskId = res.data;
+                    task.instanceId = res.data;
+                    taskPageOpt.value.data.push(task);
+                    taskPageOpt.value.total++;
+                  }
                 }
                 popup.value.close();
                 uni.removeStorageSync(TaskReminderKey);
@@ -8013,8 +8042,11 @@ if (uni.restoreGlobal) {
                 icon: "none"
               });
             } else {
-              for (let pro in state.task)
-                state.selectedTask[pro] = state.task[pro];
+              if (dateEquals(state.task.beginTime, state.selectedDay) && dateEquals(state.task.endTime, state.selectedDay)) {
+                for (let pro in state.task)
+                  state.selectedTask[pro] = state.task[pro];
+              } else
+                taskPageOpt.value.data.splice(state.selectedTask.index, 1);
               loading("", () => {
                 popup.value.close();
                 detailPopup.value.close();
@@ -8205,7 +8237,19 @@ if (uni.restoreGlobal) {
           task.state = state2;
         });
       }
-      const __returned__ = { popup, frequencyPopup, defRulePopup, detailPopup, priorityPopup, customPopup, editModePopup: editModePopup2, today, taskPageOpt, pattern: pattern2, fabPosition, state, openToEdit, modeChange, beforeClosePopup, reloadTaskModel, pick, allDay, seeTaskDetail, titleInput, editTask, multiSelect, addReminderInfoModel, changeNotifyMode, notify, takeCustom, takeCustomMode, takeCount, takeDeadline, dateChange, getData, getDataCallback, updateTask, closeDetailPopup, removeReminder, openEditOrRemoveTaskOrCancelTask, openEditUI, beginEndTimeStr, changeRepeatRule, finishOrNot, reactive: vue.reactive, ref: vue.ref, nextTick: vue.nextTick, get timeWithoutSeconds() {
+      function getPriorityText(task) {
+        switch (task.priority) {
+          case 1:
+            return "Ⅰ";
+          case 2:
+            return "Ⅱ";
+          case 3:
+            return "Ⅲ";
+          case 4:
+            return "Ⅵ";
+        }
+      }
+      const __returned__ = { popup, frequencyPopup, defRulePopup, detailPopup, priorityPopup, customPopup, editModePopup: editModePopup2, today, taskPageOpt, pattern: pattern2, fabPosition, state, openToEdit, modeChange, beforeClosePopup, reloadTaskModel, pick, allDay, seeTaskDetail, titleInput, editTask, multiSelect, addReminderInfoModel, changeNotifyMode, notify, takeCustom, takeCustomMode, takeCount, takeDeadline, dateChange, getData, getDataCallback, updateTask, closeDetailPopup, removeReminder, openEditOrRemoveTaskOrCancelTask, openEditUI, beginEndTimeStr, changeRepeatRule, finishOrNot, getPriorityText, reactive: vue.reactive, ref: vue.ref, nextTick: vue.nextTick, onMounted: vue.onMounted, get timeWithoutSeconds() {
         return timeWithoutSeconds;
       }, get priority() {
         return priority;
@@ -8360,6 +8404,16 @@ if (uni.restoreGlobal) {
                                     width: 4,
                                     height: 18
                                   }),
+                                  vue.createElementVNode(
+                                    "text",
+                                    {
+                                      class: vue.normalizeClass("quadrant-" + task.priority),
+                                      style: { "margin-right": "3px" }
+                                    },
+                                    vue.toDisplayString($setup.getPriorityText(task)),
+                                    3
+                                    /* TEXT, CLASS */
+                                  ),
                                   vue.createElementVNode("view", { class: "title-text" }, [
                                     vue.createElementVNode(
                                       "view",
@@ -8820,7 +8874,7 @@ if (uni.restoreGlobal) {
                                     ], 40, ["value"])) : vue.createCommentVNode("v-if", true),
                                     $setup.state.defOpt.val == 2 ? (vue.openBlock(), vue.createElementBlock("picker", {
                                       key: 1,
-                                      range: $setup.state.frequency.multiData[2],
+                                      range: $setup.state.frequency.counts,
                                       onChange: $setup.takeCount
                                     }, [
                                       vue.createElementVNode(
@@ -9047,7 +9101,8 @@ if (uni.restoreGlobal) {
             type: "center",
             "background-color": "#fff",
             "border-radius": "10px 10px 10px 10px",
-            ref: "customPopup"
+            ref: "customPopup",
+            style: { "z-index": "101" }
           },
           {
             default: vue.withCtx(() => [
@@ -9146,6 +9201,13 @@ if (uni.restoreGlobal) {
         state.show.detail = false;
       });
       function seeDetail(groupName, index) {
+        if (onlyDate(today.value).getTime() < state.selectedDay.getTime()) {
+          uni.showToast({
+            title: "现在还不能操作!",
+            icon: "none"
+          });
+          return;
+        }
         state.selectedHabit = state.data[groupName][index];
         if (state.selectedDay.getTime() < state.selectedHabit.beginDate.getTime())
           return;
@@ -9187,13 +9249,15 @@ if (uni.restoreGlobal) {
       function habitCreated(e2) {
         const item = e2.item;
         const groupName = e2.groupName;
-        if (habitOption.value.data.length < habitOption.value.size) {
-          habitOption.value.data.push(item);
-          if (state.data[groupName] == void 0) {
-            state.data[groupName] = [item];
-            state.model[groupName] = "0";
-          } else
-            state.data[groupName].push(item);
+        if (dateEquals(item.beginDate, state.selectedDay)) {
+          if (habitOption.value.data.length < habitOption.value.size) {
+            habitOption.value.data.push(item);
+            if (state.data[groupName] == void 0) {
+              state.data[groupName] = [item];
+              state.model[groupName] = "0";
+            } else
+              state.data[groupName].push(item);
+          }
         }
         uni.removeStorageSync(HabitReminderKey$1);
       }
@@ -9332,6 +9396,8 @@ if (uni.restoreGlobal) {
         return HabitReminderKey$1;
       }, get delayToRun() {
         return delayToRun;
+      }, get getDateStr() {
+        return getDateStr;
       }, get GetHabits() {
         return GetHabits;
       }, get FinishOrNot() {
@@ -9428,7 +9494,7 @@ if (uni.restoreGlobal) {
                                 {
                                   default: vue.withCtx(() => [
                                     vue.createVNode(_component_uni_swipe_action_item, {
-                                      disabled: habit.finished
+                                      disabled: habit.finished || $setup.onlyDate($setup.today).getTime() < $setup.state.selectedDay.getTime()
                                     }, {
                                       right: vue.withCtx(() => [
                                         vue.createElementVNode("view", { style: { "display": "flex", "align-items": "center" } }, [
@@ -9495,7 +9561,7 @@ if (uni.restoreGlobal) {
                                           vue.createElementVNode(
                                             "text",
                                             { style: { "font-weight": "normal", "font-size": "14px", "color": "blue", "margin-left": "4px", "margin-right": "4px" } },
-                                            vue.toDisplayString($setup.dateEquals(habit.finishTime, $setup.state.selectedDay) ? $setup.timeWithoutSeconds(habit.finishTime) : _ctx.getDateStr(habit.finishTime)) + "  完成",
+                                            vue.toDisplayString($setup.dateEquals(habit.finishTime, $setup.state.selectedDay) ? $setup.timeWithoutSeconds(habit.finishTime) : $setup.getDateStr(habit.finishTime)) + "  完成",
                                             1
                                             /* TEXT */
                                           ),
@@ -9557,8 +9623,9 @@ if (uni.restoreGlobal) {
         onFinished: $setup.habitFinished,
         onUpdated: $setup.habitUpdated,
         onClose: $setup.detailClose,
-        onRemoved: $setup.habitRemoved
-      }, null, 8, ["habit"])) : vue.createCommentVNode("v-if", true),
+        onRemoved: $setup.habitRemoved,
+        date: $setup.state.selectedDay
+      }, null, 8, ["habit", "date"])) : vue.createCommentVNode("v-if", true),
       vue.createVNode(_component_uni_fab, {
         vertical: "bottom",
         pattern: $setup.pattern,
@@ -9699,6 +9766,8 @@ if (uni.restoreGlobal) {
       }
       function taskCreated(e2) {
         const task = e2.item;
+        if (!dateEquals(task.beginTime, today.value))
+          return;
         const quadrantTo = `${quadrant.value}-${task.priority}`;
         state.data[quadrantTo].push(task);
       }
@@ -9706,23 +9775,27 @@ if (uni.restoreGlobal) {
         const index = e2.index;
         const task = e2.item;
         const quadrantFrom = `${quadrant.value}-${state.selectedTask.priority}`;
-        const quadrantTo = `${quadrant.value}-${task.priority}`;
-        if (quadrantFrom != quadrantTo) {
+        if (!dateEquals(task.beginTime, today.value))
           state.data[quadrantFrom].splice(index, 1);
-          const data = state.data[quadrantTo];
-          if (data.length == 0)
-            data.push(task);
-          else {
-            var i2;
-            for (i2 = 0; i2 < data.length; i2++) {
-              if (data[i2].createTime <= task.createTime) {
-                data.splice(i2, 0, task);
-                break;
-              }
-            }
-            if (i2 == data.length)
+        else {
+          const quadrantTo = `${quadrant.value}-${task.priority}`;
+          if (quadrantFrom != quadrantTo) {
+            state.data[quadrantFrom].splice(index, 1);
+            const data = state.data[quadrantTo];
+            if (data.length == 0)
               data.push(task);
-            uni.removeStorageSync(TaskReminderKey);
+            else {
+              var i2;
+              for (i2 = 0; i2 < data.length; i2++) {
+                if (data[i2].createTime <= task.createTime) {
+                  data.splice(i2, 0, task);
+                  break;
+                }
+              }
+              if (i2 == data.length)
+                data.push(task);
+              uni.removeStorageSync(TaskReminderKey);
+            }
           }
         }
       }
@@ -9868,7 +9941,20 @@ if (uni.restoreGlobal) {
         const year = today.value.getFullYear();
         return getDateTimeStr(date, year);
       }
-      const __returned__ = { pattern: pattern2, quadrantTaskEditor, quadrant1, quadrant2, quadrant3, quadrant4, today, fabPosition, state, quadrant, getData, beforeEditorClose, toUpdate, openToEdit, resetDataOption, taskCreated, taskUpdated, taskRemoved, finishOrNot, toDragTaskContent, draggingTaskContent, taskContentDragged, cancelDragging, taskContentIn, getElementBound, getQuadrant, getTimeStr, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, nextTick: vue.nextTick, get TaskState() {
+      function getBorderStyle(index) {
+        const priority2 = index + 1;
+        switch (priority2) {
+          case 1:
+            return "border:1.5px solid red";
+          case 2:
+            return "border:1.5px solid rgb(255, 195, 0)";
+          case 3:
+            return "border:1.5px solid blue";
+          case 4:
+            return "border:1.5px solid springgreen";
+        }
+      }
+      const __returned__ = { pattern: pattern2, quadrantTaskEditor, quadrant1, quadrant2, quadrant3, quadrant4, today, fabPosition, state, quadrant, getData, beforeEditorClose, toUpdate, openToEdit, resetDataOption, taskCreated, taskUpdated, taskRemoved, finishOrNot, toDragTaskContent, draggingTaskContent, taskContentDragged, cancelDragging, taskContentIn, getElementBound, getQuadrant, getTimeStr, getBorderStyle, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, nextTick: vue.nextTick, get TaskState() {
         return TaskState;
       }, get weekDaySign() {
         return weekDaySign;
@@ -9932,7 +10018,7 @@ if (uni.restoreGlobal) {
               ref_for: true,
               ref: $setup.quadrant + (index + 1),
               id: $setup.getQuadrant(index),
-              style: vue.normalizeStyle($setup.state.dataOption[$setup.getQuadrant(index)] ? "border:1.5px solid blue;" : "")
+              style: vue.normalizeStyle($setup.state.dataOption[$setup.getQuadrant(index)] ? $setup.getBorderStyle(index) : "")
             }, [
               vue.createElementVNode(
                 "text",
@@ -16944,7 +17030,7 @@ ${i3}
             });
             newVersion.value = null;
           }
-        }, (error) => formatAppLog("log", "at pages/version.vue:159", error));
+        }, (error) => formatAppLog("log", "at pages/version.vue:160", error));
         downloadTask.start();
       }
       function resetCurrentVersion(version) {
@@ -16990,6 +17076,7 @@ ${i3}
     const _component_uni_list_item = resolveEasycom(vue.resolveDynamicComponent("uni-list-item"), __easycom_2$1);
     const _component_uni_list = resolveEasycom(vue.resolveDynamicComponent("uni-list"), __easycom_3$1);
     const _component_uni_icons = resolveEasycom(vue.resolveDynamicComponent("uni-icons"), __easycom_0$4);
+    const _component_uni_title = resolveEasycom(vue.resolveDynamicComponent("uni-title"), __easycom_7);
     return vue.openBlock(), vue.createElementBlock("view", { id: "version" }, [
       vue.createElementVNode("view", { class: "info" }, [
         vue.createElementVNode("view", { style: { "display": "flex", "align-items": "center", "justify-content": "center", "height": "70px" } }, [
@@ -17078,6 +17165,10 @@ ${i3}
                   onClick: $setup.versionPopupClose
                 })
               ]),
+              vue.createVNode(_component_uni_title, {
+                type: "h4",
+                title: "版本更新"
+              }),
               vue.createElementVNode("view", {
                 class: "content",
                 innerHTML: $setup.newVersion.description
@@ -28276,7 +28367,7 @@ ${i3}
                           vue.createElementVNode("checkbox", {
                             value: item.value,
                             style: { "transform": "scale(0.7)" },
-                            checked: $setup.model.indexOf(item.value) > 0
+                            checked: $setup.model.indexOf(item.value) >= 0
                           }, null, 8, ["value", "checked"]),
                           vue.createElementVNode(
                             "text",
@@ -29060,7 +29151,7 @@ ${i3}
         onTransition: $setup.toTransform,
         onChange: $setup.transformed,
         onAnimationfinish: $setup.backTransform,
-        style: { "height": "230px" }
+        style: { "height": "250px" }
       }, [
         (vue.openBlock(true), vue.createElementBlock(
           vue.Fragment,
@@ -29502,13 +29593,13 @@ ${i3}
         const value = event.detail.value;
         switch (sign) {
           case "begin-date":
-            startTime.value.date = value.replace(/-/g, "/");
+            startTime.value.date = getDateStr(new Date(value));
             break;
           case "begin-time":
             startTime.value.time = value;
             break;
           case "end-date":
-            endTime.value.date = value.replace(/-/g, "/");
+            endTime.value.date = getDateStr(new Date(value));
             break;
           case "end-time":
             endTime.value.time = value;
@@ -31537,7 +31628,7 @@ ${i3}
           habitId: state.selectedHabit.habitId,
           finishTime: /* @__PURE__ */ new Date(),
           finished,
-          day: onlyDate(state.selectedDay)
+          day: onlyDate(date.value)
         };
         if (!model.finished && !state.selectedHabit.finished)
           return;
@@ -31601,6 +31692,8 @@ ${i3}
         return onlyDate;
       }, get delayToRun() {
         return delayToRun;
+      }, get getFrequencyText() {
+        return getFrequencyText;
       }, get FinishOrNot() {
         return FinishOrNot;
       }, get RemoveHabit() {
@@ -31686,7 +31779,7 @@ ${i3}
                       class: "content-show"
                     }, [
                       vue.createElementVNode("view", { class: "show-content" }, [
-                        vue.createElementVNode("text", null, "当前坚持"),
+                        vue.createElementVNode("text", null, "当前连续"),
                         vue.createElementVNode(
                           "text",
                           null,
@@ -31696,7 +31789,7 @@ ${i3}
                         )
                       ]),
                       vue.createElementVNode("view", { class: "show-content" }, [
-                        vue.createElementVNode("text", null, "最多坚持"),
+                        vue.createElementVNode("text", null, "最多连续"),
                         vue.createElementVNode(
                           "text",
                           null,
@@ -31717,6 +31810,13 @@ ${i3}
                       ])
                     ])) : vue.createCommentVNode("v-if", true)
                   ]),
+                  vue.createElementVNode(
+                    "view",
+                    { class: "frequency-text" },
+                    vue.toDisplayString($setup.getFrequencyText($setup.state.selectedHabit)),
+                    1
+                    /* TEXT */
+                  ),
                   vue.createElementVNode("text", {
                     onClick: $setup.openRecord,
                     class: "open-record"

@@ -1,4 +1,6 @@
-import { KShowModal } from "./KShowModal";
+import {
+	KShowModal
+} from "./KShowModal";
 
 export function loading(title, func, expire) {
 	uni.showLoading({
@@ -247,12 +249,14 @@ export function getRuleText(task) {
 				break;
 		}
 	} else {
-		for (let pro in task.custom) {
-			res += `${weekDaySign(task.custom[pro])},`;
-		}
+		const values = [];
+		for (let pro in task.custom)
+			values.push(task.custom[pro]);
+		for (let day of values.sort())
+			res += `${weekDaySign(day)},`;
 		res = res.substring(0, res.length - 1);
 	}
-	if (task.count != null&&task.count>0) {
+	if (task.count != null && task.count > 0) {
 		res += `;重复${task.count}次`;
 	}
 	if (task.deadline != null) {
@@ -341,18 +345,18 @@ export function notifyTaskWithModal(reminder, finishCallback) {
 export function notifyHabitWithModal(reminder) {
 	KShowModal({
 		title: `习惯：${reminder.habitName},完成提醒`,
-		content:reminder.habitDescription,
-		thumb:reminder.habitThumb,
-        habitId:reminder.habitId
+		content: reminder.habitDescription,
+		thumb: reminder.habitThumb,
+		habitId: reminder.habitId
 	});
-	
+
 }
 
 //#ifdef APP-PLUS
-export function notifyTask(isbackGround,reminder, finishCallback,audioPlayCallback) {
-	if(!isbackGround){
+export function notifyTask(isbackGround, reminder, finishCallback, audioPlayCallback) {
+	if (!isbackGround) {
 		audioPlayCallback();
-		notifyTaskWithModal(reminder,finishCallback);
+		notifyTaskWithModal(reminder, finishCallback);
 		return;
 	}
 	const payload = {};
@@ -362,7 +366,7 @@ export function notifyTask(isbackGround,reminder, finishCallback,audioPlayCallba
 	plus.push.createMessage(reminder.taskDescription, payload, {
 		title: `任务：${reminder.taskTitle}        --${priority[reminder.taskPriority-1].text}`,
 		when: new Date(),
-		sound:"system"
+		sound: "system"
 	});
 	/* uni.createPushMessage({
 	   	title:`任务：${reminder.taskTitle}        --${priority[reminder.taskPriority-1].text}`,
@@ -379,15 +383,15 @@ export function notifyTask(isbackGround,reminder, finishCallback,audioPlayCallba
 
 
 //#ifdef H5
-export function notifyTask(reminder, finishCallback,audioPlayCallback) {
+export function notifyTask(reminder, finishCallback, audioPlayCallback) {
 	audioPlayCallback();
 	notifyTaskWithModal(reminder, finishCallback);
 }
 //#endif
 
 //#ifdef APP-PLUS
-export function notifyHabit(isBackground,reminder,audioPlayCallback){
-	if(!isBackground){
+export function notifyHabit(isBackground, reminder, audioPlayCallback) {
+	if (!isBackground) {
 		audioPlayCallback();
 		notifyHabitWithModal(reminder);
 		return;
@@ -415,7 +419,7 @@ export function notifyHabit(isBackground,reminder,audioPlayCallback){
 //#endif 
 
 //#ifdef H5
-export function notifyHabit(reminder,audioPlayCallback) {
+export function notifyHabit(reminder, audioPlayCallback) {
 	audioPlayCallback();
 	notifyHabitWithModal(reminder);
 }
@@ -426,30 +430,52 @@ export const HabitReminderKey = "habit-reminders";
 export const DefaultListIcon = "list.png";
 export const DefaultLabelIcon = "label.png";
 
-export function isBaseDayLabel(labelId){
-	return labelId==1||labelId==2||labelId==3;
+export function isBaseDayLabel(labelId) {
+	return labelId == 1 || labelId == 2 || labelId == 3;
 }
 
-export function isBaseLabel(labelId){
-	return [1,2,3,5,6,7].findIndex(l=>l==labelId)>=0;
+export function isBaseLabel(labelId) {
+	return [1, 2, 3, 5, 6, 7].findIndex(l => l == labelId) >= 0;
 }
 
-export function isStateLabel(labelId){
-	return [5,6,7,8].findIndex(l=>l==labelId)>=0;
+export function isStateLabel(labelId) {
+	return [5, 6, 7, 8].findIndex(l => l == labelId) >= 0;
 }
 
-export function isSysLabel(labelId){
-	return [1,2,3,4,5,6,7,8].findIndex(l=>l==labelId)>=0;
+export function isSysLabel(labelId) {
+	return [1, 2, 3, 4, 5, 6, 7, 8].findIndex(l => l == labelId) >= 0;
 }
 
+export const TomorrowLabelId = 2;
 export const AWeek = 7;
 export const CurrentAudioKey = "current-notify-audio";
 export const CurrentFinsihAudioKey = "current-finish-audio";
 
-export function playNotifyAudio(audio){
+export function playNotifyAudio(audio) {
 	const context = uni.createInnerAudioContext();
 	context.src = audio;
 	context.play();
-	
-	context.onEnded(result=>context.destroy());
+
+	context.onEnded(result => context.destroy());
+}
+
+export function getFrequencyText(habit) {
+	let res = "";
+	if (habit.days != null) {
+		const values = [];
+		for (let key in habit.days)
+			values.push(habit.days[key]);
+		values.sort();
+		for (let day of values)
+			res += `${weekDaySign(day)};`
+		res = res.substring(0, res.length - 1);
+	}
+
+	if (habit.weekPersistDays)
+		res = `每周${habit.weekPersistDays}天`;
+
+	if (habit.period != null)
+		res = `每隔${habit.period}天`;
+
+	return res;
 }

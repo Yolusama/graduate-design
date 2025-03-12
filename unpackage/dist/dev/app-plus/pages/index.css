@@ -1306,6 +1306,7 @@
 		justify-content: flex-start;
 		width: 100%;
 		margin-bottom: 2%;
+		padding-left: 2%;
 }
 #task-labels .header .avatar {
 		display: block;

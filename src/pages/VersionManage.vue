@@ -25,7 +25,7 @@
     <el-table :data="pagination.data" >
       <el-table-column prop="id" label="版本id" width="160">
       </el-table-column>
-      <el-table-column label="发布日期">
+      <el-table-column label="发布日期" width="120">
         <template #default="version">
           <span>{{ new Date(version.row.publishDate).toLocaleDateString() }}</span>
         </template>
@@ -37,7 +37,7 @@
       </el-table-column>
       <el-table-column label="描述信息" width="125">
         <template #default="version">
-          <p class="description" @click="showAll(version)">{{ version.row.description }}</p>
+          <p class="description" @click="showAll(version.row.description)">{{ version.row.description }}</p>
         </template>
       </el-table-column>
       <el-table-column label="类型">
@@ -77,7 +77,7 @@
         </el-form-item>
         <div>
           <el-button type="success" size="small" @click="publish">确定</el-button>
-          <el-button type="info" size="small">取消</el-button>
+          <el-button type="info" size="small" @click="state.show=false">取消</el-button>
         </div>
       </el-form>
     </div>
@@ -89,6 +89,7 @@ import { Download, GetVersions, Publish, VersionCode } from "@/api/Version";
 import { PageOption, copy, getVersionType, onlyDate } from "@/modules/Common";
 import {  imgSrc } from "@/modules/Request";
 import stateStroge from "@/modules/StateStorage";
+import { ElMessageBox } from "element-plus";
 import { reactive, ref, onMounted } from "vue";
 
 const state = reactive({
@@ -158,6 +159,14 @@ async function toDownload(fileName) {
   await Download(fileName);
 }
 
+function showAll(description){
+   ElMessageBox({
+    title:"版本描述",
+    confirmButtonText:"确定",
+    message:description
+   });
+}
+
 </script>
 
 <style scoped>
@@ -192,5 +201,11 @@ async function toDownload(fileName) {
   color: rgb(0,75,235);
   text-decoration: underline;
   cursor: pointer;
+}
+
+#version .description{
+  overflow: hidden;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

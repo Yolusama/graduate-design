@@ -36,7 +36,7 @@
         </template>
       </el-table-column>
       <el-table-column label="电子邮箱" prop="email" width="170"> </el-table-column>
-      <el-table-column label="用户状态">
+      <el-table-column label="用户状态" width="90">
         <template #default="scope">
           <div class="normal" v-if="scope.row.status">
               正常

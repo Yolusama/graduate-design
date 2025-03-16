@@ -62,6 +62,9 @@
 					</template>
 				</uni-list-item>
 			</uni-list>
+			<view class="calculation">
+				{{state.calculation}}
+			</view>
 			<button type="primary" @click="pwdPopup.open()" size="mini" style="margin-top: 2%;">修改密码</button>
 		</view>
 		<uni-popup ref="emailPopup" background-color="#fff" type="left" @change="emailPopupClose" style="z-index: 101;">
@@ -238,6 +241,7 @@
 		ChangeEmail,
 		ChangeNickname,
 		ChangePassword,
+		GetCalculation,
 		GetFinishedTaskCount,
 		GetFinishedTaskCounts,
 		GetUserHabits,
@@ -274,7 +278,8 @@
 			data: [new ValueText(0, "日"), new ValueText(1, "周"), new ValueText(2, "月")],
 			mode: 0
 		},
-		pageLoading:false
+		pageLoading:false,
+		calculation:""
 	});
 
 	onMounted(() => {
@@ -292,6 +297,17 @@
 				getTaskCountOption();
 				getUserHabits({
 					current: 1
+				});
+				GetCalculation(data.uid,onlyDate(new Date()),response=>{
+					const res = response.data;
+					if(!res.succeeded){
+						uni.showToast({
+							title:res.message,
+							icon:"none"
+						});
+						return;
+					}
+					state.calculation = res.data;
 				});
 			}
 		});
@@ -837,5 +853,14 @@
 		padding-left: 1%;
 		padding-right: 2%;
 		align-items: center;
+	}
+	
+	#user .calculation{
+		width: 90%;
+		text-align:center;
+		color: darkcyan;
+		font-size: 14px;
+		height: 20vh;
+		margin-top: 2%;
 	}
 </style>

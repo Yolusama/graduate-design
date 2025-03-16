@@ -181,4 +181,12 @@ public class TaskController extends ControllerBase
                 successWithData(taskService.getFinishedTaskCounts(userId,mode,new Date(today),redis))
         );
     }
+
+    @GetMapping("/GetCalculation/{userId}")
+    public CompletableFuture<ActionResult<String>> GetCalculation(@PathVariable String userId,@RequestParam Long time){
+        String res = taskService.getCalculation(userId,new Date(time));
+        if(res.equals(""))
+            return CompletableFuture.completedFuture(fail("出现了点错误"));
+        return CompletableFuture.completedFuture(successWithData(res));
+    }
 }

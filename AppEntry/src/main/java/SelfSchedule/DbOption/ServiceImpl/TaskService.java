@@ -828,6 +828,35 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
         return ObjectUtil.toList(data);
     }
 
+    @Override
+    public String getCalculation(String userId, Date time) {
+        Date leftBound = new Date(time.getTime());
+        leftBound.setDate(time.getDate()-Constants.Week);
+        Date rightBound = new Date(time.getTime());
+        rightBound.setDate(time.getDate()+1);
+        List<TaskCountVO> res = mapper.getPriorityTaskCounts(userId,leftBound,rightBound);
+        TaskCountVO max=new TaskCountVO();
+        max.setTaskCount(0L);
+        for(var data:res){
+            if(data.getTaskCount()>max.getTaskCount())
+            {
+                max.setPriority(data.getPriority());
+                max.setTaskCount(data.getTaskCount());
+            }
+        }
+        if(max.getTaskCount().equals((long)Constants.None))
+            return "最近没有任何任务安排，时间太紧迫了吗？";
+        if(max.getPriority().equals(SchedulePriority.INU.value()))
+            return "最近一段时间内你集中于做重要且紧急的事情，最近一定很紧迫却充实吧!";
+        else if(max.getPriority().equals(SchedulePriority.IBNU.value()))
+            return "最近一段时间内你集中于做重要却又不紧急的事情，最近的状态应该很好吧！";
+        else if(max.getPriority().equals(SchedulePriority.NIBU.value()))
+            return "最近一段时间内你集中于做重要但不紧急的事情，最近的时间利用得有些不太好哦！";
+        else if(max.getPriority().equals(SchedulePriority.NIONU.value()))
+           return "最近一段时间内你集中于做不重要也不紧急的事情，最近可能有点闲，还是得稍微让自己忙碌起来啊！";
+        return "";
+    }
+
     //某个时间下的任务的重复任务的提醒清除，或者更新
     private void handleTaskOptions(Date beginTime, Long taskId, Long instanceId,
                                    Integer reminderMode,Integer reminderMoveValue){

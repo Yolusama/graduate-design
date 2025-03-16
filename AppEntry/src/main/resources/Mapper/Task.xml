@@ -56,4 +56,10 @@
         select count(1) from Task t join TaskInstance i on t.id = i.instanceId and i.flag = 0
         where  t.userId = #{userId} and t.state = 1 and (t.finishTime&gt;=#{leftBound} and t.finishTime&lt;#{rightBound})
     </select>
+
+    <select id="getPriorityTaskCounts" resultType="SelfSchedule.Entity.VO.TaskCountVO">
+        select t.priority,count(t.priority) as taskCount from Task t join TaskInstance i on t.id = i.instanceId
+         where t.userId = #{userId} and i.flag = 0 and (t.finishTime &gt;= #{leftBound} and t.finishTime &lt; #{rightBound})
+         group by t.priority    order by t.priority
+    </select>
 </mapper>

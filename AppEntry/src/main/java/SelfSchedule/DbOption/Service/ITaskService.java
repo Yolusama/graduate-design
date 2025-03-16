@@ -36,4 +36,5 @@ public interface ITaskService extends IService<Task> {
    int recover(Long taskId);
    Long getFinishedTaskCount(String userId);
    List<Pair<Date, Long>> getFinishedTaskCounts(String userId, Integer mode, Date today, RedisCache redis);
+   String getCalculation(String userId,Date time);
 }

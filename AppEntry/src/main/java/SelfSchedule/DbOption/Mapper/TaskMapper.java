@@ -1,6 +1,7 @@
 package SelfSchedule.DbOption.Mapper;
 
 import SelfSchedule.Entity.Task;
+import SelfSchedule.Entity.VO.TaskCountVO;
 import SelfSchedule.Entity.VO.TaskLabelVO;
 import SelfSchedule.Entity.VO.TaskRuleComboVO;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -28,6 +29,8 @@ public interface TaskMapper extends BaseMapper<Task> {
     Long getTaskCount(@Param("userId")String userId,@Param("state")Integer state);
     Long getDurationTaskCounts(@Param("userId")String userId,@Param("leftBound")Date leftBound,
                                      @Param("rightBound")Date rightBound);
+    List<TaskCountVO> getPriorityTaskCounts(@Param("userId") String userId, @Param("leftBound")Date leftBound,
+                                            @Param("rightBound")Date rightBound);
 
     @Update("update Task set state=#{state} where id=#{taskId}")
     Integer changeState(@Param("state")Integer state,@Param("taskId")Long taskId);

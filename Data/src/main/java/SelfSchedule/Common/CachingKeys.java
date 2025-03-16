@@ -20,4 +20,5 @@ public final class CachingKeys {
     public static final String GetTaskCountsMode = "GetTaskCountsMode";
     public static final String GetNotifyAudios = "GetNotifyAudios";
     public static final String ContinuousDaysChecked = "ContinuousDaysChecked";
+    public static final String GetTaskCalculation = "GetTaskCalculation";
 }

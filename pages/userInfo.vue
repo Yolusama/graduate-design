@@ -28,28 +28,10 @@
 								<uni-data-checkbox v-model="state.taskCheck.mode" :localdata="state.taskCheck.data"
 									mode="tag" @change="getFinishTaskCounts">
 								</uni-data-checkbox>
-								<!--#ifdef H5-->
-								<uni-grid :show-border="false">
-									<uni-grid-item v-for="(count,index) in state.finishCounts" :key="index" :index="index">
-										<view class="task-count">
-											<text style="font-weight: 600;">{{count.item2}}</text>
-											<text
-												style="color:red;font-size: 14px;">{{getTaskCountDateStr(count.item1,index)}}</text>
-										</view>
-									</uni-grid-item>
-								</uni-grid>
-								<!--#endif-->
-								<!--#ifndef H5-->
-								<view style="display: flex;justify-content: space-between;width:75vw">
-									<view v-for="(count,index) in state.finishCounts" :key="index" :index="index" >
-										<view class="task-count">
-											<text style="font-weight: 600;">{{count.item2}}</text>
-											<text
-												style="color:red;font-size: 14px;">{{getTaskCountDateStr(count.item1,index)}}</text>
-										</view>
-									</view>
+								<view style="height:40vh ;width:80vw">
+									<qiun-data-charts type="line" :chartData="chartData.data" :opts="chartData.option" 
+									  />
 								</view>
-								<!--#endif-->
 							</view>
 						</view>
 					</template>
@@ -210,8 +192,8 @@
 					<uni-pagination :current="habitPageoption.current" :total="habitPageoption.total" :show-icon="true"
 						:page-size="habitPageoption.size" @change="getUserHabits" />
 					<text style="font-size: 14px;">共计
-					<text style="color: red;">{{habitPageoption.total}}</text>
-					条数据</text>
+						<text style="color: red;">{{habitPageoption.total}}</text>
+						条数据</text>
 				</view>
 			</view>
 		</uni-popup>
@@ -258,6 +240,7 @@
 
 	const today = ref(onlyDate(new Date()));
 	const habitPageoption = ref(new PageOption(1, 10, 0));
+	const chartData = ref({});
 
 	const state = reactive({
 		user: null,
@@ -273,13 +256,12 @@
 		checkCode: "",
 		hasGotCode: false,
 		finishCount: 0,
-		finishCounts: [],
 		taskCheck: {
 			data: [new ValueText(0, "日"), new ValueText(1, "周"), new ValueText(2, "月")],
 			mode: 0
 		},
-		pageLoading:false,
-		calculation:""
+		pageLoading: false,
+		calculation: ""
 	});
 
 	onMounted(() => {
@@ -298,12 +280,12 @@
 				getUserHabits({
 					current: 1
 				});
-				GetCalculation(data.uid,onlyDate(new Date()),response=>{
+				GetCalculation(data.uid, onlyDate(new Date()), response => {
 					const res = response.data;
-					if(!res.succeeded){
+					if (!res.succeeded) {
 						uni.showToast({
-							title:res.message,
-							icon:"none"
+							title: res.message,
+							icon: "none"
 						});
 						return;
 					}
@@ -502,7 +484,7 @@
 			cancelColor: "red",
 			confirmText: "确定",
 			cancelText: "取消",
-			placeholderText:"新昵称",
+			placeholderText: "新昵称",
 			editable: true,
 			success: res => {
 				if (res.cancel) return;
@@ -531,12 +513,12 @@
 
 	function logout(cancelAccount) {
 		uni.showModal({
-			cancelText:"取消",
-			confirmText:"确定",
-			title:"注销",
-			content:"注销后将清除所有用户数据",
-			success:(res)=>{
-				if(res.cancel)return;
+			cancelText: "取消",
+			confirmText: "确定",
+			title: "注销",
+			content: "注销后将清除所有用户数据",
+			success: (res) => {
+				if (res.cancel) return;
 				Logout(cancelAccount, state.user.userId, state.user.email, response => {
 					const res = response.data;
 					if (!res.succeeded) {
@@ -574,9 +556,9 @@
 		const daysFromBeginDateToNow = (today.value.getTime() - beginDate.getTime()) / ADayMillseconds;
 		var count = 0;
 		if (frequency.value.days != null) {
-			for (let i = 0; i <=  daysFromBeginDateToNow; i++) {
+			for (let i = 0; i <= daysFromBeginDateToNow; i++) {
 				const date = new Date(beginDate);
-				date.setDate(date.getDate()+i);
+				date.setDate(date.getDate() + i);
 				for (let pro in frequency.value.days) {
 					if (frequency.value.days[pro] == date.getDay()) {
 						count++;
@@ -604,8 +586,8 @@
 
 		if (count == 0)
 			return 0;
-			
-		return ((persistDays / count)*100).toFixed(0);
+
+		return ((persistDays / count) * 100).toFixed(0);
 	}
 
 	function getTaskCountOption() {
@@ -633,11 +615,31 @@
 				});
 				return;
 			}
-			state.finishCounts = res.data;
+			const xData = [];
+			const yData = [{name:"完成数",data:[]}];
+			for (let i=0;i<res.data.length;i++) {
+				const item = res.data[i];
+				xData.push(getTaskCountDateStr(new Date(item.item1),i));
+				yData[0].data.push(item.item2);
+			}
+
+			const data = {
+				categories:xData,
+				series:yData
+			};	
+			const option = {
+				yAxis:{
+					disabled:true
+				}
+			};
+			chartData.value = {
+				data:data,
+				option:option
+			};
 		});
 	}
 
-	function getTaskCountDateStr(time, index) {
+	function getTaskCountDateStr(time,index) {
 		const date = new Date(time);
 		switch (state.taskCheck.mode) {
 			case 0:
@@ -661,7 +663,7 @@
 	function getUserHabits(e) {
 		habitPageoption.value.current = e.current;
 		state.pageLoading = true;
-		delayToRun(()=>{
+		delayToRun(() => {
 			GetUserHabits(habitPageoption.value, state.user.userId, response => {
 				const res = response.data;
 				if (!res.succeeded) {
@@ -677,7 +679,7 @@
 				habitPageoption.value.data = res.data.data;
 				state.pageLoading = false;
 			});
-		},350);
+		}, 350);
 	}
 </script>
 
@@ -845,8 +847,8 @@
 		text-overflow: ellipsis;
 		margin-left: 2%;
 	}
-	
-	#user .page{
+
+	#user .page {
 		display: flex;
 		margin-top: 3%;
 		justify-content: space-between;
@@ -854,10 +856,10 @@
 		padding-right: 2%;
 		align-items: center;
 	}
-	
-	#user .calculation{
+
+	#user .calculation {
 		width: 90%;
-		text-align:center;
+		text-align: center;
 		color: darkcyan;
 		font-size: 14px;
 		height: 20vh;

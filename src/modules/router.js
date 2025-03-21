@@ -4,6 +4,7 @@ import LoginView from "@/pages/LoginView.vue";
 import AppHome from "@/pages/AppHome.vue";
 import UserManage from "@/pages/UserManage.vue";
 import VersionManage from "@/pages/VersionManage.vue";
+import UserInfo from "@/pages/UserInfo.vue";
 
 
 const routes=[];
@@ -12,6 +13,7 @@ routes.push(new Route("/Login","Login",LoginView));
 const home = new Route("/Home","Home",AppHome);
 home.addSubRoute(new Route("/Home/UserManage","UserManage",UserManage));
 home.addSubRoute(new Route("/Home/VersionManage","VersionManage",VersionManage));
+home.addSubRoute(new Route("/Home/UserInfo","UserInfo",UserInfo));
 routes.push(home);
 const router=createRouter({
        routes:routes,

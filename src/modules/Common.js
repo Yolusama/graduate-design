@@ -102,3 +102,11 @@ export function onlyDate(date=new Date()){
      res.setMilliseconds(0);
      return res;
 }
+
+export const CurrentUser = "current-user"; 
+
+export const TaskCountMode = {
+  day:0,
+  week:1,
+  month:2
+}

@@ -25,8 +25,16 @@
             <el-button plain type="primary" @click="state.show=true">添加用户</el-button>
     </header>
     <el-table :data="pagination.data" border>
-      <el-table-column label="uid" prop="id" width="150"> </el-table-column>
-      <el-table-column label="账号" prop="account" width="120"> </el-table-column>
+      <el-table-column label="uid"  width="150" >
+          <template #default="scope">
+              <span @click="seeUserInfo(scope.row)">{{ scope.row.id }}</span>
+          </template>
+       </el-table-column>
+      <el-table-column label="账号" width="120"> 
+        <template #default="scope">
+              <span @click="seeUserInfo(scope.row)">{{ scope.row.account }}</span>
+          </template>
+      </el-table-column>
       <el-table-column label="用户信息" width="220">
         <template #default="scope">
           <div class="user-info" @click="toUpdate(scope.$index)">
@@ -91,10 +99,12 @@
 </template>
 
 <script setup>
-import { PageOption } from "@/modules/Common";
+import { CurrentUser, PageOption } from "@/modules/Common";
 import { reactive, ref, onMounted } from "vue";
 import { imgSrc } from "@/modules/Request";
 import { getUserType,UserType,GetUsers, ChangeStatus } from "@/api/User";
+import stateStroge from "@/modules/StateStorage";
+import Route from "@/modules/Route";
 
 const state = reactive({
   queryKey: "",
@@ -159,6 +169,12 @@ function userUpdated(e){
   const index = e.index;
   const user = e.item;
   pagination.value.data[index] = user;
+}
+
+function seeUserInfo(user){
+  if(user.role==1)return;
+    stateStroge.set(CurrentUser,user);
+    Route.dive("#/Home/UserInfo");
 }
 </script>
 

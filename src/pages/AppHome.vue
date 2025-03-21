@@ -27,7 +27,7 @@
 </template>
 <script setup>
 import { Logout } from "@/api/User";
-import { BeforeRouteLeave } from "@/modules/Common";
+import { BeforeRouteLeave, CurrentUser } from "@/modules/Common";
 import Route from "@/modules/Route";
 import stateStroge from "@/modules/StateStorage";
 import { reactive,onMounted } from "vue";
@@ -43,6 +43,9 @@ onMounted(function(){
     state.routes['user'] = "/Home/UserManage";
     state.routes['version'] = "/Home/VersionManage";
     state.routes['userInfo'] = "/Home/UserInfo";
+
+    if(stateStroge.has(CurrentUser))
+       stateStroge.remove(CurrentUser);
 });
 
 onBeforeRouteLeave(function(to,from,next){

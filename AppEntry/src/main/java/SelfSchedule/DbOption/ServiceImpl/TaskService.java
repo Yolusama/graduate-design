@@ -208,6 +208,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 long delta = endTime.getTime()-beginTime.getTime();
                 if (task.getCustom() == null) {
                     Date tempDate = new Date(beginTime.getTime());
+                    Date thisDay = DateUtil.onlyDate(time);
                     int i = 1;
                     if (task.getPeriodUnit().equals(PeriodUnit.DAILY.value())) {
                         if(task.getPeriod()==1) {
@@ -219,7 +220,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                             instance.setEndTime(endTime);
                         }
                         else{
-                            while(tempDate.getTime()<time.getTime()){
+                            while(tempDate.getTime()<thisDay.getTime()){
                                 tempDate.setDate(beginTime.getDate()+task.getPeriod()*i);
                                 i++;
                             }
@@ -229,7 +230,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                             instance.setEndTime(endTime);
                         }
                     } else if (task.getPeriodUnit().equals(PeriodUnit.WEEKLY.value())) {
-                        while(tempDate.getTime()<time.getTime()){
+                        while(tempDate.getTime()<thisDay.getTime()){
                             tempDate.setDate(beginTime.getDate()+task.getPeriod()*i*Constants.Week);
                             i++;
                         }
@@ -239,7 +240,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                         instance.setEndTime(endTime);
 
                     } else if (task.getPeriodUnit().equals(PeriodUnit.MONTHLY.value())) {
-                        while(tempDate.getTime()<time.getTime()){
+                        while(tempDate.getTime()<thisDay.getTime()){
                             tempDate.setMonth(beginTime.getMonth()+task.getPeriod()*i);
                             i++;
                         }
@@ -248,7 +249,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                         endTime.setTime(tempDate.getTime()+delta);
                         instance.setEndTime(endTime);
                     } else if (task.getPeriodUnit().equals(PeriodUnit.YEARLY.value())) {
-                        while(tempDate.getTime()<time.getTime()){
+                        while(tempDate.getTime()<thisDay.getTime()){
                             tempDate.setYear(beginTime.getYear()+task.getPeriod()*i);
                             i++;
                         }
@@ -319,7 +320,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
                 res.getData().add(toAdd);
             }
             else {
-                if(queryTask.getState().equals(TaskState.CANCELLED.value()))
+                if(queryTask.getState().equals(TaskState.CANCELLED.value()) || queryTask.getDeleteFlag())
                     continue;
                 queryTask.setPeriod(task.getPeriod());
                 queryTask.setPeriodUnit(task.getPeriodUnit());

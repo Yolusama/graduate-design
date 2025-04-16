@@ -127,7 +127,7 @@ public class TaskController extends ControllerBase
     @PatchMapping("/FinishOrNot/{taskId}")
     @ApiOperation(value = "完成或取消完成任务",notes = "完成或取消完成")
     @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData,
-            CachingKeys.GetTaskCountsMode})
+            CachingKeys.GetTaskCountsMode,CachingKeys.GetFinishedTaskCounts})
     public ActionResult FinishOrNot(@PathVariable Long taskId,@RequestParam Integer state,HttpServletRequest request){
        int res = taskService.finishOrNot(taskId,state);
        if(res==Constants.AbNormalState)
@@ -158,7 +158,7 @@ public class TaskController extends ControllerBase
     @PutMapping("/RemoveTask")
     @ApiOperation(value = "形式删除当前任务",notes = "重复任务的主实例才会被放入回收站")
     @ClearRedisCache(keys = {CachingKeys.GetTasksDateValue,CachingKeys.GetTasks,CachingKeys.GetIndexData,
-            CachingKeys.GetTaskCountsMode})
+            CachingKeys.GetTaskCountsMode,CachingKeys.GetFinishedTaskCounts})
     public ActionResult RemoveTask(@RequestBody TaskModel model,@RequestParam Integer mode,HttpServletRequest request){
         int res = taskService.removeTask(model,mode);
         if(res==Constants.AbNormalState)

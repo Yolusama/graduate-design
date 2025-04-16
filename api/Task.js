@@ -12,6 +12,7 @@ export function GetTaskReminders(taskId,successCallback){
 }
 
 export function GetTasks(pageOption,userId,time,successCallback){
+	time.setMilliseconds(0);
 	Get(`/Api/Task/GetTasks/${userId}?page=${pageOption.current}&pageSize=${pageOption.size}&time=${time.getTime()}`
 	,auth,successCallback);
 }

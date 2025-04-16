@@ -601,12 +601,20 @@
 	function dateChange(event) {
 		const detail = event.detail;
 		const date = new Date(detail.value);
-		state.selectedDay.setFullYear(date.getFullYear());
-		state.selectedDay.setMonth(date.getMonth());
-		state.selectedDay.setDate(date.getDate());
+		const toSet = new Date(state.selectedDay);
+		toSet.setFullYear(date.getFullYear());
+		toSet.setMonth(date.getMonth());
+		toSet.setDate(date.getDate());
 		freshItems();
+		state.selectedDay = toSet;
 		if (showWay.value == CalendarDisplayWay.week)
-			updateView(showWay.value);
+			{
+				state.view.current = 2;
+				state.current = 1;
+				nextTick(()=>{
+					updateView(showWay.value);
+				})
+			}
 		else {
 			//#ifndef H5
 			state.view.current = 2;
@@ -620,7 +628,9 @@
 			showWay.value = CalendarDisplayWay.week;
 			state.view.current = 2;
 			state.current = 1;
-			updateView(showWay.value);
+			nextTick(()=>{
+				updateView(showWay.value);
+			});
 			// #endif
 			emits("modeChange",CalendarDisplayWay.week);
 		}

@@ -11,6 +11,14 @@
 			</uni-list-item>
 			<uni-list-item show-arrow>
 				<template v-slot:body>
+					<view class="item" @click="reloadTo('/pages/setting')">
+						<image src="../static/fresh.png" class="avatar"></image>
+						<text class="item-text">同步数据</text>
+					</view>
+				</template>
+			</uni-list-item>
+			<uni-list-item show-arrow>
+				<template v-slot:body>
 					<view class="item" @click="goSetNotifyAudio">
 						<image src="../static/notify.png" class="avatar"></image>
 						<text class="item-text">设置通知音效</text>
@@ -86,6 +94,7 @@
 	import {
 		Logout
 	} from '../api/UserInfo';
+	import { reloadTo } from '../module/Common';
     import { Feedback } from '../api/User';
 	
 	const state = reactive({

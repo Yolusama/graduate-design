@@ -83,7 +83,8 @@
 				<image :src="imgSrc(state.currentLabel.icon)"
 					style="height: 30px;width: 30px;margin-left: 1%;margin-right: 1%"></image>
 				<text class="text" style="margin-left: 0;">{{state.currentLabel.labelName}}</text>
-			</view>
+				<image class="fresh" src="../static/fresh.png" @click="reload"></image>
+			</view> 
 			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0"
 				style="margin-bottom: 4vh;" v-model="state.model.habit" :accordion="true">
 				<uni-collapse-item>
@@ -295,7 +296,8 @@
 		ValueText,
 		CurrentFinsihAudioKey,
 		isSysLabel,
-		TomorrowLabelId
+		TomorrowLabelId,
+		reloadTo
 	} from '../module/Common';
 	import {
 		imgSrc
@@ -936,6 +938,10 @@
 		    time.setDate(time.getDate()-1);
 	    return time;
 	}
+	
+	function reload(){
+		reloadTo("/pages/index");
+	}
 </script>
 
 <style>
@@ -1166,5 +1172,12 @@
 	#index .close {
 		margin-left: 1%;
 		margin-right: 1%;
+	}
+	
+	#index .fresh{
+		position: absolute;
+		width: 22px;
+		height: 22px;
+		right:4%;
 	}
 </style>

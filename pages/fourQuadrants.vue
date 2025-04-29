@@ -8,6 +8,7 @@
 			</text>
 			&nbsp;
 			<k-time-counter style="display: inline-block;color: rgb(44,47,49);font-size: 16px;" />
+			<image src="../static/fresh.png" @click="reloadTo('/pages/fourQuadrants')" style="height: 20px;width: 20px;margin-left:5%;"/>
 		</view>
 		<view class="content">
 			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)"
@@ -66,7 +67,8 @@
 		priority,
 		ValueText,
 		dateEquals,
-		timeWithoutSeconds
+		timeWithoutSeconds,
+		reloadTo
 	} from '../module/Common';
 	import {
 		GetTaskReminders,

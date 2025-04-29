@@ -479,3 +479,18 @@ export function getFrequencyText(habit) {
 
 	return res;
 }
+
+export function reloadTo(page){
+	const duration = 1500;
+	uni.showToast({
+		title:"同步中...",
+		icon:"loading"
+	});
+	
+	const timer = setTimeout(()=>{
+		uni.reLaunch({
+			url:page
+		});
+		clearTimeout(timer);
+	},duration);
+}

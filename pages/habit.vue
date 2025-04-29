@@ -3,7 +3,11 @@
 		<!--#ifdef H5-->
 		<view class="center" style="padding: 2%;">
 			<k-time-counter ref="counter"></k-time-counter>
+			<image src="../static/fresh.png" @click="reloadTo('/pages/habit')" class="fresh"></image>
 		</view>
+		<!--#endif-->
+		<!--#ifndef H5-->
+		<image src="../static/fresh.png" @click="reloadTo('/page/habit')" class="fresh"></image>
 		<!--#endif-->
 		<!--#ifdef H5-->
 		<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;">
@@ -102,7 +106,8 @@
 		dateEquals,
 		HabitReminderKey,
 		delayToRun,
-		getDateStr
+		getDateStr,
+		reloadTo
 	} from "../module/Common";
 	import {
 		GetHabits,
@@ -468,5 +473,11 @@
 		border-radius: 7px;
 		width: 60px;
 		height: 40px;
+	}
+	
+	#habit .fresh{
+		width: 23px;
+		height: 23px;
+		margin-left: 4%;
 	}
 </style>

@@ -1,5 +1,6 @@
 <template>
 	<view id="task">
+		<image class="fresh" src="../static/fresh.png" @click="reloadTo('/pages/task')"></image>
 		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange"></k-calendar>
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
 			<view class="todo" v-for="(task,index) in taskPageOpt.data"
@@ -331,7 +332,8 @@
 		dateGE,
 		onlyDate,
 		TaskState,
-		TaskReminderKey
+		TaskReminderKey,
+		reloadTo
 	} from "../module/Common";
 	import {
 		CreateTask,
@@ -498,17 +500,8 @@
 			else
 				state.task[pro] = 4;
 		}
-		const temp = new Date(state.selectedDay);
-		state.startTime.date = getDateStr(temp);
-		state.startTime.time = timeWithoutSeconds(temp);
-
-		const date = new Date(temp.setHours(temp.getHours() + 1));
-		state.endTime.date = getDateStr(date);
-		state.endTime.time = timeWithoutSeconds(date);
-
-		state.task.beginTime = new Date(state.startTime.date + " " + state.startTime.time);
-		state.task.endTime = new Date(state.endTime.date + " " + state.endTime.time);
-
+		
+        reloadStartEndTime();
 
 		state.task.custom = null;
 		state.task.deadline = null;
@@ -526,6 +519,19 @@
 		state.isTaskUpdate = false;
 		state.task.repeatable = false;
 		state.mode = -1;
+	}
+	
+	function reloadStartEndTime(){
+		const temp = new Date(state.selectedDay);
+		state.startTime.date = getDateStr(temp);
+		state.startTime.time = timeWithoutSeconds(temp);
+		
+		const date = new Date(temp.setHours(temp.getHours() + 1));
+		state.endTime.date = getDateStr(date);
+		state.endTime.time = timeWithoutSeconds(date);
+		
+		state.task.beginTime = new Date(state.startTime.date + " " + state.startTime.time);
+		state.task.endTime = new Date(state.endTime.date + " " + state.endTime.time);
 	}
 
 	function pick(event, sign) {
@@ -766,6 +772,7 @@
 	function dateChange(date) {
 		state.selectedDay = date;
 		getData();
+		reloadStartEndTime();
 	}
 
 	function getData() {
@@ -1260,5 +1267,10 @@
 		justify-content: center;
 		border-radius: 7px;
 		width: 40px;
+	}
+	
+	#task .fresh{
+		width: 20px;
+		height: 20px;
 	}
 </style>

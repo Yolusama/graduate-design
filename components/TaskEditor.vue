@@ -1,5 +1,5 @@
 <template>
-	<uni-popup ref="popup" type="bottom" background-color="#fff" @change="beforeEditorClose">
+	<uni-popup ref="popup" type="bottom" :background-color="subject.backColor" @change="beforeEditorClose">
 		<view class="task-edit">
 			<view class="head">
 				<text :class="'quadrant-'+state.task.priority" @click="priorityPopup.open()">
@@ -41,7 +41,7 @@
 			</uni-list-item>
 		</uni-list>
 	</uni-popup>
-	<uni-popup ref="timePopup" background-color="#fff" type="bottom">
+	<uni-popup ref="timePopup" :background-color="subject.backColor" type="bottom">
 		<view style="display: flex;width:96%;margin-bottom: 1%;">
 			<uni-icons type="closeempty" @click="timePopup.close()" :size="20"></uni-icons>
 		</view>
@@ -122,7 +122,7 @@
 		<k-radio-group :data="state.frequency.data" :containDef="true" @onChange="takeBaseRule">
 		</k-radio-group>
 	</uni-popup>
-	<uni-popup type="bottom" background-color="#fff" border-radius="10px 10px 10px 10px" ref="customPopup"
+	<uni-popup type="bottom" :background-color="subject.backColor" border-radius="10px 10px 10px 10px" ref="customPopup"
 		:safe-area="false">
 		<scroll-view class="custom" :scroll-y="true">
 			<view style="display: flex;width:96%;margin-bottom: 1%;">
@@ -162,7 +162,7 @@
 			</view>
 		</scroll-view>
 	</uni-popup>
-	<uni-popup ref="labelPopup" background-color="#fff" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
+	<uni-popup ref="labelPopup" :background-color="subject.backColor" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
 		<scroll-view scroll-y style="max-height: 40vh;">
 			<view class="header">
 				<uni-icons type="closeempty" @click="labelPopup.close()"></uni-icons>
@@ -177,7 +177,7 @@
 			</view>
 		</scroll-view>
 	</uni-popup>
-	<uni-popup ref="listPopup" background-color="#fff" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
+	<uni-popup ref="listPopup" :background-color="subject.backColor" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
 		<view class="list">
 			<view class="header">
 				<uni-icons type="closeempty" @click="listPopup.close()"></uni-icons>
@@ -263,10 +263,12 @@
 		labelSet: Boolean,
 		userLabels: Array,
 		userLists: Array,
-		label: Object
+		label: Object,
+		subject:Object
 	});
 	const task = ref(pros.task);
 	const label = ref(pros.label);
+	const subject = ref(pros.subject);
 	const userLabels = ref(pros.userLabels);
 	const userLists = ref(pros.userLists);
 	const popup = ref(null);

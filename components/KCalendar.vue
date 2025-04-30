@@ -5,13 +5,13 @@
 			<view class="sign" @click="signRotate" :style="state.view.rotation" v-if="!unchangable"></view>
 			<view class="select-date">
 				<picker mode="date" :value="state.dateStr" start="1970-01-01" @change="dateChange"
-					 @cancel="state.dateStr=''">
+					@cancel="state.dateStr=''">
 					<uni-icons type="paperplane"></uni-icons>
 				</picker>
 			</view>
 			<view class="switch">
 				<uni-icons type="left" :size="16" @click="switchLeft"></uni-icons>
-				<uni-icons type="right" :size="16"  @click="switchRight"></uni-icons>
+				<uni-icons type="right" :size="16" @click="switchRight"></uni-icons>
 			</view>
 		</view>
 		<uni-segmented-control style-type="text" :values="state.view.items" :current="state.view.current"
@@ -64,8 +64,7 @@
 						</view>
 						<view class="month">
 							<view v-for="(day,index3) in monthDays" :key="index3" class="month-container">
-								<view :class="day!=null&&dateEquals(day.date,current)?'date date-today':'date'"
-								:style="day!=null&&dateEquals(day.date,state.selectedDay)&&!dateEquals(day.date,current)
+								<view :class="day!=null&&dateEquals(day.date,current)?'date date-today':'date'" :style="day!=null&&dateEquals(day.date,state.selectedDay)&&!dateEquals(day.date,current)
 								?'border-color:rgb(36, 155, 221)':''">
 									{{day!=null?day.date.getDate():""}}
 								</view>
@@ -79,8 +78,8 @@
 			@change="transformed" @animationfinish="backTransform" style="height: 70px;">
 			<swiper-item v-for="(item,index) in state.data" :key="index"
 				style="height: 50px;background-color: aliceblue;">
-				<view v-for="(day,index1) in state.days[index]" :key="index1" 
-				style="font-size: 18px;text-align: center;line-height: 50px;">
+				<view v-for="(day,index1) in state.days[index]" :key="index1"
+					style="font-size: 18px;text-align: center;line-height: 50px;">
 					<k-time-counter v-if="day.selected"></k-time-counter>
 				</view>
 			</swiper-item>
@@ -107,7 +106,7 @@
 	const pros = defineProps({
 		currentDay: Date,
 		showWay: Number,
-		unchangable:Boolean
+		unchangable: Boolean
 	});
 
 	const state = reactive({
@@ -130,7 +129,7 @@
 	const current = ref(pros.currentDay);
 	const showWay = ref(pros.showWay);
 	const unchangable = ref(pros.unchangable);
-	const emits = defineEmits(["modeChange","onChange"]);
+	const emits = defineEmits(["modeChange", "onChange"]);
 
 	onMounted(() => {
 		if (current.value == undefined)
@@ -250,7 +249,7 @@
 					};
 					days.push(item);
 				}
-				state.days[i].push(days);	
+				state.days[i].push(days);
 			}
 		}
 	}
@@ -328,8 +327,8 @@
 				state.selectedDay = new Date(date.setDate(date.getDate() - 7));
 			} else if (showWay.value == CalendarDisplayWay.month) {
 				date.setMonth(date.getMonth() - 1);
-				if(date.getFullYear()==current.value.getFullYear()&&date.getMonth()==current.value.getMonth())
-				   date.setDate(current.value.getDate());
+				if (date.getFullYear() == current.value.getFullYear() && date.getMonth() == current.value.getMonth())
+					date.setDate(current.value.getDate());
 				state.selectedDay = date;
 			} else if (showWay.value == CalendarDisplayWay.year) {
 				date.setFullYear(date.getFullYear() - 1);
@@ -343,8 +342,8 @@
 				state.selectedDay = new Date(date.setDate(date.getDate() + 7));
 			else if (showWay.value == CalendarDisplayWay.month) {
 				date.setMonth(date.getMonth() + 1);
-		        if(date.getFullYear()==current.value.getFullYear()&&date.getMonth()==current.value.getMonth())
-		           date.setDate(current.value.getDate());
+				if (date.getFullYear() == current.value.getFullYear() && date.getMonth() == current.value.getMonth())
+					date.setDate(current.value.getDate());
 				state.selectedDay = date;
 			} else if (showWay.value == CalendarDisplayWay.year) {
 				date.setFullYear(date.getFullYear() + 1);
@@ -354,10 +353,10 @@
 				state.selectedDay = date;
 			}
 		}
-		if(showWay.value!=CalendarDisplayWay.year)
-			emits("onChange",state.selectedDay);
+		if (showWay.value != CalendarDisplayWay.year)
+			emits("onChange", state.selectedDay);
 		else
-		    emits("onChange",current.value);
+			emits("onChange", current.value);
 	}
 
 	function toTransform(e) {
@@ -373,11 +372,11 @@
 
 	function backTransform(e) {
 		const detail = e.detail;
-	
+
 		changeDays(e.detail.current);
 	}
-	
-	function changeDays(index){
+
+	function changeDays(index) {
 		const date = state.selectedDay;
 		const day = date.getDate();
 		const weekDay = date.getDay();
@@ -483,33 +482,49 @@
 		state.transformed = false;
 		state.moveLeft = undefined;
 	}
-	
-	function switchLeft(){
+
+	function switchLeft() {
 		const date = new Date(state.selectedDay);
-		switch(showWay.value){
-			case CalendarDisplayWay.day:date.setDate(date.getDate()-1);break;
-			case CalendarDisplayWay.week: date.setDate(date.getDate()-7);break;
-			case CalendarDisplayWay.month: date.setMonth(date.getMonth()-1);break;
-			case CalendarDisplayWay.year: date.setFullYear(date.getFullYear()-1);break;
+		switch (showWay.value) {
+			case CalendarDisplayWay.day:
+				date.setDate(date.getDate() - 1);
+				break;
+			case CalendarDisplayWay.week:
+				date.setDate(date.getDate() - 7);
+				break;
+			case CalendarDisplayWay.month:
+				date.setMonth(date.getMonth() - 1);
+				break;
+			case CalendarDisplayWay.year:
+				date.setFullYear(date.getFullYear() - 1);
+				break;
 		}
 		changeDays(state.current--);
 		state.selectedDay = date;
-		if(showWay.value!=CalendarDisplayWay.year)
-		emits("onChange",date);
+		if (showWay.value != CalendarDisplayWay.year)
+			emits("onChange", date);
 	}
-	
-	function switchRight(){
+
+	function switchRight() {
 		const date = new Date(state.selectedDay);
-		switch(showWay.value){
-			case CalendarDisplayWay.day:date.setDate(date.getDate()+1);break;
-			case CalendarDisplayWay.week: date.setDate(date.getDate()+7);break;
-			case CalendarDisplayWay.month: date.setMonth(date.getMonth()+1);break;
-			case CalendarDisplayWay.year: date.setFullYear(date.getFullYear()+1);break;
+		switch (showWay.value) {
+			case CalendarDisplayWay.day:
+				date.setDate(date.getDate() + 1);
+				break;
+			case CalendarDisplayWay.week:
+				date.setDate(date.getDate() + 7);
+				break;
+			case CalendarDisplayWay.month:
+				date.setMonth(date.getMonth() + 1);
+				break;
+			case CalendarDisplayWay.year:
+				date.setFullYear(date.getFullYear() + 1);
+				break;
 		}
 		changeDays(state.current++);
 		state.selectedDay = date;
-		if(showWay.value!=CalendarDisplayWay.year)
-		emits("onChange",date);
+		if (showWay.value != CalendarDisplayWay.year)
+			emits("onChange", date);
 	}
 
 	function signRotate() {
@@ -560,12 +575,12 @@
 		//#ifndef H5
 		updateView(way);
 		nextTick(() => {
-			if(way != CalendarDisplayWay.day)
-			   showWay.value = way;
-			else{
+			if (way != CalendarDisplayWay.day)
+				showWay.value = way;
+			else {
 				showWay.value = CalendarDisplayWay.year;
-			    nextTick(()=>showWay.value = way);
-			 }
+				nextTick(() => showWay.value = way);
+			}
 		});
 		// #endif
 		//#ifdef H5
@@ -587,8 +602,8 @@
 		updateView(showWay.value);
 		state.view.current = 1;
 		state.view.expanded = false;
-		emits("modeChange",showWay.value);
-		emits("onChange",state.selectedDay);
+		emits("modeChange", showWay.value);
+		emits("onChange", state.selectedDay);
 	}
 
 	function freshItems() {
@@ -607,36 +622,25 @@
 		toSet.setDate(date.getDate());
 		freshItems();
 		state.selectedDay = toSet;
-		if (showWay.value == CalendarDisplayWay.week)
-			{
-				state.view.current = 2;
-				state.current = 1;
-				nextTick(()=>{
-					updateView(showWay.value);
-				})
-			}
-		else {
-			//#ifndef H5
-			state.view.current = 2;
-			state.current = 1;
-			updateView(CalendarDisplayWay.week);
-			nextTick(() => {
-				showWay.value = CalendarDisplayWay.week;
-			});
-			// #endif
-			// #ifdef H5
+		//#ifndef H5
+		state.view.current = 2;
+		state.current = 1;
+		updateView(CalendarDisplayWay.week);
+		nextTick(() => {
 			showWay.value = CalendarDisplayWay.week;
-			state.view.current = 2;
-			state.current = 1;
-			nextTick(()=>{
-				updateView(showWay.value);
-			});
-			// #endif
-			emits("modeChange",CalendarDisplayWay.week);
-		}
-		emits("onChange",state.selectedDay);
+		});
+		// #endif
+		// #ifdef H5
+		showWay.value = CalendarDisplayWay.week;
+		state.view.current = 2;
+		state.current = 1;
+		nextTick(() => {
+			updateView(showWay.value);
+		});
+		// #endif
+		emits("modeChange", CalendarDisplayWay.week);
+		emits("onChange", state.selectedDay);
 	}
-	
 </script>
 
 <style>
@@ -644,7 +648,7 @@
 		position: relative;
 		top: 20px;
 		touch-action: none;
-        height:fit-content;
+		height: fit-content;
 		padding: 1%;
 	}
 
@@ -655,8 +659,8 @@
 		font-size: 18px;
 		font-weight: 600;
 	}
-	
-	.k-calendar .title .switch{
+
+	.k-calendar .title .switch {
 		position: absolute;
 		right: 9%;
 		display: flex;

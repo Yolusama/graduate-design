@@ -1,11 +1,19 @@
 <template>
-	<view id="setting" v-if="state.user!=null">
+	<view id="setting" v-if="state.user!=null" :style="'background-color:'+subject.backColor">
 		<uni-list style="width: 92%;">
 			<uni-list-item show-arrow>
 				<template v-slot:body>
 					<view class="item" @click="goToSelfInfo">
 						<image :src="imgSrc(state.user.avatar)" class="avatar"></image>
 						<text class="item-text">{{state.user.nickname}}</text>
+					</view>
+				</template>
+			</uni-list-item>
+			<uni-list-item show-arrow>
+				<template v-slot:body>
+					<view class="item" @click="goSetSubject">
+						<image src="../static/subject.png" class="avatar"></image>
+						<text class="item-text">设置主题</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -72,8 +80,8 @@
 					width: 100%;"></textarea>
 				</view>
 				<view style="display: flex;width: 65%;justify-content: center;">
-					<button size="mini" type="primary" @click="feedback" 
-					:disabled="state.userFeedback.trim().length==0">发送</button>
+					<button size="mini" type="primary" @click="feedback"
+						:disabled="state.userFeedback.trim().length==0">发送</button>
 					<button @click="feedbackPopup.close()" size="mini" style="background-color: gray;color: white;">
 						取消</button>
 				</view>
@@ -94,9 +102,17 @@
 	import {
 		Logout
 	} from '../api/UserInfo';
-	import { reloadTo } from '../module/Common';
-    import { Feedback } from '../api/User';
-	
+	import {
+		reloadTo
+	} from '../module/Common';
+	import {
+		Feedback
+	} from '../api/User';
+	import {
+		SubjectStyle, getSubject
+	} from '../module/Subject';
+	import {onShow} from "@dcloudio/uni-app";
+	const subject = ref(new SubjectStyle());
 	const state = reactive({
 		user: null,
 		userFeedback: ""
@@ -110,6 +126,10 @@
 				state.user = res.data;
 			}
 		});
+	});
+	
+	onShow(()=>{
+		subject.value = getSubject();
 	});
 
 	function logout() {
@@ -142,20 +162,20 @@
 	}
 
 	function feedback() {
-	   const authorization = {
-		   token: state.user.token
-	   };
-       Feedback(state.user.email,state.userFeedback,authorization,response=>{
-		  const res = response.data;
-		  if(!res.succeeded){
-			  uni.showToast({
-			  	title:res.message,
-				icon:"none"
-			  });
-			  return;
-		  }
-		  feedbackPopup.value.close();
-	   });
+		const authorization = {
+			token: state.user.token
+		};
+		Feedback(state.user.email, state.userFeedback, authorization, response => {
+			const res = response.data;
+			if (!res.succeeded) {
+				uni.showToast({
+					title: res.message,
+					icon: "none"
+				});
+				return;
+			}
+			feedbackPopup.value.close();
+		});
 	}
 
 	function seeAppHelp() {
@@ -171,10 +191,16 @@
 		if (e.show) return;
 		state.userFeedback = "";
 	}
-	
-	function goSetNotifyAudio(){
+
+	function goSetNotifyAudio() {
 		uni.navigateTo({
-			url:"/pages/notifyAudio"
+			url: "/pages/notifyAudio"
+		});
+	}
+
+	function goSetSubject() {
+		uni.navigateTo({
+			url: "/pages/subject"
 		});
 	}
 </script>
@@ -191,7 +217,6 @@
 		flex-flow: column nowrap;
 		align-items: center;
 		height: 96vh;
-		background-color: aliceblue;
 	}
 
 	#setting .avatar {
@@ -221,23 +246,23 @@
 		color: rgb(0, 75, 235);
 		margin-top: 3%;
 	}
-	
-	#setting .feedback{
+
+	#setting .feedback {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		width: 74vw;
 		height: 40vh;
-	} 
-	
-	.feedback .header{
+	}
+
+	.feedback .header {
 		display: flex;
 		align-items: center;
 		height: 30px;
-		width:94%;
+		width: 94%;
 	}
-	
-	.feedback .feedback-content{
+
+	.feedback .feedback-content {
 		display: flex;
 		flex-direction: column;
 		width: 94%;

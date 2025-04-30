@@ -1467,3 +1467,9 @@
 		margin-left: 1%;
 		margin-right: 1%;
 }
+#index .fresh{
+		position: absolute;
+		width: 22px;
+		height: 22px;
+		right:4%;
+}

@@ -78,6 +78,13 @@
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+			"path" : "pages/subject",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"tabBar": {

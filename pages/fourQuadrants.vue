@@ -1,5 +1,5 @@
 <template>
-	<view id="four-quadrants">
+	<view id="four-quadrants" :style="{backgroundColor:subject.backColor}">
 		<view class="header">
 			<text>四象限</text>
 			&nbsp;
@@ -45,7 +45,7 @@
 		</view>
 		<task-editor ref="quadrantTaskEditor" :task="state.selectedTask" @close="beforeEditorClose"
 			:isTaskUpdate="state.selectedTask!=null" v-if="state.show" @created="taskCreated" @updated="taskUpdated"
-			@removed="taskRemoved"></task-editor>
+			@removed="taskRemoved" :subject="subject"></task-editor>
 		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false"
 			@fabClick="openToEdit" @longpress="fabPosition.left=!fabPosition.left" />
 	</view>
@@ -82,12 +82,14 @@
 		onShow,
 		onTabItemTap
 	} from "@dcloudio/uni-app"
+import { SubjectStyle, getSubject } from '../module/Subject';
 	const pattern = ref({
 		color: '#7A7E83',
 		backgroundColor: '#fff',
 		buttonColor: '#007AFF',
 		iconColor: '#fff'
 	});
+	const subject = ref(new SubjectStyle());
 
 	const quadrantTaskEditor = ref(null);
 	const quadrant1 = ref(null);
@@ -136,6 +138,8 @@
 		const user = uni.getStorageSync("user");
 		state.userId = user.uid;
 		getData();
+		subject.value = getSubject();
+		pattern.value.buttonColor = subject.value.fabColor;
 	});
 
 	onTabItemTap(() => {

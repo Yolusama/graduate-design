@@ -1,6 +1,6 @@
 <template>
-	<view id="index">
-		<uni-popup type="left" ref="labelDrawer" background-color="#fff" style="z-index:1000">
+	<view id="index" :style="'background-color:'+subject.backColor">
+		<uni-popup type="left" ref="labelDrawer" :background-color="subject.backColor" style="z-index:1000">
 			<view id="task-labels">
 				<view class="header" @click="goToSelfInfo">
 					<image class="avatar" :src="imgSrc(state.user.avatar)"></image>
@@ -63,11 +63,11 @@
 				</scroll-view>
 				<view class="add-list">
 					<view class="add" @click="openLabelEditor(null,true)">
-						<uni-icons type="plusempty" color="rgb(0,75,235)"></uni-icons><text
+						<uni-icons type="plusempty" :color="subject.iconColor"></uni-icons><text
 							style="margin-left: 2px;">清单</text>
 					</view>
 					<view class="add" style="margin-left:4%;margin-right: 4%;" @click="openLabelEditor(null,false)">
-						<uni-icons type="plusempty" color="rgb(0,75,235)"></uni-icons><text
+						<uni-icons type="plusempty" :color="subject.iconColor"></uni-icons><text
 							style="margin-left: 2px;">标签</text>
 					</view>
 					<text style="font-size: 13px;color: rgb(0,75,235);" @click="seeHiddenLabels">查看隐藏</text>
@@ -79,19 +79,19 @@
 		</uni-popup>
 		<scroll-view class="index-content" direction="vertical">
 			<view class="header">
-				<uni-icons type="bars" color="rgb(0,125,245)" :size="20" @click="labelDrawer.open()"></uni-icons>
+				<uni-icons type="bars" :color="subject.barColor" :size="20" @click="labelDrawer.open()"></uni-icons>
 				<image :src="imgSrc(state.currentLabel.icon)"
 					style="height: 30px;width: 30px;margin-left: 1%;margin-right: 1%"></image>
 				<text class="text" style="margin-left: 0;">{{state.currentLabel.labelName}}</text>
 				<image class="fresh" src="../static/fresh.png" @click="reload"></image>
 			</view> 
 			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0"
-				style="margin-bottom: 4vh;" v-model="state.model.habit" :accordion="true">
+				style="margin-bottom: 4vh;border-radius: 5px;" v-model="state.model.habit" :accordion="true">
 				<uni-collapse-item>
 					<template v-slot:title>
 						<view class="item-title">
 							<text class="text">习惯</text>
-							<text style="font-size: 13px;color:gray">{{state.data['habit'].length}}</text>
+							<text :style="{fontSize:'13px',color:subject.introColor}">{{state.data['habit'].length}}</text>
 						</view>
 					</template>
 					<scroll-view style="max-height: 42vh;" scroll-y>
@@ -109,7 +109,7 @@
 									</template>
 									<template v-if="state.currentLabel.labelId==IdOfBin" v-slot:left>
 										<view style="display: flex;align-items: center;">
-											<uni-icons type="undo" color="rgb(0,125,235)" @click="recoverHabit(index)"
+											<uni-icons type="undo" :color="subject.iconColor" @click="recoverHabit(index)"
 												:size="22"></uni-icons>
 										</view>
 									</template>
@@ -156,12 +156,12 @@
 				</uni-collapse-item>
 			</uni-collapse>
 			<uni-collapse v-if="(isBaseDayLabel(state.currentLabel.labelId)||state.currentLabel.labelId==IdOfBin)
-			&&state.data['task'].length>0" v-model="state.model.task" :accordion="true">
+			&&state.data['task'].length>0" v-model="state.model.task" :accordion="true" style="border-radius: 5px;">
 				<uni-collapse-item>
 					<template v-slot:title>
 						<view class="item-title">
 							<text class="text">任务</text>
-							<text style="font-size: 13px;color:gray">{{state.data['task'].length}}</text>
+							<text :style="{fontSize: '13px',color:subject.introColor}">{{state.data['task'].length}}</text>
 						</view>
 					</template>
 					<scroll-view style="max-height: 42vh;" scroll-y>
@@ -202,7 +202,7 @@
 										<view class="task-content">
 											<view class="title">
 												<text>{{task.title}}</text>
-												<text style="font-size: 13px;color: gray;">{{task.description}}</text>
+												<text :style="{fontSize: '13px',color:subject.introColor}">{{task.description}}</text>
 											</view>
 											<view v-html="getTaskTimeStr(task)" class="time"></view>
 										</view>
@@ -236,7 +236,7 @@
 							<view class="task-content">
 								<view class="title">
 									<text>{{task.title}}</text>
-									<text style="font-size: 13px;color: gray;">{{task.description}}</text>
+									<text :style="{fontSize: '13px',color: subject.introColor}">{{task.description}}</text>
 								</view>
 								<view v-html="getTaskTimeStr(task)" class="time"></view>
 							</view>
@@ -248,10 +248,11 @@
 		<task-editor ref="indexTaskEditor" :task="state.task" :isTaskUpdate="state.task!=null" v-if="state.show.task"
 			@close="taskEditorClose" @created="taskCreated" @updated="taskUpdated" :labelSet="true"
 			@removed="taskRemoved" @createdLabel="createdLabel" :userLabels="state.labels" :label="state.currentLabel"
-			:userLists="state.lists.filter(l=>!isSysLabel(l.labelId))">
+			:userLists="state.lists.filter(l=>!isSysLabel(l.labelId))" :subject="subject">
 		</task-editor>
 		<habit-detail :habit="state.habit" v-if="state.show.habit" @updated="habitUpdated" ref="indexHabitDetail"
-			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished" :date="getBaseDayLabelTime()"></habit-detail>
+			@close="habitDetailClose" @removed="habitRemoved" @finished="habitFinished" :date="getBaseDayLabelTime()"
+			:subject="subject"></habit-detail>
 		<uni-fab :pattern="pattern" :horizontal="fabPosition.value()" vertical="bottom" :pop-menu="false"
 			@fabClick="openToEdit" v-if="!isStateLabel(state.currentLabel.labelId)"
 			@longpress="fabPosition.left=!fabPosition.left" />
@@ -311,6 +312,7 @@
 		GetTaskReminders
 	} from '../api/Task';
 	import {onShow,onTabItemTap} from "@dcloudio/uni-app";
+import { SubjectStyle, getSubject } from '../module/Subject';
 
 	const pattern = ref({
 		color: '#7A7E83',
@@ -366,6 +368,7 @@
 		isList: true,
 		icon: "today.png"
 	});
+	const subject = ref(new SubjectStyle());
 	
 	//uniapptab页面使用onShow保证页面内容刷新
 	onShow(()=>{
@@ -396,6 +399,8 @@
 			finishAudio = new ValueText(0, "无");
 			uni.setStorageSync(CurrentFinsihAudioKey, finishAudio);
 		}	
+		subject.value = getSubject();
+		pattern.value.buttonColor = subject.value.fabColor;
 	});
 	
 	onTabItemTap(()=>{

@@ -1,10 +1,9 @@
 <template>
-	<view id="task">
+	<view id="task" :style="{backgroundColor:subject.backColor}">
 		<image class="fresh" src="../static/fresh.png" @click="reloadTo('/pages/task')"></image>
 		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange"></k-calendar>
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
-			<view class="todo" v-for="(task,index) in taskPageOpt.data"
-				:key="index" @click="seeTaskDetail(index)">
+			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
 				<view class="mask" v-if="task.state==TaskState.abondoned"></view>
 				<uni-swipe-action style="width: 100%;">
 					<uni-swipe-action-item>
@@ -37,7 +36,7 @@
 			</view>
 		</scroll-view>
 	</view>
-	<uni-popup type="right" ref="popup" background-color="#fff" @change="beforeClosePopup" style="z-index:101">
+	<uni-popup type="right" ref="popup" :background-color="subject.backColor" @change="beforeClosePopup" style="z-index:101">
 		<scroll-view class="popup" :scroll-y="true">
 			<view class="header">
 				<uni-icons type="closeempty" @click="popup.close()" class="close" :size="25"></uni-icons>
@@ -163,13 +162,13 @@
 					</template>
 				</uni-list-item>
 			</uni-list>
-			<uni-popup type="center" ref="frequencyPopup" background-color="#fff" border-radius="5px 5px 5px 5px"
+			<uni-popup type="center" ref="frequencyPopup" :background-color="subject.backColor" border-radius="5px 5px 5px 5px"
 				style="height: 75vh;">
 				<k-radio-group :data="state.frequency.data" v-model="state.frequency.selection" :containDef="true"
 					@onChange="notify">
 				</k-radio-group>
 			</uni-popup>
-			<uni-popup ref="defRulePopup" type="center" background-color="#fff">
+			<uni-popup ref="defRulePopup" type="center" :background-color="subject.backColor">
 				<scroll-view :scroll-y="true" class="popup">
 					<view class="header" style="justify-content: flex-start;"><uni-icons type="closeempty"
 							@click="defRulePopup.close()"></uni-icons>
@@ -224,7 +223,7 @@
 			</uni-popup>
 		</scroll-view>
 	</uni-popup>
-	<uni-popup background-color="#fff" ref="detailPopup" type="right">
+	<uni-popup :background-color="subject.backColor" ref="detailPopup" type="right">
 		<scroll-view class="task-detail" v-if="state.selectedTask!=null" :scroll-y="true">
 			<view class="header">
 				<uni-icons type="closeempty" @click="closeDetailPopup" class="close" :size="25"></uni-icons>
@@ -285,17 +284,17 @@
 			</view>
 		</scroll-view>
 	</uni-popup>
-	<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="priorityPopup"
+	<uni-popup type="center" :background-color="subject.backColor" border-radius="10px 10px 10px 10px" ref="priorityPopup"
 		style="z-index:101">
 		<k-radio-group :data="state.priority" v-model="state.task.priority" @onChange="priorityPopup.close()">
 		</k-radio-group>
 	</uni-popup>
-	<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="customPopup"
+	<uni-popup type="center" :background-color="subject.backColor" border-radius="10px 10px 10px 10px" ref="customPopup"
 		style="z-index: 101;">
 		<k-radio-group :data="state.defOpt.data" v-model="state.defOpt.val" @onChange="takeCustomMode">
 		</k-radio-group>
 	</uni-popup>
-	<uni-popup type="center" background-color="#fff" border-radius="10px 10px 10px 10px" ref="editModePopup">
+	<uni-popup type="center" :background-color="subject.backColor" border-radius="10px 10px 10px 10px" ref="editModePopup">
 		<k-radio-group :data="state.modeContent" v-model="state.mode" @onChange="openEditOrRemoveTaskOrCancelTask">
 		</k-radio-group>
 	</uni-popup>
@@ -355,6 +354,7 @@
 		onShow,
 		onTabItemTap
 	} from "@dcloudio/uni-app"
+import { SubjectStyle, getSubject } from "../module/Subject";
 	const popup = ref(null);
 	const frequencyPopup = ref(null);
 	const defRulePopup = ref(null);
@@ -365,10 +365,8 @@
 	const today = ref(new Date());
 	const taskPageOpt = ref(new PageOption(1, 100, 0));
 	const pattern = ref({
-		color: "#7A7E83",
-		backgroundColor: "#fff",
-		selectedColor: "#007AFF",
-		buttonColor: "#007AFF",
+		color: '#7A7E83',
+		buttonColor: '#007AFF',
 		iconColor: '#fff'
 	});
 	const fabPosition = ref({
@@ -377,6 +375,7 @@
 			return this.left ? "left" : "right";
 		}
 	});
+	const subject = ref(new SubjectStyle());
 	const state = reactive({
 		showWay: CalendarDisplayWay.week,
 		canCreateTask: false,
@@ -441,6 +440,8 @@
 		else
 			state.task.userId = user.uid;
 		getData();
+		subject.value = getSubject();
+		pattern.value.buttonColor = subject.value.fabColor;
 	});
 
 	onMounted(() => {
@@ -500,8 +501,8 @@
 			else
 				state.task[pro] = 4;
 		}
-		
-        reloadStartEndTime();
+
+		reloadStartEndTime();
 
 		state.task.custom = null;
 		state.task.deadline = null;
@@ -520,16 +521,16 @@
 		state.task.repeatable = false;
 		state.mode = -1;
 	}
-	
-	function reloadStartEndTime(){
+
+	function reloadStartEndTime() {
 		const temp = new Date(state.selectedDay);
 		state.startTime.date = getDateStr(temp);
 		state.startTime.time = timeWithoutSeconds(temp);
-		
+
 		const date = new Date(temp.setHours(temp.getHours() + 1));
 		state.endTime.date = getDateStr(date);
 		state.endTime.time = timeWithoutSeconds(date);
-		
+
 		state.task.beginTime = new Date(state.startTime.date + " " + state.startTime.time);
 		state.task.endTime = new Date(state.endTime.date + " " + state.endTime.time);
 	}
@@ -1043,7 +1044,6 @@
 <style>
 	#task {
 		position: relative;
-		background-color: azure;
 		padding: 3%;
 		z-index: 1;
 		height: 96vh;
@@ -1268,9 +1268,12 @@
 		border-radius: 7px;
 		width: 40px;
 	}
-	
-	#task .fresh{
+
+	#task .fresh {
 		width: 20px;
 		height: 20px;
+		/*#ifndef H5*/
+		margin-top: 3vh;
+		/*#endif*/
 	}
 </style>

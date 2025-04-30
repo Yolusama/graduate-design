@@ -1,5 +1,5 @@
 <template>
-	<uni-popup ref="popup" type="left" @change="closePopup" background-color="#fff">
+	<uni-popup ref="popup" type="left" @change="closePopup" :background-color="subject.backColor">
 		<view class="label-edit">
 			<view class="header">
 				<uni-icons type="closeempty" color="black" :size="24" @click="popup.close()"></uni-icons>
@@ -47,7 +47,8 @@
 		isList: Boolean,
 		labelName: String,
 		isLabelUpdate: Boolean,
-		label: Object
+		label: Object,
+		subject:Object
 	});
 	const emits = defineEmits(["created", "close", "updated"]);
 	const state = reactive({
@@ -61,6 +62,7 @@
 	const isList = ref(pros.isList);
 	const label = ref(pros.label);
 	const isLabelUpdate = ref(pros.isLabelUpdate);
+	const subject = ref(pros.subject);
 
 	onMounted(() => {
 		if (isLabelUpdate.value == undefined)

@@ -1,5 +1,5 @@
 <template>
-	<uni-popup ref="detailPopup" type="right" background-color="#fff" @change="beforeClose">
+	<uni-popup ref="detailPopup" type="right" :background-color="subject.backColor" @change="beforeClose">
 		<view class="detail">
 			<view class="header">
 				<uni-icons type="arrow-left" :size="25" @click="detailPopup.close();"></uni-icons>
@@ -54,7 +54,7 @@
 		</view>
 	</uni-popup>
 	<habit-editor :habit="state.selectedHabit" :isHabitUpdate="true" v-if="state.show" @close="editorClose" @updated="habitUpdated"
-	ref="editorInHabitDetail"></habit-editor>
+	ref="editorInHabitDetail" :subject="subject"></habit-editor>
 </template>
 
 <script setup>
@@ -88,9 +88,11 @@
 	
 	const pros = defineProps({
 		habit:Object,
-		date:Date
+		date:Date,
+		subject:Object
 	});
 	
+	const subject = ref(pros.subject);
 	const habit = ref(pros.habit);
 	const date = ref(pros.date);
 	const emits = defineEmits(["close","finished","removed","updated"]);
@@ -202,7 +204,6 @@
 		/*#ifndef H5*/
 		padding-top: 3vh;
 		/*#endif*/
-		background-color: rgb(98%, 98%, 98%);
 	}
 
 	.detail .detail-content {

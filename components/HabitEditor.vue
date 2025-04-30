@@ -1,5 +1,5 @@
 <template>
-	<uni-popup type="right" ref="popup" background-color="#fff" style="z-index:101" @change="popupClose">
+	<uni-popup type="right" ref="popup" :background-color="subject.backColor" style="z-index:101" @change="popupClose">
 		<scroll-view class="habit-edit" scroll-y="true">
 			<view class="header">
 				<uni-icons type="left" @click="closePopup" class="close" :size="25"></uni-icons>
@@ -223,9 +223,11 @@
 
 	const pros = defineProps({
 		habit: Object,
-		isHabitUpdate: Boolean
+		isHabitUpdate: Boolean,
+		subject:Object
 	});
 	const habit = ref(pros.habit);
+	const subject = ref(pros.subject);
 	const emits = defineEmits(["close", "created", "updated"]);
 
 	const state = reactive({
@@ -602,7 +604,6 @@
 		/*#ifndef H5*/
 		padding-top: 5%;
 		/*#endif*/
-		background-color: aliceblue;
 		align-items: center;
 		font-size: 15px;
 	}

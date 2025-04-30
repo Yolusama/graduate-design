@@ -1,5 +1,5 @@
 <template>
-	<view id="user" v-if="state.user!=null">
+	<view id="user" v-if="state.user!=null" :style="{backgroundColor:subject.backColor}">
 		<uni-nav-bar left-text="账户" @clickLeft="goBack" left-icon="arrow-left" right-icon="list"
 			@clickRight="infoListedPopup.open();">
 		</uni-nav-bar>
@@ -101,7 +101,7 @@
 				</view>
 			</view>
 		</uni-popup>
-		<uni-popup ref="infoListedPopup" background-color="#fff" type="right" style="z-index:100">
+		<uni-popup ref="infoListedPopup" :background-color="subject.backColor" type="right" style="z-index:100">
 			<view class="user-listed">
 				<view class="header">
 					<uni-icons type="closeempty" :size="24" @click="infoListedPopup.close();"></uni-icons>
@@ -145,7 +145,7 @@
 				<button @click="logout(true)" class="logout" size="mini">注销账号</button>
 			</view>
 		</uni-popup>
-		<uni-popup ref="habitPopup" background-color="#fff" type="right">
+		<uni-popup ref="habitPopup" :background-color="subject.backColor" type="right">
 			<view class="habits">
 				<view class="header">
 					<uni-icons type="closeempty" :size="24" @click="habitPopup.close();"></uni-icons>
@@ -232,6 +232,7 @@
 	import {
 		GetCheckCode
 	} from '../api/User';
+import { SubjectStyle, getSubject } from '../module/Subject';
 
 	const emailPopup = ref(null);
 	const pwdPopup = ref(null);
@@ -241,6 +242,7 @@
 	const today = ref(onlyDate(new Date()));
 	const habitPageoption = ref(new PageOption(1, 10, 0));
 	const chartData = ref({});
+	const subject = ref(new SubjectStyle());
 
 	const state = reactive({
 		user: null,
@@ -293,6 +295,7 @@
 				});
 			}
 		});
+		subject.value = getSubject();
 	});
 
 	function nicknameInput(e) {

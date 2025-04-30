@@ -1,5 +1,5 @@
 <template>
-	<view id="habit">
+	<view id="habit" :style="{backgroundColor:subject.backColor}">
 		<!--#ifdef H5-->
 		<view class="center" style="padding: 2%;">
 			<k-time-counter ref="counter"></k-time-counter>
@@ -13,7 +13,7 @@
 		<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;">
 			<!--#endif-->
 			<!--#ifndef H5-->
-			<k-calendar :unchangable="true" @onChange="dateChange" style="top:4vh;height: 120px;">
+			<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;">
 				<!--#endif-->
 			</k-calendar>
 			<scroll-view class="content" :scroll-y="true">
@@ -83,10 +83,10 @@
 				</uni-collapse>
 			</scroll-view>
 			<habit-editor ref="editor" :habit="state.habit" v-if="state.show.editor" :isHabitUpate="state.habit!=null"
-				@close="editorClose" @created="habitCreated">
+				@close="editorClose" @created="habitCreated" :subject="subject">
 			</habit-editor>
 			<habit-detail :habit="state.selectedHabit" ref="detail" @finished="habitFinished" v-if="state.show.detail"
-				@updated="habitUpdated" @close="detailClose" @removed="habitRemoved" :date="state.selectedDay">
+				@updated="habitUpdated" @close="detailClose" @removed="habitRemoved" :date="state.selectedDay" :subject="subject">
 			</habit-detail>
 			<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" :horizontal="fabPosition.value()"
 				@fabClick="openToEdit" @longpress="fabPosition.left=!fabPosition.left" />
@@ -122,6 +122,7 @@
 		onShow,
 		onTabItemTap
 	} from "@dcloudio/uni-app"
+import { SubjectStyle, getSubject } from "../module/Subject";
 	const counter = ref(null);
 	const editor = ref(null);
 	const detail = ref(null);
@@ -139,7 +140,7 @@
 		value: function() {
 			return this.left ? "left" : "right";
 		}
-	})
+	});
 	const state = reactive({
 		habit: null,
 		selectedHabit: null,
@@ -153,11 +154,13 @@
 		selectedDay: onlyDate(today.value),
 		model: {}
 	});
-
+    const subject = ref(new SubjectStyle());
 	onShow(() => {
 		const user = uni.getStorageSync("user");
 		state.userId = user.uid;
 		getData();
+		subject.value = getSubject();
+		pattern.value.buttonColor = subject.value.fabColor;
 	});
 
 	onTabItemTap(() => {
@@ -375,7 +378,6 @@
 	#habit {
 		position: relative;
 		width: 100%;
-		background-color: aliceblue;
 	}
 
 	#habit .content {
@@ -479,5 +481,8 @@
 		width: 23px;
 		height: 23px;
 		margin-left: 4%;
+		/*#ifndef H5*/
+		margin-top: 3vh;
+		/*#endif
 	}
 </style>

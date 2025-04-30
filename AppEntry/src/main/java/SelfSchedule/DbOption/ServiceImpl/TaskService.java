@@ -830,7 +830,7 @@ public class TaskService extends ServiceImpl<TaskMapper, Task> implements ITaskS
     }
 
     @Override
-    public String getCalculation(String userId, Date time) {
+    public String  getCalculation(String userId, Date time) {
         Date leftBound = new Date(time.getTime());
         leftBound.setDate(time.getDate()-Constants.Week);
         Date rightBound = new Date(time.getTime());

@@ -25,4 +25,8 @@ public class ValueText {
     public void setValue(Object value) {
         this.value = value;
     }
+
+    public Pair<String,Object> asPair(){
+        return Pair.makePair(text,value);
+    }
 }

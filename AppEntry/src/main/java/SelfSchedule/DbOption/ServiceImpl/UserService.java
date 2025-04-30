@@ -115,8 +115,13 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             return res;
         }
         String key =String.format("%s_token",user.getId());
-        String token = jwtService.generateToken(user.getId(),Constants.TokenExpire);
-        redis.set(key,token,Constants.TokenExpire);
+        String token;
+        if(!redis.has(key)) {
+            token = jwtService.generateToken(user.getId(), Constants.TokenExpire);
+            redis.set(key, token, Constants.TokenExpire);
+        }
+        else
+            token = redis.get(key).toString();
         ObjectUtil.copy(user,res);
         res.setLoginStatus(UserLoginStatus.SUCCESS);
         res.setToken(token);
@@ -147,8 +152,13 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
             return res;
         }
         String key =String.format("%s_token",user.getId());
-        String token = jwtService.generateToken(user.getId(),Constants.TokenExpire);
-        redis.set(key,token,Constants.TokenExpire);
+        String token;
+        if(!redis.has(key)) {
+            token = jwtService.generateToken(user.getId(), Constants.TokenExpire);
+            redis.set(key, token, Constants.TokenExpire);
+        }
+        else
+            token = redis.get(key).toString();
         ObjectUtil.copy(user,res);
         res.setToken(token);
         res.setLoginStatus(UserLoginStatus.SUCCESS);
@@ -169,8 +179,6 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
            wrapper.set(User::getLastLoginTime,Constants.now()).eq(User::getId,userId);
            mapper.update(wrapper);
         }
-        else
-            redis.remove(key);
         return res;
     }
 

@@ -3,7 +3,7 @@
 		<scroll-view class="habit-edit" scroll-y="true">
 			<view class="header">
 				<uni-icons type="left" @click="closePopup" class="close" :size="25"></uni-icons>
-				<text style="font-weight: 600;">{{state.isHabitUpdate?"习惯内容更新":"添加新习惯"}}</text>
+				<text :style="'font-weight: 600;color:'+subject.textColor">{{state.isHabitUpdate?"习惯内容更新":"添加新习惯"}}</text>
 				<uni-icons type="checkmarkempty" :style="state.canAddHabit||state.isHabitUpdate?'':'color:lightgray'"
 					:size="25" class="create" @click="editHabit"></uni-icons>
 			</view>
@@ -172,10 +172,10 @@
 			</view>
 		</view>
 	</uni-popup>
-	<uni-popup type="right" background-color="#fff" ref="groupPopup" style="z-index:101">
-		<view class="header">
-			<uni-icons type="left" @click="groupPopup.close()" class="close" :size="25"></uni-icons>
-			<text style="font-weight: 600;">习惯分组</text>
+	<uni-popup type="right" :background-color="subject.backColor" ref="groupPopup" style="z-index:101">
+		<view class="header" style="margin-top: 3vh;">
+			<uni-icons type="left" @click="groupPopup.close()" class="close" :size="25" :color="subject.iconColor"></uni-icons>
+			<text :style="'font-weight: 600;color:'+subject.textColor">习惯分组</text>
 			<view style="width: 40px;"></view>
 		</view>
 		<k-habit-group v-model="state.groups"></k-habit-group>

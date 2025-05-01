@@ -1,7 +1,7 @@
 <template>
-	<view id="hidden-label">
+	<view id="hidden-label" :style="{backgroundColor:subject.backColor}">
 		<uni-nav-bar @clickLeft="goBack" left-text="返回" left-icon="left" :border="false"></uni-nav-bar>
-		<view v-if="state.lists.length==0&&state.labels.length==0" class="no-content">
+		<view v-if="state.lists.length==0&&state.labels.length==0" class="no-content" :style="{color:subject.textColor}">
 			暂无内容
 		</view>
 		<view class="list-content" v-if="state.lists.length>0">
@@ -53,8 +53,10 @@
 		imgSrc
 	} from '../module/Request';
 import { delayToRun } from '../module/Common';
+import { SubjectStyle, getSubject } from '../module/Subject';
 
 	const labelEditorOf = ref(null);
+	const subject = ref(new SubjectStyle());
 
 	const state = reactive({
 		labels: [],
@@ -69,6 +71,7 @@ import { delayToRun } from '../module/Common';
 
 		state.userId = user.uid;
 		getLabels();
+		subject.value = getSubject();
 	});
 
 	function getLabels() {
@@ -142,7 +145,6 @@ import { delayToRun } from '../module/Common';
 		position: relative;
 		width: 100vw;
 		height: 94vh;
-		background-color: aliceblue;
 		/*#ifndef H5*/
 		padding-top: 3vh;
 		/*#endif*/

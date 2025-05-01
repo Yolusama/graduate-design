@@ -1,14 +1,14 @@
 <template>
 	<view id="four-quadrants" :style="{backgroundColor:subject.backColor}">
-		<view class="header">
+		<view class="header" :style="{color:subject.textColor}">
 			<text>四象限</text>
 			&nbsp;
-			<text style="color:rgb(25,27,28);font-size: 17px;">
+			<text style="font-size: 17px;">
 				{{today.getFullYear()}}年{{today.getMonth()+1}}月{{today.getDate()}}日&nbsp;{{weekDaySign(today.getDay())}}
 			</text>
 			&nbsp;
-			<k-time-counter style="display: inline-block;color: rgb(44,47,49);font-size: 16px;" />
-			<image src="../static/fresh.png" @click="reloadTo('/pages/fourQuadrants')" style="height: 20px;width: 20px;margin-left:5%;"/>
+			<k-time-counter style="display: inline-block;font-size: 16px;" />
+			<uni-icons type="reload"  @click="reloadTo('/pages/fourQuadrants')" style="margin-left:5%;" :size="24" :color="subject.iconColor" />
 		</view>
 		<view class="content">
 			<view class="item" v-for="(item,index) in state.priority" :key="index" :ref="quadrant+(index+1)"

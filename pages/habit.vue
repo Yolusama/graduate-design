@@ -1,13 +1,13 @@
 <template>
 	<view id="habit" :style="{backgroundColor:subject.backColor}">
 		<!--#ifdef H5-->
-		<view class="center" style="padding: 2%;">
+		<view class="center" :style="'padding: 2%;color:'+subject.textColor">
 			<k-time-counter ref="counter"></k-time-counter>
-			<image src="../static/fresh.png" @click="reloadTo('/pages/habit')" class="fresh"></image>
+			<uni-icons type="reload" :size="24" @click="reloadTo('/page/habit')" :color="subject.iconColor" class="fresh" />
 		</view>
 		<!--#endif-->
 		<!--#ifndef H5-->
-		<image src="../static/fresh.png" @click="reloadTo('/page/habit')" class="fresh"></image>
+		<uni-icons type="reload" :size="24" @click="reloadTo('/page/habit')" :color="subject.iconColor" class="fresh" />
 		<!--#endif-->
 		<!--#ifdef H5-->
 		<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;">
@@ -478,10 +478,9 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 	}
 	
 	#habit .fresh{
-		width: 23px;
-		height: 23px;
 		margin-left: 4%;
 		/*#ifndef H5*/
+		display: inline-block;
 		margin-top: 3vh;
 		/*#endif
 	}

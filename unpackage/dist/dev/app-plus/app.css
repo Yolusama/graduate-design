@@ -625,8 +625,8 @@
 		position: relative;
 		top: 20px;
 		touch-action: none;
-        height:-webkit-fit-content;
-        height:fit-content;
+		height: -webkit-fit-content;
+		height: fit-content;
 		padding: 1%;
 }
 .k-calendar .title[data-v-517b2787] {
@@ -636,7 +636,7 @@
 		font-size: 18px;
 		font-weight: 600;
 }
-.k-calendar .title .switch[data-v-517b2787]{
+.k-calendar .title .switch[data-v-517b2787] {
 		position: absolute;
 		right: 9%;
 		display: flex;
@@ -1241,7 +1241,6 @@
 	   width:100vw;
 	   height: 96vh;
 	   padding: 1%;
-	   background-color: aliceblue;
 }
 .k-habit-group-item[data-v-a4133cde]{
 	   display: flex;
@@ -2241,7 +2240,6 @@
 
 		padding-top: 5%;
 
-		background-color: aliceblue;
 		align-items: center;
 		font-size: 15px;
 }
@@ -2395,23 +2393,30 @@
 
 
 		padding-top: 3vh;
-
-		background-color: rgb(98%, 98%, 98%);
 }
 .detail .detail-content[data-v-e6c3bf42] {
 		display: flex;
 		position: relative;
+		justify-content: center;
+		flex-direction: column;
+		align-items: center;
 		height: 100%;
+}
+.detail .detail-content-inner[data-v-e6c3bf42] {
+		display: flex;
+		position: relative;
 		flex-flow: column nowrap;
 		justify-content: center;
 		align-items: center;
+		height: 75%;
 		padding: 1%;
+		border-radius: 8px;
+		width: 86%;
+		background-color: #fff;
 }
 .detail .background[data-v-e6c3bf42] {
-		position: absolute;
 		width: 90px;
 		height: 90px;
-		top: 20%;
 }
 .detail .header[data-v-e6c3bf42] {
 		display: flex;
@@ -2455,7 +2460,7 @@
 		font-size: 18px;
 		margin-left: 15px;
 }
-.detail .frequency-text[data-v-e6c3bf42]{
+.detail .frequency-text[data-v-e6c3bf42] {
 		font-size: 14px;
 		color: gray;
 		margin-top: 2%;
@@ -2507,6 +2512,7 @@
 		justify-content: space-between;
 		align-items: center;
 		height: 30px;
+		background-color: white;
 }
 .label-edit .header .title[data-v-99a35764] {
 		font-size: 18px;
@@ -2522,4 +2528,13 @@
 		font-size: 15px;
 		color: rgb(0, 75, 235);
 		margin-left: 2%;
+}
+.label-edit .edit-content[data-v-99a35764] {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: white;
+		flex-direction: column;
+		padding: 1%;
+		width: 94%;
 }

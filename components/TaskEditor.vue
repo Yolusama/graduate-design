@@ -1,7 +1,7 @@
 <template>
 	<uni-popup ref="popup" type="bottom" :background-color="subject.backColor" @change="beforeEditorClose">
 		<view class="task-edit">
-			<view class="head">
+			<view class="head" style="background-color: white;border-radius: 5px;">
 				<text :class="'quadrant-'+state.task.priority" @click="priorityPopup.open()">
 					{{state.priority[state.task.priority-1].text}}
 				</text>
@@ -177,7 +177,7 @@
 			</view>
 		</scroll-view>
 	</uni-popup>
-	<uni-popup ref="listPopup" :background-color="subject.backColor" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
+	<uni-popup ref="listPopup" background-color="#fff" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
 		<view class="list">
 			<view class="header">
 				<uni-icons type="closeempty" @click="listPopup.close()"></uni-icons>

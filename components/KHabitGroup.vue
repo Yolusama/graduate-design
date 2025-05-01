@@ -116,7 +116,6 @@
 	   width:100vw;
 	   height: 96vh;
 	   padding: 1%;
-	   background-color: aliceblue;
    }
    .k-habit-group-item{
 	   display: flex;

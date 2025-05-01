@@ -4,7 +4,7 @@
 			<view id="task-labels">
 				<view class="header" @click="goToSelfInfo">
 					<image class="avatar" :src="imgSrc(state.user.avatar)"></image>
-					<text class="nickName">{{state.user.nickname}}</text>
+					<text class="nickName" :style="{color:subject.textColor}">{{state.user.nickname}}</text>
 				</view>
 				<scroll-view class="labels" scroll-y>
 					<uni-list>
@@ -14,7 +14,7 @@
 								<view class="label-info" v-if="list.labelId!=IdOfLableNamed"
 									@click="switchContent(list)">
 									<image :src="imgSrc(list.icon)" class="label-icon"></image>
-									<text class="text">{{list.labelName}}</text>
+									<text class="text" :style="{color:subject.introColor}">{{list.labelName}}</text>
 									<view style="margin-left: 5%;display: flex;width:90px">
 										<view @click.stop="openLabelEditor(list,true,index);">
 											<uni-icons type="compose" v-if="!list.notCustom">
@@ -29,7 +29,7 @@
 								<view style="height: 100%;width:100%" v-if="list.labelId==IdOfLableNamed">
 									<view class="label-info" style="position: relative;">
 										<image :src="imgSrc(list.icon)" class="label-icon"></image>
-										<text class="text">{{list.labelName}}</text>
+										<text class="text" :style="{color:subject.introColor}">{{list.labelName}}</text>
 										<view @click.stop="state.labelsExpand=!state.labelsExpand" class="right"
 											:style="state.labelsExpand?state.labelsExpandStyle:''"
 											v-if="state.labels.length>0">
@@ -64,17 +64,17 @@
 				<view class="add-list">
 					<view class="add" @click="openLabelEditor(null,true)">
 						<uni-icons type="plusempty" :color="subject.iconColor"></uni-icons><text
-							style="margin-left: 2px;">清单</text>
+							:style="'margin-left: 2px;color:'+subject.textColor">清单</text>
 					</view>
 					<view class="add" style="margin-left:4%;margin-right: 4%;" @click="openLabelEditor(null,false)">
 						<uni-icons type="plusempty" :color="subject.iconColor"></uni-icons><text
-							style="margin-left: 2px;">标签</text>
+							:style="'margin-left: 2px;color:'+subject.textColor">标签</text>
 					</view>
 					<text style="font-size: 13px;color: rgb(0,75,235);" @click="seeHiddenLabels">查看隐藏</text>
 				</view>
 				<label-editor :label="state.label" :isLabelUpdate="state.label!=null" v-if="state.show.label"
 					:isList="state.isList" @created="labelCreated" @updated="labelUpdated" @close="labelEditorClose"
-					ref="indexLabelEditor"></label-editor>
+					ref="indexLabelEditor" :subject="subject"></label-editor>
 			</view>
 		</uni-popup>
 		<scroll-view class="index-content" direction="vertical">
@@ -82,8 +82,8 @@
 				<uni-icons type="bars" :color="subject.barColor" :size="20" @click="labelDrawer.open()"></uni-icons>
 				<image :src="imgSrc(state.currentLabel.icon)"
 					style="height: 30px;width: 30px;margin-left: 1%;margin-right: 1%"></image>
-				<text class="text" style="margin-left: 0;">{{state.currentLabel.labelName}}</text>
-				<image class="fresh" src="../static/fresh.png" @click="reload"></image>
+				<text class="text" :style="{color:subject.textColor}">{{state.currentLabel.labelName}}</text>
+				<uni-icons :size="26" @click="reload" type="reload" :color="subject.iconColor" class="fresh"></uni-icons>
 			</view> 
 			<uni-collapse v-if="state.data['habit']!=undefined && state.data['habit'].length>0"
 				style="margin-bottom: 4vh;border-radius: 5px;" v-model="state.model.habit" :accordion="true">

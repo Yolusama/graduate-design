@@ -5,7 +5,7 @@
 				<template v-slot:body>
 					<view class="item" @click="goToSelfInfo">
 						<image :src="imgSrc(state.user.avatar)" class="avatar"></image>
-						<text class="item-text">{{state.user.nickname}}</text>
+						<text class="item-text" :style="{color:subject.introColor}">{{state.user.nickname}}</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -13,7 +13,7 @@
 				<template v-slot:body>
 					<view class="item" @click="goSetSubject">
 						<image src="../static/subject.png" class="avatar"></image>
-						<text class="item-text">设置主题</text>
+						<text class="item-text" :style="{color:subject.introColor}">设置主题</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -21,7 +21,7 @@
 				<template v-slot:body>
 					<view class="item" @click="reloadTo('/pages/setting')">
 						<image src="../static/fresh.png" class="avatar"></image>
-						<text class="item-text">同步数据</text>
+						<text class="item-text" :style="{color:subject.introColor}">同步数据</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -29,7 +29,7 @@
 				<template v-slot:body>
 					<view class="item" @click="goSetNotifyAudio">
 						<image src="../static/notify.png" class="avatar"></image>
-						<text class="item-text">设置通知音效</text>
+						<text class="item-text" :style="{color:subject.introColor}">设置通知音效</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -37,7 +37,7 @@
 				<template v-slot:body>
 					<view class="item" @click="seeAppHelp">
 						<image src="../static/doubt.png" class="avatar"></image>
-						<text class="item-text">帮助</text>
+						<text class="item-text" :style="{color:subject.introColor}">帮助</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -45,7 +45,7 @@
 				<template v-slot:body>
 					<view class="item" @click="showAbout">
 						<uni-icons type="flag-filled" :size="32"></uni-icons>
-						<text class="item-text">关于</text>
+						<text class="item-text" :style="{color:subject.introColor}">关于</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -53,7 +53,7 @@
 				<template v-slot:body>
 					<view class="item" @click="feedbackPopup.open()">
 						<uni-icons type="chat-filled" :size="32"></uni-icons>
-						<text class="item-text">反馈</text>
+						<text class="item-text" :style="{color:subject.introColor}">反馈</text>
 					</view>
 				</template>
 			</uni-list-item>
@@ -236,7 +236,6 @@
 	.item .item-text {
 		font-size: 15px;
 		margin-left: 4%;
-		color: gray;
 	}
 
 	#setting .logout {

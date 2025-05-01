@@ -924,7 +924,6 @@
 #habit[data-v-61768113] {
 		position: relative;
 		width: 100%;
-		background-color: aliceblue;
 }
 #habit .content[data-v-61768113] {
 		position: relative;
@@ -1012,9 +1011,8 @@
 		height: 40px;
 }
 #habit .fresh[data-v-61768113]{
-		width: 23px;
-		height: 23px;
 		margin-left: 4%;
 
+		display: inline-block;
 		margin-top: 3vh;
 }

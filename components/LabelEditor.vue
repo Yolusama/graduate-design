@@ -9,13 +9,15 @@
 				<uni-icons type="checkmarkempty" :color="state.canCreate?'black':'lightgray'" :size="24"
 					@click="editLabel"></uni-icons>
 			</view>
-			<view style="display: flex;justify-content: center;">
+			<view class="edit-content">
+				<view style="display: flex;justify-content: center;">
 				<image :src="state.imgShow" @click="uploadImage" style="width: 80px;height:80px;"></image>
 				<text class="upload" @click="uploadImage">上传图片</text>
-			</view>
-			<view style="width: 92%;margin-top: 3%;">
-				<uni-easyinput v-model="state.label.labelName" :placeholder="isList?'清单名':'标签名'" @change="check"
-					@input="input"></uni-easyinput>
+				</view>
+				<view style="width: 92%;margin-top: 3%;">
+					<uni-easyinput v-model="state.label.labelName" :placeholder="isList?'清单名':'标签名'" @change="check"
+						@input="input"></uni-easyinput>
+				</view>
 			</view>
 		</view>
 	</uni-popup>
@@ -48,7 +50,7 @@
 		labelName: String,
 		isLabelUpdate: Boolean,
 		label: Object,
-		subject:Object
+		subject: Object
 	});
 	const emits = defineEmits(["created", "close", "updated"]);
 	const state = reactive({
@@ -155,9 +157,9 @@
 					});
 					return;
 				}
-				if(state.selectedFile==null)
-				   afterUpdating(null);
-				else{
+				if (state.selectedFile == null)
+					afterUpdating(null);
+				else {
 					UploadLabelIcon(state.label, state.selectedFile, response => {
 						const res = JSON.parse(response.data);
 						if (!res.succeeded) {
@@ -173,12 +175,12 @@
 			});
 		}
 	}
-	
-	function afterCreating(icon){
-		const label = {};   
+
+	function afterCreating(icon) {
+		const label = {};
 		copy(state.label, label);
-		if(icon!=null)
-		   label.icon = icon;
+		if (icon != null)
+			label.icon = icon;
 		emits("created", {
 			item: label
 		});
@@ -221,7 +223,7 @@
 	function open() {
 		popup.value.open();
 	}
-	
+
 	defineExpose({
 		open
 	});
@@ -244,6 +246,7 @@
 		justify-content: space-between;
 		align-items: center;
 		height: 30px;
+		background-color: white;
 	}
 
 	.label-edit .header .title {
@@ -261,5 +264,15 @@
 		font-size: 15px;
 		color: rgb(0, 75, 235);
 		margin-left: 2%;
+	}
+
+	.label-edit .edit-content {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: white;
+		flex-direction: column;
+		padding: 1%;
+		width: 94%;
 	}
 </style>

@@ -10,34 +10,36 @@
 				</view>
 			</view>
 			<view class="detail-content">
-				<text v-if="state.selectedHabit.finished" style="width:90%;
+				<view class="detail-content-inner">
+					<text v-if="state.selectedHabit.finished" style="width:90%;
 						text-align:right;color:red">已完成</text>
-				<image class="background" :src="imgSrc(state.selectedHabit.thumb)"></image>
-				<view class="detail-option">
-					<text class="detail-title">{{state.selectedHabit.name}}</text>
-					<view class="detail-descritpion" v-html="state.selectedHabit.description"></view>
-					<k-swiper @finish="finishHabit" :height="60" v-if="!state.selectedHabit.finished"></k-swiper>
-					<view class="content-show" v-if="state.selectedHabit.finished">
-						<view class="show-content">
-							<text>当前连续</text>
-							<text>{{state.selectedHabit.continuousDays}}天</text>
-						</view>
-						<view class="show-content">
-							<text>最多连续</text>
-							<text>{{state.selectedHabit.mostDays}}天</text>
-						</view>
-						<view class="show-content">
-							<text>已坚持</text>
-							<text>{{state.selectedHabit.persistDays}}天</text>
+					<image class="background" :src="imgSrc(state.selectedHabit.thumb)"></image>
+					<view class="detail-option">
+						<text class="detail-title">{{state.selectedHabit.name}}</text>
+						<view class="detail-descritpion" v-html="state.selectedHabit.description"></view>
+						<k-swiper @finish="finishHabit" :height="60" v-if="!state.selectedHabit.finished"></k-swiper>
+						<view class="content-show" v-if="state.selectedHabit.finished">
+							<view class="show-content">
+								<text>当前连续</text>
+								<text>{{state.selectedHabit.continuousDays}}天</text>
+							</view>
+							<view class="show-content">
+								<text>最多连续</text>
+								<text>{{state.selectedHabit.mostDays}}天</text>
+							</view>
+							<view class="show-content">
+								<text>已坚持</text>
+								<text>{{state.selectedHabit.persistDays}}天</text>
+							</view>
 						</view>
 					</view>
+					<view class="frequency-text">{{getFrequencyText(state.selectedHabit)}}</view>
+					<text @click="openRecord" class="open-record">习惯记录详情</text>
 				</view>
-				<view class="frequency-text">{{getFrequencyText(state.selectedHabit)}}</view>
-				<text @click="openRecord" class="open-record">习惯记录详情</text>
 			</view>
 		</view>
 	</uni-popup>
-	<uni-popup ref="recordPopup" background-color="aliceblue" type="right">
+	<uni-popup ref="recordPopup" :background-color="subject.backColor" type="right">
 		<view class="record">
 			<view class="header" style="width: 98%;">
 				<uni-icons type="arrow-left" :size="25" @click="recordPopup.close()"></uni-icons>
@@ -53,8 +55,8 @@
 			</k-record-month>
 		</view>
 	</uni-popup>
-	<habit-editor :habit="state.selectedHabit" :isHabitUpdate="true" v-if="state.show" @close="editorClose" @updated="habitUpdated"
-	ref="editorInHabitDetail" :subject="subject"></habit-editor>
+	<habit-editor :habit="state.selectedHabit" :isHabitUpdate="true" v-if="state.show" @close="editorClose"
+		@updated="habitUpdated" ref="editorInHabitDetail" :subject="subject"></habit-editor>
 </template>
 
 <script setup>
@@ -82,42 +84,42 @@
 	const today = ref(new Date());
 	const state = reactive({
 		selectedDay: new Date(today.value.setMilliseconds(0)),
-		selectedHabit:null,
-		show:false
+		selectedHabit: null,
+		show: false
 	});
-	
+
 	const pros = defineProps({
-		habit:Object,
-		date:Date,
-		subject:Object
+		habit: Object,
+		date: Date,
+		subject: Object
 	});
-	
+
 	const subject = ref(pros.subject);
 	const habit = ref(pros.habit);
 	const date = ref(pros.date);
-	const emits = defineEmits(["close","finished","removed","updated"]);
+	const emits = defineEmits(["close", "finished", "removed", "updated"]);
 
 	onMounted(() => {
-       if(habit.value!=undefined&&habit.value!=null)
-	      state.selectedHabit = habit.value;
-		if(date.value!=undefined)
-		  state.selectedDay = onlyDate(date.value);
+		if (habit.value != undefined && habit.value != null)
+			state.selectedHabit = habit.value;
+		if (date.value != undefined)
+			state.selectedDay = onlyDate(date.value);
 	});
-	
-	function toEdit(){
+
+	function toEdit() {
 		state.show = true;
-		nextTick(()=>{
+		nextTick(() => {
 			editorInHabitDetail.value.open();
 		});
 	}
-	
-	function beforeClose(e){
-		if(e.show)return;
+
+	function beforeClose(e) {
+		if (e.show) return;
 		emits("close");
 	}
-	
-	function editorClose(){
-		delayToRun(()=>state.show=false,175);
+
+	function editorClose() {
+		delayToRun(() => state.show = false, 175);
 	}
 
 	function finishHabit(e) {
@@ -141,22 +143,24 @@
 			state.selectedHabit.finished = finished;
 			state.selectedHabit.finishTime = model.finishTime;
 			recordFinish(res.data);
-			emits("finished",{item:state.selectedHabit});
+			emits("finished", {
+				item: state.selectedHabit
+			});
 		});
 	}
-	
+
 	function recordFinish(data) {
 		state.selectedHabit.persistDays = data.persistDays;
 		state.selectedHabit.mostDays = data.mostDays;
 		state.selectedHabit.continuousDays = data.continuousDays;
 	}
-	
-	function habitUpdated(e){
+
+	function habitUpdated(e) {
 		const data = e.item;
 		state.selectedHabit = data;
-		emits("updated",e);
+		emits("updated", e);
 	}
-	
+
 	function removeHabit() {
 		uni.showModal({
 			confirmText: "确定",
@@ -174,7 +178,10 @@
 							});
 							return;
 						}
-						emits("removed",{index:state.selectedHabit.index,groupName:state.selectedHabit.groupName});
+						emits("removed", {
+							index: state.selectedHabit.index,
+							groupName: state.selectedHabit.groupName
+						});
 						detailPopup.value.close();
 					});
 				}
@@ -186,11 +193,13 @@
 		recordPopup.value.open();
 	}
 
-	function open(){
+	function open() {
 		detailPopup.value.open();
 	}
-	
-	defineExpose({open});
+
+	defineExpose({
+		open
+	});
 </script>
 
 <style scoped>
@@ -209,27 +218,37 @@
 	.detail .detail-content {
 		display: flex;
 		position: relative;
+		justify-content: center;
+		flex-direction: column;
+		align-items: center;
 		height: 100%;
+	}
+
+	.detail .detail-content-inner {
+		display: flex;
+		position: relative;
 		flex-flow: column nowrap;
 		justify-content: center;
 		align-items: center;
+		height: 75%;
 		padding: 1%;
+		border-radius: 8px;
+		width: 86%;
+		background-color: #fff;
 	}
 
 	.detail .background {
-		position: absolute;
 		width: 90px;
 		height: 90px;
-		top: 20%;
 	}
-	
+
 	.detail .header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		height: 30px;
 	}
-	
+
 
 	.detail .detail-title,
 	.detail .detail-descritpion {
@@ -271,8 +290,8 @@
 		font-size: 18px;
 		margin-left: 15px;
 	}
-	
-	.detail .frequency-text{
+
+	.detail .frequency-text {
 		font-size: 14px;
 		color: gray;
 		margin-top: 2%;

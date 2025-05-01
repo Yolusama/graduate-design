@@ -91,7 +91,7 @@
 		continuousDays: Number,
 		mostDays: Number,
 		persistDays: Number,
-		frequency: Object
+		frequency: Object,
 	});
 	const emits = defineEmits();
 

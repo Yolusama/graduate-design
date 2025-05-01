@@ -1,9 +1,8 @@
 <template>
 	<view id="notify-audio">
 		<view class="content">
-			<uni-title type="h1" title="自定义音效无法完成,uniapp对上传文件与系统原生api调用的支持不足,无法完成上传文件,只提供系统音频供使用"
-			 style="width: 90%;">
-			</uni-title>
+			<h2 style="width: 90%;">自定义音效无法完成,uniapp
+			对上传文件与系统原生api调用的支持不足,无法完成上传文件,只提供系统音频供使用</h2>
 			<uni-data-checkbox mode="tag" :localdata="state.audioModeData"
 			v-model="state.audioMode" @change="setAudioMode"></uni-data-checkbox>
 			<scroll-view scroll-y style="width: 90%;">
@@ -36,6 +35,7 @@
 	import {
 		audioSrc
 	} from '../module/Request';
+	
 	const state = reactive({
 		audios: [],
 		value: 0,

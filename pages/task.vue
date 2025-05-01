@@ -1,6 +1,6 @@
 <template>
 	<view id="task" :style="{backgroundColor:subject.backColor}">
-		<image class="fresh" src="../static/fresh.png" @click="reloadTo('/pages/task')"></image>
+		<uni-icons type="reload" :size="24" :color="subject.iconColor" @click="reloadTo('/pages/task')" class="fresh"></uni-icons>
 		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange"></k-calendar>
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
 			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
@@ -40,7 +40,7 @@
 		<scroll-view class="popup" :scroll-y="true">
 			<view class="header">
 				<uni-icons type="closeempty" @click="popup.close()" class="close" :size="25"></uni-icons>
-				<text style="font-weight: 600;">{{state.isTaskUpdate?"修改任务":"新建任务"}}</text>
+				<text :style="'font-weight: 600;color:'+subject.textColor">{{state.isTaskUpdate?"修改任务":"新建任务"}}</text>
 				<uni-icons type="checkmarkempty" :style="state.canCreateTask?'':'color:lightgray'" :size="25"
 					class="create" @click="editTask"></uni-icons>
 			</view>
@@ -234,7 +234,7 @@
 			<view v-html="'任务描述：'+state.selectedTask.description" class="description"></view>
 			<view class="def-text">开始：{{getDateTimeStr(state.selectedTask.beginTime,today.getFullYear())}}</view>
 			<view class="def-text">结束：{{getDateTimeStr(state.selectedTask.endTime,today.getFullYear())}}</view>
-			<uni-list>
+			<uni-list style="width:92%">
 				<uni-list-item>
 					<template v-slot:body>
 						<view>
@@ -1270,9 +1270,8 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 	}
 
 	#task .fresh {
-		width: 20px;
-		height: 20px;
 		/*#ifndef H5*/
+		display: inline-block;
 		margin-top: 3vh;
 		/*#endif*/
 	}

@@ -7,12 +7,12 @@ import SelfSchedule.Model.ArrayDataModel;
 import SelfSchedule.Result.ActionResult;
 import SelfSchedule.Service.FileService;
 import SelfSchedule.Service.RedisCache;
+import SelfSchedule.Service.VoskService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -23,11 +23,13 @@ import java.util.concurrent.CompletableFuture;
 public class CommonController extends ControllerBase
 {
     private final FileService fileService;
+    private final VoskService voskService;
 
     @Autowired
-    public CommonController(RedisCache redis,FileService fileService){
+    public CommonController(RedisCache redis,FileService fileService,VoskService voskService){
         this.redis = redis;
         this.fileService = fileService;
+        this.voskService = voskService;
     }
 
 
@@ -65,6 +67,15 @@ public class CommonController extends ControllerBase
             redis.set(CachingKeys.GetNotifyAudios,model,Constants.CachingExpire);
         }
         return CompletableFuture.completedFuture(successWithData(model.getData()));
+    }
+
+    @PostMapping("/Recording")
+    @ApiOperation(value = "转换录音文件内容为字符串",notes = "转换录音文件内容为字符串")
+    public CompletableFuture<ActionResult<String>> Recording(@RequestPart("file")MultipartFile file){
+        String res = voskService.convert(file);
+        if(res.equals(Constants.Error))
+            return CompletableFuture.completedFuture(fail("失败！"));
+        return CompletableFuture.completedFuture(successWithData(res));
     }
 
 }

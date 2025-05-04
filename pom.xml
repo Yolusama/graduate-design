@@ -76,8 +76,8 @@
                 <version>${httpcomponents.httpclient.version}</version>
             </dependency>
             <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
                 <version>${jdbc.mysql.version}</version>
             </dependency>
             <dependency>
@@ -94,6 +94,21 @@
                 <groupId>io.springfox</groupId>
                 <artifactId>springfox-swagger-ui</artifactId>
                 <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org</groupId>
+                <artifactId>jaudiotagger</artifactId>
+                <version>${jaudio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>${jna.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alphacephei</groupId>
+                <artifactId>vosk</artifactId>
+                <version>${vosk.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -112,6 +127,9 @@
         <httpcomponents.httpclient.version>4.5.14</httpcomponents.httpclient.version>
         <jdbc.mysql.version>8.0.32</jdbc.mysql.version>
         <swagger.version>3.0.0</swagger.version>
+        <jaudio.version>2.0.3</jaudio.version>
+        <jna.version>5.7.0</jna.version>
+        <vosk.version>0.3.33</vosk.version>
     </properties>
 
 </project>

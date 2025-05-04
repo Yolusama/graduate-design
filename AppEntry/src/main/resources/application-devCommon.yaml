@@ -22,3 +22,7 @@ resource:
      pattern: /notify/**
      path: D:\repos\scResource\notify\
      location: file:D:/repos/scResource/notify/
+
+vosk:
+  path: D:\vosk-model-cn-0.22
+  ffmpegSupport: D:\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe

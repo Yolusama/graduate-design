@@ -662,7 +662,6 @@
 }
 .k-calendar .day-text[data-v-517b2787] {
 		font-weight: 400;
-		color: gray;
 }
 .k-calendar .date[data-v-517b2787] {
 		height: 30px;
@@ -670,7 +669,6 @@
 		width: 30px;
 		border-radius: 50%;
 		text-align: center;
-		border: 2px solid transparent;
 }
 .k-calendar .title .sign[data-v-517b2787] {
 		margin-left: 10px;
@@ -2053,6 +2051,27 @@
 		text-overflow: ellipsis;
 		font-size: 13px;
 		color: rgb(0, 75, 235);
+}
+.recoreding[data-v-8922942d] {
+		position: relative;
+		height: 35vh;
+		width: 100vw;
+}
+.recoreding .header[data-v-8922942d] {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding-left: 2%;
+		height: 40px;
+}
+.recoreding .recording-content[data-v-8922942d] {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: white;
+		width: 92%;
+		height: 120px;
+		margin: 0 auto;
 }
 
 /**

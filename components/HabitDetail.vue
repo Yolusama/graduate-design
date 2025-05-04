@@ -41,8 +41,8 @@
 	</uni-popup>
 	<uni-popup ref="recordPopup" :background-color="subject.backColor" type="right">
 		<view class="record">
-			<view class="header" style="width: 98%;">
-				<uni-icons type="arrow-left" :size="25" @click="recordPopup.close()"></uni-icons>
+			<view class="header" style="width: 98%;height: 35px;">
+				<uni-icons type="arrow-left" :size="25" @click="recordPopup.close()" :color="subject.iconColor"></uni-icons>
 			</view>
 			<k-record-month class="record-calendar" v-model="state.selectedHabit.records" :current="state.selectedDay"
 				:habitId="state.selectedHabit.habitId" :beginDate="state.selectedHabit.beginDate" @select="recordFinish"
@@ -51,7 +51,7 @@
 							days:state.selectedHabit.days,
 							weekPersistDays:state.selectedHabit.weekPersistDays,
 							period:state.selectedHabit.period
-						}">
+						}" :subject="subject">
 			</k-record-month>
 		</view>
 	</uni-popup>

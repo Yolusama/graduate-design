@@ -1,12 +1,12 @@
 <template>
 	<view class="k-record-month">
 		<view class="title">
-			<uni-icons type="left" @click="transformLeft"></uni-icons>
+			<uni-icons type="left" @click="transformLeft" :color="subject.iconColor"></uni-icons>
 			<picker mode="date" @change="selectDate" style="margin-left: 2%;margin-right: 2%;"
 				:value="getDateStr(current)">
 				{{current.getFullYear()}}年{{current.getMonth()+1}}月
 			</picker>
-			<uni-icons type="right" @click="transformRight"></uni-icons>
+			<uni-icons type="right" @click="transformRight" :color="subject.iconColor"></uni-icons>
 		</view>
 		<swiper :current="state.current" @transition="toTransform" @change="transformed"
 			@animationfinish="backTransform" style="height: 250px">
@@ -92,6 +92,7 @@
 		mostDays: Number,
 		persistDays: Number,
 		frequency: Object,
+		subject:Object
 	});
 	const emits = defineEmits();
 
@@ -117,6 +118,7 @@
 	const mostDays = ref(pros.mostDays);
 	const persistDays = ref(pros.persistDays);
 	const frequency = ref(pros.frequency);
+	const subject = ref(pros.subject);
 
 	onMounted(() => {
 		if (beginDate.value == undefined)

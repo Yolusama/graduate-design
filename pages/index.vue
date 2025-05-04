@@ -80,8 +80,10 @@
 		<scroll-view class="index-content" direction="vertical">
 			<view class="header">
 				<uni-icons type="bars" :color="subject.barColor" :size="20" @click="labelDrawer.open()"></uni-icons>
-				<image :src="imgSrc(state.currentLabel.icon)"
+				<image :src="imgSrc(state.currentLabel.icon)" v-if="state.currentLabel.labelId!=IdOfBin"
 					style="height: 30px;width: 30px;margin-left: 1%;margin-right: 1%"></image>
+				<uni-icons :size="26" :color="subject.iconColor" type="trash-filled" v-if="state.currentLabel.labelId==IdOfBin">
+				</uni-icons>
 				<text class="text" :style="{color:subject.textColor}">{{state.currentLabel.labelName}}</text>
 				<uni-icons :size="26" @click="reload" type="reload" :color="subject.iconColor" class="fresh"></uni-icons>
 			</view> 

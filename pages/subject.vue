@@ -91,10 +91,15 @@
 					value: subjects[state.selected]
 				},
 				success: () => {
+					const expire = 1500;
 					uni.showToast({
 						title: "已更改！",
-						icon: "success"
+						icon: "success",
+						duration: expire
 					});
+					setTimeout(()=>uni.reLaunch({
+						url:"/pages/setting"
+					}),expire);
 				}
 			});
 		}, 750);

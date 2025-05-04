@@ -1,21 +1,23 @@
 <template>
 	<view class="k-calendar">
-		<view v-if="state.selectedDay!=undefined" class="title">
+		<view v-if="state.selectedDay!=undefined" class="title" :style="'color:'+subject.textColor">
 			{{ labelText()}}
-			<view class="sign" @click="signRotate" :style="state.view.rotation" v-if="!unchangable"></view>
+			<view class="sign" @click="signRotate" :style="'border-top-color:'+subject.textColor+';'+state.view.rotation"
+			 v-if="!unchangable"></view>
 			<view class="select-date">
 				<picker mode="date" :value="state.dateStr" start="1970-01-01" @change="dateChange"
 					@cancel="state.dateStr=''">
-					<uni-icons type="paperplane"></uni-icons>
+					<uni-icons type="paperplane" :size="18" :color="subject.iconColor"></uni-icons>
 				</picker>
 			</view>
 			<view class="switch">
-				<uni-icons type="left" :size="16" @click="switchLeft"></uni-icons>
-				<uni-icons type="right" :size="16" @click="switchRight"></uni-icons>
+				<uni-icons type="left" :size="16" @click="switchLeft" :color="subject.iconColor"></uni-icons>
+				<uni-icons type="right" :size="16" @click="switchRight" :color="subject.iconColor"></uni-icons>
 			</view>
 		</view>
 		<uni-segmented-control style-type="text" :values="state.view.items" :current="state.view.current"
-			v-if="state.view.expanded" @clickItem="switchViewMode" style="margin-bottom:5px">
+			v-if="state.view.expanded" @clickItem="switchViewMode"  :active-color="subject.fabColor"
+			style="margin-bottom:5px">
 		</uni-segmented-control>
 		<swiper :current="state.current" @transition="toTransform" @change="transformed" :duration="state.duration"
 			@animationfinish="backTransform" v-if="showWay==CalendarDisplayWay.week" style="height: 110px;">
@@ -23,10 +25,12 @@
 				<view class="header">
 					<view class="day-label">
 						<view v-for="(weekDay,index1) in state.days[index]" :key="index1" class="week">
-							<text class="day-text">{{weekDayShow(weekDay.date.getDay())}}</text>
+							<text class="day-text" :style="{color:subject.textColor}">{{weekDayShow(weekDay.date.getDay())}}</text>
 							<text @tap="selectDay($event,weekDay,index)"
-								:style="weekDay.selected?'border-color:rgb(36, 155, 221)':''"
-								:class="weekDay.date.getTime()==current.getTime()?'date date-today':'date'">
+								:style="weekDay.selected?{borderColor:subject.fabColor,backgroundColor:'aqua',color:'white',
+								borderWidth:'2px',borderStyle:'solid'}:
+								{color:subject.textColor}"
+								:class="dateEquals(weekDay.date,current)?'date date-today':'date'">
 								{{weekDay.date.getDate()}}</text>
 						</view>
 					</view>
@@ -38,13 +42,15 @@
 			<swiper-item v-for="(item,index) in state.data" :key="index">
 				<view class="day-label">
 					<text class="day-text" v-for="(day,index1) in ['日','一','二','三','四','五','六']"
-						:key="index1">{{day}}</text>
+						:key="index1" :style="'color:'+subject.textColor">{{day}}</text>
 				</view>
 				<view class="month">
 					<view v-for="(day,index2) in state.days[index]" :key="index2" class="month-container">
-						<view :class="day!=null&&day.date.getTime()==current.getTime()?'date date-today':'date'"
+						<view :class="day!=null&&dateEquals(day.date,current)?'date date-today':'date'"
 							@tap="selectDay($event,day,index)"
-							:style="day!=null&&day.selected?'border-color:rgb(36, 155, 221)':''">
+							:style="day!=null&&day.selected?{borderColor:subject.fabColor,backgroundColor:'aqua',color:'white',
+							borderWidth:'2px',borderStyle:'solid'}:
+							{color:subject.textColor}">
 							{{day!=null?day.date.getDate():""}}
 						</view>
 					</view>
@@ -57,15 +63,17 @@
 				<view class="year">
 					<view class="year-item" v-for="(monthDays,index2) in state.days[index]" :key="index2"
 						@tap="goToMonth(index2)">
-						<h4>{{index2+1}}月</h4>
+						<h4 :style="{color:subject.textColor}">{{index2+1}}月</h4>
 						<view class="day-label">
 							<text class="day-text" v-for="(day,index1) in ['日','一','二','三','四','五','六']"
-								:key="index1">{{day}}</text>
+								:key="index1" :style="{color:subject.textColor}">{{day}}</text>
 						</view>
 						<view class="month">
 							<view v-for="(day,index3) in monthDays" :key="index3" class="month-container">
-								<view :class="day!=null&&dateEquals(day.date,current)?'date date-today':'date'" :style="day!=null&&dateEquals(day.date,state.selectedDay)&&!dateEquals(day.date,current)
-								?'border-color:rgb(36, 155, 221)':''">
+								<view :class="day!=null&&dateEquals(day.date,current)?'date date-today':'date'" 
+								:style="day!=null&&day.selected?{borderColor:subject.fabColor,backgroundColor:'aqua',color:'white',
+								borderWidth:'2px'}:
+							{color:subject.textColor}">
 									{{day!=null?day.date.getDate():""}}
 								</view>
 							</view>
@@ -77,7 +85,7 @@
 		<swiper v-if="showWay==CalendarDisplayWay.day" :current="state.current" @transition="toTransform"
 			@change="transformed" @animationfinish="backTransform" style="height: 70px;">
 			<swiper-item v-for="(item,index) in state.data" :key="index"
-				style="height: 50px;background-color: aliceblue;">
+				:style="{height: '50px',color:subject.textColor}">
 				<view v-for="(day,index1) in state.days[index]" :key="index1"
 					style="font-size: 18px;text-align: center;line-height: 50px;">
 					<k-time-counter v-if="day.selected"></k-time-counter>
@@ -103,10 +111,12 @@
 		monthDays,
 		dateEquals
 	} from '../module/Common.js'
+import { SubjectStyle, getSubject } from '../module/Subject.js';
 	const pros = defineProps({
 		currentDay: Date,
 		showWay: Number,
-		unchangable: Boolean
+		unchangable: Boolean,
+		subject:Object
 	});
 
 	const state = reactive({
@@ -129,6 +139,7 @@
 	const current = ref(pros.currentDay);
 	const showWay = ref(pros.showWay);
 	const unchangable = ref(pros.unchangable);
+	const subject = ref(new SubjectStyle());
 	const emits = defineEmits(["modeChange", "onChange"]);
 
 	onMounted(() => {
@@ -149,6 +160,7 @@
 		} else if (showWay.value == CalendarDisplayWay.day) {
 			loadDays();
 		}
+		subject.value = getSubject();
 	});
 
 	function weekDayShow(weekDay) {
@@ -690,7 +702,6 @@
 
 	.k-calendar .day-text {
 		font-weight: 400;
-		color: gray;
 	}
 
 	.k-calendar .date {
@@ -699,7 +710,6 @@
 		width: 30px;
 		border-radius: 50%;
 		text-align: center;
-		border: 2px solid transparent;
 	}
 
 	.k-calendar .title .sign {

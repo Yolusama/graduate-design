@@ -2,10 +2,10 @@
 	<uni-popup type="right" ref="popup" :background-color="subject.backColor" style="z-index:101" @change="popupClose">
 		<scroll-view class="habit-edit" scroll-y="true">
 			<view class="header">
-				<uni-icons type="left" @click="closePopup" class="close" :size="25"></uni-icons>
+				<uni-icons type="left" @click="closePopup" class="close" :size="25" :color="subject.iconColor"></uni-icons>
 				<text :style="'font-weight: 600;color:'+subject.textColor">{{state.isHabitUpdate?"习惯内容更新":"添加新习惯"}}</text>
-				<uni-icons type="checkmarkempty" :style="state.canAddHabit||state.isHabitUpdate?'':'color:lightgray'"
-					:size="25" class="create" @click="editHabit"></uni-icons>
+				<uni-icons type="checkmarkempty" :style="state.canAddHabit||state.isHabitUpdate?'':'opacity:0.5'"
+					:size="25" class="create" @click="editHabit" :color="subject.iconColor"></uni-icons>
 			</view>
 			<view class="habit-item">
 				<view>

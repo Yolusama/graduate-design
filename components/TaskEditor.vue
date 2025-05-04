@@ -18,6 +18,9 @@
 				</text>
 				<uni-icons type="close" color="red" :size="18" v-if="state.isTaskUpdate" style="margin-left: 2%;"
 					@click="removeTask"></uni-icons>
+				<uni-icons type="mic" :color="subject.iconColor" :size="24" v-if="!state.isTaskUpdate"
+					style="margin-left: 2%;" @click="recordPopup.open();">
+				</uni-icons>
 			</view>
 			<uni-easyinput v-model="state.task.title" placeholder="标题" :focus="!state.isTaskUpdate"
 				style="margin-bottom: 2px;margin-top: 3px;" @input="titleInput"></uni-easyinput>
@@ -162,7 +165,8 @@
 			</view>
 		</scroll-view>
 	</uni-popup>
-	<uni-popup ref="labelPopup" :background-color="subject.backColor" border-radius="7px 8px 8px 7px" v-if="state.hasLabelSetter">
+	<uni-popup ref="labelPopup" :background-color="subject.backColor" border-radius="7px 8px 8px 7px"
+		v-if="state.hasLabelSetter">
 		<scroll-view scroll-y style="max-height: 40vh;">
 			<view class="header">
 				<uni-icons type="closeempty" @click="labelPopup.close()"></uni-icons>
@@ -207,6 +211,29 @@
 						style="margin-right: 2%;"></uni-icons>
 				</view>
 			</scroll-view>
+		</view>
+	</uni-popup>
+	<uni-popup ref="recordPopup" :background-color="subject.backColor" type="bottom" @change="closeRecordPopup">
+		<view class="recoreding">
+			<view class="header">
+				<uni-icons type="closeempty" :color="subject.iconColor" @click="recordPopup.close()"
+					:size="24"></uni-icons>
+			</view>
+			<view class="recording-content"v-if="!state.recordOpt.finished">
+				<view style="display: flex;justify-content: center;height: 40px;align-items: center;"
+					>
+					<text v-show="recorder.isRecording" style="margin-right: 2%;">{{recorder.getTime()}}</text>
+					<button @click="recordAction" type="primary" size="mini" v-if="!recorder.isRecording"
+						style="height: 30px;width: 65px;">录制</button>
+					<button @click="recordAction" style="background-color: red;color:#fff;height: 30px;width: 65px;"
+						size="mini" v-if="recorder.isRecording">停止</button>
+				</view>
+			</view>
+			<view class="recording-content" style="flex-direction: column;" v-if="state.recordOpt.finished">
+				<h3 style="margin-top: 2%;margin-bottom: 2%;">{{state.recordOpt.content}}</h3> 
+				<button type="primary" @click="saveRecordContent" size="mini" style="height: 30px;width: 65px;"
+				:disabled="!state.recordOpt.transformed">保存</button>
+			</view>
 		</view>
 	</uni-popup>
 </template>
@@ -255,6 +282,7 @@
 		CreateOrGetLabel,
 		TakeTaskLabelsFor
 	} from '../api/Index';
+	import Recorder from '../module/Recording';
 
 
 	const pros = defineProps({
@@ -264,7 +292,7 @@
 		userLabels: Array,
 		userLists: Array,
 		label: Object,
-		subject:Object
+		subject: Object
 	});
 	const task = ref(pros.task);
 	const label = ref(pros.label);
@@ -278,6 +306,7 @@
 	const customPopup = ref(null);
 	const labelPopup = ref(null);
 	const listPopup = ref(null);
+	const recordPopup = ref(null);
 
 	const emits = defineEmits(["close", "created", "updated", "removed", "createdLabel"]);
 	const startTime = ref({
@@ -289,6 +318,7 @@
 		time: ""
 	});
 	const today = ref(new Date());
+	const recorder = ref(new Recorder());
 
 	const state = reactive({
 		priority: [],
@@ -341,6 +371,11 @@
 				return this.selected != null && list != null && list.labelId == this.selected;
 			},
 			selected: null
+		},
+		recordOpt: {
+			content: "",
+			finished: false,
+			transformed:false
 		}
 	});
 
@@ -506,18 +541,17 @@
 			if (index < 0) {
 				loading("", () => {
 					state.labelOpt.labelName = "";
-						userLabels.value.push(data);
-						state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
-						state.labelOpt.selected.push(data.labelId);
-						state.task.labels.push(data);
-						emits("createdLabel", {
-							data: userLabels.value,
-							isList: false
-						});
+					userLabels.value.push(data);
+					state.labelOpt.data.push(new ValueText(data.labelId, data.labelName));
+					state.labelOpt.selected.push(data.labelId);
+					state.task.labels.push(data);
+					emits("createdLabel", {
+						data: userLabels.value,
+						isList: false
+					});
 				}, 750);
-			}
-			else
-			    state.labelOpt.labelName = "";
+			} else
+				state.labelOpt.labelName = "";
 		});
 	}
 
@@ -772,6 +806,49 @@
 		})
 	}
 
+	function recordAction() {
+		if (!recorder.value.isRecording) {
+			recorder.value.startRecording(res => {
+				const content = res.text;
+				state.recordOpt.content = content.replace(/\s/g, "");
+				state.recordOpt.transformed = true;
+			});
+		} else
+			{
+				state.recordOpt.finished = true;
+				state.recordOpt.content = "语音识别转换中...";
+				if(recorder.value.current==0)
+					{
+						popup.value.close();
+						recorder.value.stopRecording(false);
+					}
+				else
+				   recorder.value.stopRecording(true);   	
+			}
+	}
+
+	function closeRecordPopup(e) {
+		if (e.show) return;
+		if (recorder.value.isRecording)
+			recorder.value.stopRecording(false);
+	    state.recordOpt = {
+			content:"",
+			finished:false,
+			transformed:false
+		};		
+		popup.value.close();
+	}
+	
+	function saveRecordContent(){
+		if(state.recordOpt.content.length==0)
+		{
+			popup.value.close();
+			return;
+		}
+		state.task.title = state.recordOpt.content;
+		editTask();
+	}
+
 	function open() {
 		popup.value.open();
 	}
@@ -976,5 +1053,29 @@
 		text-overflow: ellipsis;
 		font-size: 13px;
 		color: rgb(0, 75, 235);
+	}
+
+	.recoreding {
+		position: relative;
+		height: 35vh;
+		width: 100vw;
+	}
+
+	.recoreding .header {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding-left: 2%;
+		height: 40px;
+	}
+
+	.recoreding .recording-content {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: white;
+		width: 92%;
+		height: 120px;
+		margin: 0 auto;
 	}
 </style>

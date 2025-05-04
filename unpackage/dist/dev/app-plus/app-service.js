@@ -6112,6 +6112,9 @@ if (uni.restoreGlobal) {
       });
     });
   }
+  function Recording(file, successCallback) {
+    UploadFile("/Api/Common/Recording", file, formDataAuth, {}, successCallback);
+  }
   function GetData(userId, labelId, time, successCallback) {
     Get(`/Api/Index/GetData/${userId}/${labelId}?time=${time}`, auth, successCallback);
   }
@@ -6244,13 +6247,21 @@ if (uni.restoreGlobal) {
   }
   const subjects = {
     "default": new SubjectStyle("aliceblue", "#000", "rgb(0,75,235)", "rgb(0,125,245)", "gray", "#007AFF"),
-    "light": new SubjectStyle("#ffd", "#111", "rgb(0,75,235)", "rgb(0,75,225)", "olive", "orange"),
+    "lightwheat": new SubjectStyle("#ffd", "#111", "rgb(0,75,235)", "rgb(0,75,225)", "olive", "orange"),
+    "wheat": new SubjectStyle("wheat", "#110", "rgb(0,85,195)", "rgb(0,135,225)", "gold", "yellow"),
     "darkblue": new SubjectStyle("darkblue", "#ffe", "#ffb", "rgb(0,125,235)", "darkblue", "violet"),
     "azure": new SubjectStyle("azure", "#112", "rgb(0,75,125)", "rgb(0,105,235)", "darkgray", "darkcyan"),
-    "lightcyan": new SubjectStyle("lightcyan", "#fff", "rgb(0,75,125)", "rgb(0,105,235)", "darkcyan", "cyan"),
+    "lightcyan": new SubjectStyle("lightcyan", "#111", "rgb(0,75,125)", "rgb(0,105,235)", "darkcyan", "cyan"),
     "beryl": new SubjectStyle("rgb(72,209,204)", "#fff", "rgb(0,75,205)", "rgb(0,105,235)", "lime", "palegreen"),
     "pink": new SubjectStyle("pink", "#fff", "#3cf", "rgb(0,105,235)", "deeppink", "deeppink"),
-    "violet": new SubjectStyle("violet", "#fff", "blue", "rgb(0,105,235)", "darkviolet", "deepskyblue")
+    "violet": new SubjectStyle("violet", "#fff", "blue", "rgb(0,105,235)", "darkviolet", "deepskyblue"),
+    "orangered": new SubjectStyle("orangered", "#eee", "rgb(0,75,225)", "rgb(0,105,235)", "orange", "red"),
+    "midnightblue": new SubjectStyle("midnightblue", "#fff", "#ffb", "rgb(0,125,205)", "dodgerblue", "purple"),
+    "aquamarine": new SubjectStyle("aquamarine", "#121", "rgb(0,125,235)", "rgb(0,125,205)", "dodgerblue", "blueviolet"),
+    "chartreuse": new SubjectStyle("chartreuse", "#ffe", "#ffb", "rgb(0,75,205)", "limegreen", "#3cf"),
+    "tomato": new SubjectStyle("tomato", "#ffe", "#123", "rgb(0,125,225)", "crimson", "red"),
+    "brown": new SubjectStyle("brown", "#ffe", "cyan", "rgb(0,125,225)", "crimson", "cornflowerblue"),
+    "silver": new SubjectStyle("silver", "#000", "#fff", "rgb(0,125,225)", "slategray", "cadetblue")
   };
   const SubjectKey = "CurrentSubject";
   function getSubject() {
@@ -7208,10 +7219,17 @@ if (uni.restoreGlobal) {
               size: 20,
               onClick: _cache[3] || (_cache[3] = ($event) => $setup.labelDrawer.open())
             }, null, 8, ["color"]),
-            vue.createElementVNode("image", {
+            $setup.state.currentLabel.labelId != $setup.IdOfBin ? (vue.openBlock(), vue.createElementBlock("image", {
+              key: 0,
               src: $setup.imgSrc($setup.state.currentLabel.icon),
               style: { "height": "30px", "width": "30px", "margin-left": "1%", "margin-right": "1%" }
-            }, null, 8, ["src"]),
+            }, null, 8, ["src"])) : vue.createCommentVNode("v-if", true),
+            $setup.state.currentLabel.labelId == $setup.IdOfBin ? (vue.openBlock(), vue.createBlock(_component_uni_icons, {
+              key: 1,
+              size: 26,
+              color: $setup.subject.iconColor,
+              type: "trash-filled"
+            }, null, 8, ["color"])) : vue.createCommentVNode("v-if", true),
             vue.createElementVNode(
               "text",
               {
@@ -8465,8 +8483,9 @@ if (uni.restoreGlobal) {
             vue.createVNode(_component_k_calendar, {
               showWay: $setup.state.showWay,
               onModeChange: $setup.modeChange,
-              onOnChange: $setup.dateChange
-            }, null, 8, ["showWay"]),
+              onOnChange: $setup.dateChange,
+              subject: $setup.subject
+            }, null, 8, ["showWay", "subject"]),
             $setup.state.showWay != $setup.CalendarDisplayWay.year ? (vue.openBlock(), vue.createElementBlock("scroll-view", {
               key: 0,
               class: "content",
@@ -8595,8 +8614,9 @@ if (uni.restoreGlobal) {
                   type: "closeempty",
                   onClick: _cache[1] || (_cache[1] = ($event) => $setup.popup.close()),
                   class: "close",
-                  size: 25
-                }),
+                  size: 25,
+                  color: $setup.subject.iconColor
+                }, null, 8, ["color"]),
                 vue.createElementVNode(
                   "text",
                   {
@@ -8608,11 +8628,12 @@ if (uni.restoreGlobal) {
                 ),
                 vue.createVNode(_component_uni_icons, {
                   type: "checkmarkempty",
-                  style: vue.normalizeStyle($setup.state.canCreateTask ? "" : "color:lightgray"),
+                  style: vue.normalizeStyle($setup.state.canCreateTask ? "" : "opacity:0.5"),
                   size: 25,
                   class: "create",
-                  onClick: $setup.editTask
-                }, null, 8, ["style"])
+                  onClick: $setup.editTask,
+                  color: $setup.subject.iconColor
+                }, null, 8, ["style", "color"])
               ]),
               vue.createVNode(_component_uni_list, {
                 border: true,
@@ -9538,8 +9559,9 @@ if (uni.restoreGlobal) {
         vue.createVNode(_component_k_calendar, {
           unchangable: true,
           onOnChange: $setup.dateChange,
-          style: { "top": "0", "height": "120px" }
-        }),
+          style: { "top": "0", "height": "120px" },
+          subject: $setup.subject
+        }, null, 8, ["subject"]),
         vue.createElementVNode("scroll-view", {
           class: "content",
           "scroll-y": true
@@ -19437,13 +19459,11 @@ ${i3}
         audioModeData: [new ValueText(0, "设置通知音效"), new ValueText(1, "设置完成音效")]
       });
       const key = vue.ref(CurrentAudioKey);
-      const subject = vue.ref(new SubjectStyle());
       vue.onMounted(() => {
         const current = uni.getStorageSync(key.value);
         if (current != "" && current != null)
           state.value = current.value;
         getNotifyAudios();
-        subject.value = getSubject();
       });
       function getNotifyAudios() {
         GetNotifyAudios((response) => {
@@ -19486,7 +19506,7 @@ ${i3}
         const audio = uni.getStorageSync(key.value);
         state.value = audio.value;
       }
-      const __returned__ = { state, key, subject, getNotifyAudios, selectAudio, setAudioMode, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, get CurrentAudioKey() {
+      const __returned__ = { state, key, getNotifyAudios, selectAudio, setAudioMode, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, get CurrentAudioKey() {
         return CurrentAudioKey;
       }, get CurrentFinsihAudioKey() {
         return CurrentFinsihAudioKey;
@@ -19498,10 +19518,6 @@ ${i3}
         return GetNotifyAudios;
       }, get audioSrc() {
         return audioSrc;
-      }, get SubjectStyle() {
-        return SubjectStyle;
-      }, get getSubject() {
-        return getSubject;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -19510,53 +19526,36 @@ ${i3}
   function _sfc_render$f(_ctx, _cache, $props, $setup, $data, $options) {
     const _component_uni_data_checkbox = resolveEasycom(vue.resolveDynamicComponent("uni-data-checkbox"), __easycom_5);
     const _component_uni_title = resolveEasycom(vue.resolveDynamicComponent("uni-title"), __easycom_7);
-    return vue.openBlock(), vue.createElementBlock(
-      "view",
-      {
-        id: "notify-audio",
-        style: vue.normalizeStyle({ backgroundColor: $setup.subject.backColor })
-      },
-      [
-        vue.createElementVNode("view", { class: "content" }, [
-          vue.createElementVNode(
-            "h2",
-            {
-              style: vue.normalizeStyle("width: 90%;color:" + $setup.subject.textColor)
-            },
-            "自定义音效无法完成,uniapp 对上传文件与系统原生api调用的支持不足,无法完成上传文件,只提供系统音频供使用",
-            4
-            /* STYLE */
-          ),
-          vue.createVNode(_component_uni_data_checkbox, {
-            mode: "tag",
-            localdata: $setup.state.audioModeData,
-            modelValue: $setup.state.audioMode,
-            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.audioMode = $event),
-            onChange: $setup.setAudioMode
-          }, null, 8, ["localdata", "modelValue"]),
-          vue.createElementVNode("scroll-view", {
-            "scroll-y": "",
-            style: { "width": "90%" }
-          }, [
-            vue.createElementVNode("view", null, [
-              vue.createVNode(_component_uni_title, {
-                type: "h3",
-                title: "选择铃声"
-              }),
-              vue.createVNode(_component_uni_data_checkbox, {
-                mode: "list",
-                localdata: $setup.state.audios,
-                modelValue: $setup.state.value,
-                "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => $setup.state.value = $event),
-                onChange: $setup.selectAudio
-              }, null, 8, ["localdata", "modelValue"])
-            ])
+    return vue.openBlock(), vue.createElementBlock("view", { id: "notify-audio" }, [
+      vue.createElementVNode("view", { class: "content" }, [
+        vue.createElementVNode("h2", { style: { "width": "90%" } }, "自定义音效无法完成,uniapp 对上传文件与系统原生api调用的支持不足,无法完成上传文件,只提供系统音频供使用"),
+        vue.createVNode(_component_uni_data_checkbox, {
+          mode: "tag",
+          localdata: $setup.state.audioModeData,
+          modelValue: $setup.state.audioMode,
+          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.state.audioMode = $event),
+          onChange: $setup.setAudioMode
+        }, null, 8, ["localdata", "modelValue"]),
+        vue.createElementVNode("scroll-view", {
+          "scroll-y": "",
+          style: { "width": "90%" }
+        }, [
+          vue.createElementVNode("view", null, [
+            vue.createVNode(_component_uni_title, {
+              type: "h3",
+              title: "选择铃声"
+            }),
+            vue.createVNode(_component_uni_data_checkbox, {
+              mode: "list",
+              localdata: $setup.state.audios,
+              modelValue: $setup.state.value,
+              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => $setup.state.value = $event),
+              onChange: $setup.selectAudio
+            }, null, 8, ["localdata", "modelValue"])
           ])
         ])
-      ],
-      4
-      /* STYLE */
-    );
+      ])
+    ]);
   }
   const PagesNotifyAudio = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["render", _sfc_render$f], ["__scopeId", "data-v-b5a97eb4"], ["__file", "D:/repos/html+css+js/SelfSchedule/pages/notifyAudio.vue"]]);
   const _sfc_main$f = {
@@ -19577,13 +19576,21 @@ ${i3}
         for (let pro in subjects)
           data.push(new ValueText(pro, ""));
         data[0].text = "经典";
-        data[1].text = "麦黄";
-        data[2].text = "深蓝";
-        data[3].text = "湛蓝";
-        data[4].text = "浅青";
-        data[5].text = "宝石绿";
-        data[6].text = "粉红";
-        data[7].text = "紫罗兰";
+        data[1].text = "淡麦";
+        data[2].text = "麦黄";
+        data[3].text = "深蓝";
+        data[4].text = "湛蓝";
+        data[5].text = "浅青";
+        data[6].text = "宝石绿";
+        data[7].text = "粉红";
+        data[8].text = "紫罗兰";
+        data[9].text = "橘红";
+        data[10].text = "午夜蓝";
+        data[11].text = "海宝石蓝";
+        data[12].text = "黄绿";
+        data[13].text = "番茄红";
+        data[14].text = "棕褐";
+        data[15].text = "银灰";
         state.data = data;
       });
       function getColor() {
@@ -19601,10 +19608,15 @@ ${i3}
               value: subjects[state.selected]
             },
             success: () => {
+              const expire = 1500;
               uni.showToast({
                 title: "已更改！",
-                icon: "success"
+                icon: "success",
+                duration: expire
               });
+              setTimeout(() => uni.reLaunch({
+                url: "/pages/setting"
+              }), expire);
             }
           });
         }, 750);
@@ -19653,55 +19665,60 @@ ${i3}
             style: vue.normalizeStyle($setup.getColor())
           },
           [
-            vue.createElementVNode(
-              "radio-group",
-              { onChange: $setup.setValue },
-              [
-                vue.createVNode(_component_uni_list, null, {
-                  default: vue.withCtx(() => [
-                    (vue.openBlock(true), vue.createElementBlock(
-                      vue.Fragment,
-                      null,
-                      vue.renderList($setup.state.data, (item, index) => {
-                        return vue.openBlock(), vue.createBlock(
-                          _component_uni_list_item,
-                          { key: index },
-                          {
-                            body: vue.withCtx(() => [
-                              vue.createElementVNode("view", { style: { "width": "100%" } }, [
-                                vue.createElementVNode("radio", {
-                                  value: item.value,
-                                  checked: item.value == $setup.state.selected,
-                                  style: { "width": "100%" }
-                                }, [
-                                  vue.createElementVNode(
-                                    "text",
-                                    null,
-                                    vue.toDisplayString(item.text),
-                                    1
-                                    /* TEXT */
-                                  )
-                                ], 8, ["value", "checked"])
-                              ])
-                            ]),
-                            _: 2
-                            /* DYNAMIC */
-                          },
-                          1024
-                          /* DYNAMIC_SLOTS */
-                        );
-                      }),
-                      128
-                      /* KEYED_FRAGMENT */
-                    ))
-                  ]),
-                  _: 1
-                  /* STABLE */
-                })
-              ],
-              32
-              /* NEED_HYDRATION */
-            ),
+            vue.createElementVNode("scroll-view", {
+              "scroll-y": "",
+              style: { "max-height": "60vh" }
+            }, [
+              vue.createElementVNode(
+                "radio-group",
+                { onChange: $setup.setValue },
+                [
+                  vue.createVNode(_component_uni_list, null, {
+                    default: vue.withCtx(() => [
+                      (vue.openBlock(true), vue.createElementBlock(
+                        vue.Fragment,
+                        null,
+                        vue.renderList($setup.state.data, (item, index) => {
+                          return vue.openBlock(), vue.createBlock(
+                            _component_uni_list_item,
+                            { key: index },
+                            {
+                              body: vue.withCtx(() => [
+                                vue.createElementVNode("view", { style: { "width": "100%" } }, [
+                                  vue.createElementVNode("radio", {
+                                    value: item.value,
+                                    checked: item.value == $setup.state.selected,
+                                    style: { "width": "100%" }
+                                  }, [
+                                    vue.createElementVNode(
+                                      "text",
+                                      null,
+                                      vue.toDisplayString(item.text),
+                                      1
+                                      /* TEXT */
+                                    )
+                                  ], 8, ["value", "checked"])
+                                ])
+                              ]),
+                              _: 2
+                              /* DYNAMIC */
+                            },
+                            1024
+                            /* DYNAMIC_SLOTS */
+                          );
+                        }),
+                        128
+                        /* KEYED_FRAGMENT */
+                      ))
+                    ]),
+                    _: 1
+                    /* STABLE */
+                  })
+                ],
+                32
+                /* NEED_HYDRATION */
+              )
+            ]),
             vue.createElementVNode("view", { class: "board-container" }, [
               vue.createElementVNode(
                 "view",
@@ -29775,7 +29792,8 @@ ${i3}
     props: {
       currentDay: Date,
       showWay: Number,
-      unchangable: Boolean
+      unchangable: Boolean,
+      subject: Object
     },
     emits: ["modeChange", "onChange"],
     setup(__props, { expose: __expose, emit: __emit }) {
@@ -29800,6 +29818,7 @@ ${i3}
       const current = vue.ref(pros.currentDay);
       const showWay = vue.ref(pros.showWay);
       const unchangable = vue.ref(pros.unchangable);
+      const subject = vue.ref(new SubjectStyle());
       const emits = __emit;
       vue.onMounted(() => {
         if (current.value == void 0)
@@ -29819,6 +29838,7 @@ ${i3}
         } else if (showWay.value == CalendarDisplayWay.day) {
           loadDays();
         }
+        subject.value = getSubject();
       });
       function weekDayShow(weekDay) {
         switch (weekDay) {
@@ -30274,7 +30294,7 @@ ${i3}
         emits("modeChange", CalendarDisplayWay.week);
         emits("onChange", state.selectedDay);
       }
-      const __returned__ = { pros, state, current, showWay, unchangable, emits, weekDayShow, loadWeekDays, loadMonthDays, loadYearDays, loadDays, labelText, selectDay, freshSelection, transformed, toTransform, backTransform, changeDays, switchLeft, switchRight, signRotate, updateView, switchViewMode, goToMonth, freshItems, dateChange, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, watch: vue.watch, nextTick: vue.nextTick, get CalendarDisplayWay() {
+      const __returned__ = { pros, state, current, showWay, unchangable, subject, emits, weekDayShow, loadWeekDays, loadMonthDays, loadYearDays, loadDays, labelText, selectDay, freshSelection, transformed, toTransform, backTransform, changeDays, switchLeft, switchRight, signRotate, updateView, switchViewMode, goToMonth, freshItems, dateChange, reactive: vue.reactive, onMounted: vue.onMounted, ref: vue.ref, watch: vue.watch, nextTick: vue.nextTick, get CalendarDisplayWay() {
         return CalendarDisplayWay;
       }, get delayToRun() {
         return delayToRun;
@@ -30282,6 +30302,10 @@ ${i3}
         return monthDays;
       }, get dateEquals() {
         return dateEquals;
+      }, get SubjectStyle() {
+        return SubjectStyle;
+      }, get getSubject() {
+        return getSubject;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -30292,59 +30316,73 @@ ${i3}
     const _component_uni_segmented_control = resolveEasycom(vue.resolveDynamicComponent("uni-segmented-control"), __easycom_1);
     const _component_k_time_counter = vue.resolveComponent("k-time-counter");
     return vue.openBlock(), vue.createElementBlock("view", { class: "k-calendar" }, [
-      $setup.state.selectedDay != void 0 ? (vue.openBlock(), vue.createElementBlock("view", {
-        key: 0,
-        class: "title"
-      }, [
-        vue.createTextVNode(
-          vue.toDisplayString($setup.labelText()) + " ",
-          1
-          /* TEXT */
-        ),
-        !$setup.unchangable ? (vue.openBlock(), vue.createElementBlock(
-          "view",
-          {
-            key: 0,
-            class: "sign",
-            onClick: $setup.signRotate,
-            style: vue.normalizeStyle($setup.state.view.rotation)
-          },
-          null,
-          4
-          /* STYLE */
-        )) : vue.createCommentVNode("v-if", true),
-        vue.createElementVNode("view", { class: "select-date" }, [
-          vue.createElementVNode("picker", {
-            mode: "date",
-            value: $setup.state.dateStr,
-            start: "1970-01-01",
-            onChange: $setup.dateChange,
-            onCancel: _cache[0] || (_cache[0] = ($event) => $setup.state.dateStr = "")
-          }, [
-            vue.createVNode(_component_uni_icons, { type: "paperplane" })
-          ], 40, ["value"])
-        ]),
-        vue.createElementVNode("view", { class: "switch" }, [
-          vue.createVNode(_component_uni_icons, {
-            type: "left",
-            size: 16,
-            onClick: $setup.switchLeft
-          }),
-          vue.createVNode(_component_uni_icons, {
-            type: "right",
-            size: 16,
-            onClick: $setup.switchRight
-          })
-        ])
-      ])) : vue.createCommentVNode("v-if", true),
+      $setup.state.selectedDay != void 0 ? (vue.openBlock(), vue.createElementBlock(
+        "view",
+        {
+          key: 0,
+          class: "title",
+          style: vue.normalizeStyle("color:" + $setup.subject.textColor)
+        },
+        [
+          vue.createTextVNode(
+            vue.toDisplayString($setup.labelText()) + " ",
+            1
+            /* TEXT */
+          ),
+          !$setup.unchangable ? (vue.openBlock(), vue.createElementBlock(
+            "view",
+            {
+              key: 0,
+              class: "sign",
+              onClick: $setup.signRotate,
+              style: vue.normalizeStyle("border-top-color:" + $setup.subject.textColor + ";" + $setup.state.view.rotation)
+            },
+            null,
+            4
+            /* STYLE */
+          )) : vue.createCommentVNode("v-if", true),
+          vue.createElementVNode("view", { class: "select-date" }, [
+            vue.createElementVNode("picker", {
+              mode: "date",
+              value: $setup.state.dateStr,
+              start: "1970-01-01",
+              onChange: $setup.dateChange,
+              onCancel: _cache[0] || (_cache[0] = ($event) => $setup.state.dateStr = "")
+            }, [
+              vue.createVNode(_component_uni_icons, {
+                type: "paperplane",
+                size: 18,
+                color: $setup.subject.iconColor
+              }, null, 8, ["color"])
+            ], 40, ["value"])
+          ]),
+          vue.createElementVNode("view", { class: "switch" }, [
+            vue.createVNode(_component_uni_icons, {
+              type: "left",
+              size: 16,
+              onClick: $setup.switchLeft,
+              color: $setup.subject.iconColor
+            }, null, 8, ["color"]),
+            vue.createVNode(_component_uni_icons, {
+              type: "right",
+              size: 16,
+              onClick: $setup.switchRight,
+              color: $setup.subject.iconColor
+            }, null, 8, ["color"])
+          ])
+        ],
+        4
+        /* STYLE */
+      )) : vue.createCommentVNode("v-if", true),
       $setup.state.view.expanded ? (vue.openBlock(), vue.createBlock(_component_uni_segmented_control, {
         key: 1,
         "style-type": "text",
         values: $setup.state.view.items,
         current: $setup.state.view.current,
         onClickItem: $setup.switchViewMode,
+        "active-color": $setup.subject.fabColor,
         style: { "margin-bottom": "5px" }
-      }, null, 8, ["values", "current"])) : vue.createCommentVNode("v-if", true),
+      }, null, 8, ["values", "current", "active-color"])) : vue.createCommentVNode("v-if", true),
       $setup.showWay == $setup.CalendarDisplayWay.week ? (vue.openBlock(), vue.createElementBlock("swiper", {
         key: 2,
         current: $setup.state.current,
@@ -30371,15 +30409,24 @@ ${i3}
                       }, [
                         vue.createElementVNode(
                           "text",
-                          { class: "day-text" },
+                          {
+                            class: "day-text",
+                            style: vue.normalizeStyle({ color: $setup.subject.textColor })
+                          },
                           vue.toDisplayString($setup.weekDayShow(weekDay.date.getDay())),
-                          1
-                          /* TEXT */
+                          5
+                          /* TEXT, STYLE */
                         ),
                         vue.createElementVNode("text", {
                           onClick: ($event) => $setup.selectDay($event, weekDay, index),
-                          style: vue.normalizeStyle(weekDay.selected ? "border-color:rgb(36, 155, 221)" : ""),
-                          class: vue.normalizeClass(weekDay.date.getTime() == $setup.current.getTime() ? "date date-today" : "date")
+                          style: vue.normalizeStyle(weekDay.selected ? {
+                            borderColor: $setup.subject.fabColor,
+                            backgroundColor: "aqua",
+                            color: "white",
+                            borderWidth: "2px",
+                            borderStyle: "solid"
+                          } : { color: $setup.subject.textColor }),
+                          class: vue.normalizeClass($setup.dateEquals(weekDay.date, $setup.current) ? "date date-today" : "date")
                         }, vue.toDisplayString(weekDay.date.getDate()), 15, ["onClick"])
                       ]);
                     }),
@@ -30416,11 +30463,12 @@ ${i3}
                       "text",
                       {
                         class: "day-text",
-                        key: index1
+                        key: index1,
+                        style: vue.normalizeStyle("color:" + $setup.subject.textColor)
                       },
                       vue.toDisplayString(day),
-                      1
-                      /* TEXT */
+                      5
+                      /* TEXT, STYLE */
                     );
                   }),
                   64
@@ -30437,9 +30485,15 @@ ${i3}
                       class: "month-container"
                     }, [
                       vue.createElementVNode("view", {
-                        class: vue.normalizeClass(day != null && day.date.getTime() == $setup.current.getTime() ? "date date-today" : "date"),
+                        class: vue.normalizeClass(day != null && $setup.dateEquals(day.date, $setup.current) ? "date date-today" : "date"),
                         onClick: ($event) => $setup.selectDay($event, day, index),
-                        style: vue.normalizeStyle(day != null && day.selected ? "border-color:rgb(36, 155, 221)" : "")
+                        style: vue.normalizeStyle(day != null && day.selected ? {
+                          borderColor: $setup.subject.fabColor,
+                          backgroundColor: "aqua",
+                          color: "white",
+                          borderWidth: "2px",
+                          borderStyle: "solid"
+                        } : { color: $setup.subject.textColor })
                       }, vue.toDisplayString(day != null ? day.date.getDate() : ""), 15, ["onClick"])
                     ]);
                   }),
@@ -30478,10 +30532,12 @@ ${i3}
                     }, [
                       vue.createElementVNode(
                         "h4",
-                        null,
+                        {
+                          style: vue.normalizeStyle({ color: $setup.subject.textColor })
+                        },
                         vue.toDisplayString(index2 + 1) + "月",
-                        1
-                        /* TEXT */
+                        5
+                        /* TEXT, STYLE */
                       ),
                       vue.createElementVNode("view", { class: "day-label" }, [
                         (vue.openBlock(), vue.createElementBlock(
@@ -30492,11 +30548,12 @@ ${i3}
                               "text",
                               {
                                 class: "day-text",
-                                key: index1
+                                key: index1,
+                                style: vue.normalizeStyle({ color: $setup.subject.textColor })
                               },
                               vue.toDisplayString(day),
-                              1
-                              /* TEXT */
+                              5
+                              /* TEXT, STYLE */
                             );
                           }),
                           64
@@ -30516,7 +30573,12 @@ ${i3}
                                 "view",
                                 {
                                   class: vue.normalizeClass(day != null && $setup.dateEquals(day.date, $setup.current) ? "date date-today" : "date"),
-                                  style: vue.normalizeStyle(day != null && $setup.dateEquals(day.date, $setup.state.selectedDay) && !$setup.dateEquals(day.date, $setup.current) ? "border-color:rgb(36, 155, 221)" : "")
+                                  style: vue.normalizeStyle(day != null && day.selected ? {
+                                    borderColor: $setup.subject.fabColor,
+                                    backgroundColor: "aqua",
+                                    color: "white",
+                                    borderWidth: "2px"
+                                  } : { color: $setup.subject.textColor })
                                 },
                                 vue.toDisplayString(day != null ? day.date.getDate() : ""),
                                 7
@@ -30552,25 +30614,31 @@ ${i3}
           vue.Fragment,
           null,
           vue.renderList($setup.state.data, (item, index) => {
-            return vue.openBlock(), vue.createElementBlock("swiper-item", {
-              key: index,
-              style: { "height": "50px", "background-color": "aliceblue" }
-            }, [
-              (vue.openBlock(true), vue.createElementBlock(
-                vue.Fragment,
-                null,
-                vue.renderList($setup.state.days[index], (day, index1) => {
-                  return vue.openBlock(), vue.createElementBlock("view", {
-                    key: index1,
-                    style: { "font-size": "18px", "text-align": "center", "line-height": "50px" }
-                  }, [
-                    day.selected ? (vue.openBlock(), vue.createBlock(_component_k_time_counter, { key: 0 })) : vue.createCommentVNode("v-if", true)
-                  ]);
-                }),
-                128
-                /* KEYED_FRAGMENT */
-              ))
-            ]);
+            return vue.openBlock(), vue.createElementBlock(
+              "swiper-item",
+              {
+                key: index,
+                style: vue.normalizeStyle({ height: "50px", color: $setup.subject.textColor })
+              },
+              [
+                (vue.openBlock(true), vue.createElementBlock(
+                  vue.Fragment,
+                  null,
+                  vue.renderList($setup.state.days[index], (day, index1) => {
+                    return vue.openBlock(), vue.createElementBlock("view", {
+                      key: index1,
+                      style: { "font-size": "18px", "text-align": "center", "line-height": "50px" }
+                    }, [
+                      day.selected ? (vue.openBlock(), vue.createBlock(_component_k_time_counter, { key: 0 })) : vue.createCommentVNode("v-if", true)
+                    ]);
+                  }),
+                  128
+                  /* KEYED_FRAGMENT */
+                ))
+              ],
+              4
+              /* STYLE */
+            );
           }),
           128
           /* KEYED_FRAGMENT */
@@ -31212,7 +31280,8 @@ ${i3}
       continuousDays: Number,
       mostDays: Number,
       persistDays: Number,
-      frequency: Object
+      frequency: Object,
+      subject: Object
     },
     setup(__props, { expose: __expose, emit: __emit }) {
       __expose();
@@ -31239,6 +31308,7 @@ ${i3}
       const mostDays = vue.ref(pros.mostDays);
       const persistDays2 = vue.ref(pros.persistDays);
       const frequency2 = vue.ref(pros.frequency);
+      const subject = vue.ref(pros.subject);
       vue.onMounted(() => {
         if (beginDate.value == void 0)
           beginDate.value = today.value;
@@ -31518,7 +31588,7 @@ ${i3}
           return 0;
         return (persistDays2.value / count * 100).toFixed(0);
       }
-      const __returned__ = { pros, emits, today, state, records, beginDate, habitId, current, continuousDays, mostDays, persistDays: persistDays2, frequency: frequency2, loadMonthDays, select, toTransform, backTransform, transformed, selectDate, transformLeft, transformRight, changeMonthDays, getFinishRate, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get onlyDate() {
+      const __returned__ = { pros, emits, today, state, records, beginDate, habitId, current, continuousDays, mostDays, persistDays: persistDays2, frequency: frequency2, subject, loadMonthDays, select, toTransform, backTransform, transformed, selectDate, transformLeft, transformRight, changeMonthDays, getFinishRate, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get onlyDate() {
         return onlyDate;
       }, get monthDays() {
         return monthDays;
@@ -31543,8 +31613,9 @@ ${i3}
       vue.createElementVNode("view", { class: "title" }, [
         vue.createVNode(_component_uni_icons, {
           type: "left",
-          onClick: $setup.transformLeft
-        }),
+          onClick: $setup.transformLeft,
+          color: $setup.subject.iconColor
+        }, null, 8, ["color"]),
         vue.createElementVNode("picker", {
           mode: "date",
           onChange: $setup.selectDate,
@@ -31553,8 +31624,9 @@ ${i3}
         }, vue.toDisplayString($setup.current.getFullYear()) + "年" + vue.toDisplayString($setup.current.getMonth() + 1) + "月 ", 41, ["value"]),
         vue.createVNode(_component_uni_icons, {
           type: "right",
-          onClick: $setup.transformRight
-        })
+          onClick: $setup.transformRight,
+          color: $setup.subject.iconColor
+        }, null, 8, ["color"])
       ]),
       vue.createElementVNode("swiper", {
         current: $setup.state.current,
@@ -31808,6 +31880,63 @@ ${i3}
     );
   }
   const HabitReminderModal = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$5], ["__scopeId", "data-v-3da3f95d"], ["__file", "D:/repos/html+css+js/SelfSchedule/components/HabitReminderModal.vue"]]);
+  class Recorder {
+    constructor() {
+      this.recordManger = uni.getRecorderManager();
+      this.toRecord = false;
+      this.isRecording = false;
+      this.afterStopFunc = null;
+      this.current = 0;
+      this.timer = 0;
+      this.recordManger.onError((err) => {
+        uni.showToast({
+          title: err,
+          icon: "none"
+        });
+      });
+      this.recordManger.onStop((res) => {
+        const file = res.tempFilePath;
+        if (this.afterStopFunc == null || !this.toRecord)
+          return;
+        Recording(file, (response) => {
+          const res2 = JSON.parse(response.data);
+          if (!res2.succeeded)
+            this.afterStopFunc({ data: "" });
+          else
+            this.afterStopFunc(JSON.parse(res2.data));
+        });
+      });
+    }
+    startRecording(callbackAfterStopping) {
+      this.recordManger.start({
+        format: "wav"
+      });
+      this.timer = setInterval(() => {
+        if (this.isRecording || this.current == 60) {
+          if (this.current == 60)
+            this.stopRecording(true);
+          this.current++;
+        }
+      }, 1e3);
+      this.afterStopFunc = callbackAfterStopping;
+      this.isRecording = true;
+    }
+    stopRecording(toRecord = false) {
+      this.toRecord = toRecord;
+      this.isRecording = false;
+      this.recordManger.stop();
+      clearInterval(this.timer);
+      this.current = 0;
+    }
+    getTime() {
+      if (this.current == 60)
+        return "01:00";
+      if (this.current < 10)
+        return `00:0${this.current}`;
+      else
+        return `00:${this.current}`;
+    }
+  }
   const _imports_0$1 = "/static/task.png";
   const _imports_1$1 = "/static/plane.png";
   const _imports_2$1 = "/static/plane-filled.png";
@@ -31839,6 +31968,7 @@ ${i3}
       const customPopup = vue.ref(null);
       const labelPopup = vue.ref(null);
       const listPopup = vue.ref(null);
+      const recordPopup = vue.ref(null);
       const emits = __emit;
       const startTime = vue.ref({
         date: "",
@@ -31849,6 +31979,7 @@ ${i3}
         time: ""
       });
       const today = vue.ref(/* @__PURE__ */ new Date());
+      const recorder = vue.ref(new Recorder());
       const state = vue.reactive({
         priority: [],
         task: {
@@ -31900,6 +32031,11 @@ ${i3}
             return this.selected != null && list != null && list.labelId == this.selected;
           },
           selected: null
+        },
+        recordOpt: {
+          content: "",
+          finished: false,
+          transformed: false
         }
       });
       vue.onMounted(() => {
@@ -32307,13 +32443,50 @@ ${i3}
           }
         });
       }
+      function recordAction() {
+        if (!recorder.value.isRecording) {
+          recorder.value.startRecording((res) => {
+            const content = res.text;
+            state.recordOpt.content = content.replace(/\s/g, "");
+            state.recordOpt.transformed = true;
+          });
+        } else {
+          state.recordOpt.finished = true;
+          state.recordOpt.content = "语音识别转换中...";
+          if (recorder.value.current == 0) {
+            popup.value.close();
+            recorder.value.stopRecording(false);
+          } else
+            recorder.value.stopRecording(true);
+        }
+      }
+      function closeRecordPopup(e2) {
+        if (e2.show)
+          return;
+        if (recorder.value.isRecording)
+          recorder.value.stopRecording(false);
+        state.recordOpt = {
+          content: "",
+          finished: false,
+          transformed: false
+        };
+        popup.value.close();
+      }
+      function saveRecordContent() {
+        if (state.recordOpt.content.length == 0) {
+          popup.value.close();
+          return;
+        }
+        state.task.title = state.recordOpt.content;
+        editTask();
+      }
       function open() {
         popup.value.open();
       }
       __expose({
         open
       });
-      const __returned__ = { pros, task, label, subject, userLabels, userLists, popup, timePopup, priorityPopup, defRulePopup, customPopup, labelPopup, listPopup, emits, startTime, endTime, today, state, beforeEditorClose, addReminderInfoModel, removeReminderInfoModel, titleInput, resetBeginEndTime, pick, changeNotifyMode, createNewLabel, changeTaskLabels, changeTaskList, openToEdit, takePriority, takeBaseRule, takeCount, takeDeadline, takeDef, resetSomeData, editTask, removeTask, selectDay, openEditMode, takeLabel, addList, open, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get ValueText() {
+      const __returned__ = { pros, task, label, subject, userLabels, userLists, popup, timePopup, priorityPopup, defRulePopup, customPopup, labelPopup, listPopup, recordPopup, emits, startTime, endTime, today, recorder, state, beforeEditorClose, addReminderInfoModel, removeReminderInfoModel, titleInput, resetBeginEndTime, pick, changeNotifyMode, createNewLabel, changeTaskLabels, changeTaskList, openToEdit, takePriority, takeBaseRule, takeCount, takeDeadline, takeDef, resetSomeData, editTask, removeTask, selectDay, openEditMode, takeLabel, addList, recordAction, closeRecordPopup, saveRecordContent, open, onMounted: vue.onMounted, ref: vue.ref, reactive: vue.reactive, get ValueText() {
         return ValueText;
       }, get priority() {
         return priority;
@@ -32365,6 +32538,8 @@ ${i3}
         return CreateOrGetLabel;
       }, get TakeTaskLabelsFor() {
         return TakeTaskLabelsFor;
+      }, get Recorder() {
+        return Recorder;
       } };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
@@ -32391,7 +32566,10 @@ ${i3}
         }, {
           default: vue.withCtx(() => [
             vue.createElementVNode("view", { class: "task-edit" }, [
-              vue.createElementVNode("view", { class: "head" }, [
+              vue.createElementVNode("view", {
+                class: "head",
+                style: { "background-color": "white", "border-radius": "5px" }
+              }, [
                 vue.createElementVNode(
                   "text",
                   {
@@ -32445,11 +32623,21 @@ ${i3}
                   size: 18,
                   style: { "margin-left": "2%" },
                   onClick: $setup.removeTask
-                })) : vue.createCommentVNode("v-if", true)
+                })) : vue.createCommentVNode("v-if", true),
+                !$setup.state.isTaskUpdate ? (vue.openBlock(), vue.createBlock(_component_uni_icons, {
+                  key: 5,
+                  type: "mic",
+                  color: $setup.subject.iconColor,
+                  size: 24,
+                  style: { "margin-left": "2%" },
+                  onClick: _cache[3] || (_cache[3] = ($event) => {
+                    $setup.recordPopup.open();
+                  })
+                }, null, 8, ["color"])) : vue.createCommentVNode("v-if", true)
               ]),
               vue.createVNode(_component_uni_easyinput, {
                 modelValue: $setup.state.task.title,
-                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => $setup.state.task.title = $event),
+                "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => $setup.state.task.title = $event),
                 placeholder: "标题",
                 focus: !$setup.state.isTaskUpdate,
                 style: { "margin-bottom": "2px", "margin-top": "3px" },
@@ -32457,7 +32645,7 @@ ${i3}
               }, null, 8, ["modelValue", "focus"]),
               vue.createVNode(_component_uni_easyinput, {
                 modelValue: $setup.state.task.description,
-                "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => $setup.state.task.description = $event),
+                "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => $setup.state.task.description = $event),
                 placeholder: "描述",
                 type: "textarea",
                 rows: 3
@@ -32549,7 +32737,7 @@ ${i3}
             vue.createElementVNode("view", { style: { "display": "flex", "width": "96%", "margin-bottom": "1%" } }, [
               vue.createVNode(_component_uni_icons, {
                 type: "closeempty",
-                onClick: _cache[5] || (_cache[5] = ($event) => $setup.timePopup.close()),
+                onClick: _cache[6] || (_cache[6] = ($event) => $setup.timePopup.close()),
                 size: 20
               })
             ]),
@@ -32574,13 +32762,13 @@ ${i3}
                         vue.createTextVNode(" 开始： "),
                         vue.createElementVNode("picker", {
                           mode: "date",
-                          onChange: _cache[6] || (_cache[6] = ($event) => $setup.pick("begin-date", $event)),
+                          onChange: _cache[7] || (_cache[7] = ($event) => $setup.pick("begin-date", $event)),
                           value: $setup.startTime.date
                         }, vue.toDisplayString($setup.startTime.date), 41, ["value"]),
                         vue.createTextVNode("   "),
                         vue.createElementVNode("picker", {
                           mode: "time",
-                          onChange: _cache[7] || (_cache[7] = ($event) => $setup.pick("begin-time", $event)),
+                          onChange: _cache[8] || (_cache[8] = ($event) => $setup.pick("begin-time", $event)),
                           value: $setup.startTime.time
                         }, vue.toDisplayString($setup.startTime.time), 41, ["value"])
                       ]),
@@ -32588,13 +32776,13 @@ ${i3}
                         vue.createTextVNode(" 结束： "),
                         vue.createElementVNode("picker", {
                           mode: "date",
-                          onChange: _cache[8] || (_cache[8] = ($event) => $setup.pick("end-date", $event)),
+                          onChange: _cache[9] || (_cache[9] = ($event) => $setup.pick("end-date", $event)),
                           value: $setup.endTime.date
                         }, vue.toDisplayString($setup.endTime.date), 41, ["value"]),
                         vue.createTextVNode("   "),
                         vue.createElementVNode("picker", {
                           mode: "time",
-                          onChange: _cache[9] || (_cache[9] = ($event) => $setup.pick("end-time", $event)),
+                          onChange: _cache[10] || (_cache[10] = ($event) => $setup.pick("end-time", $event)),
                           value: $setup.endTime.time
                         }, vue.toDisplayString($setup.endTime.time), 41, ["value"])
                       ])
@@ -32684,7 +32872,7 @@ ${i3}
                       vue.createElementVNode(
                         "text",
                         {
-                          onClick: _cache[10] || (_cache[10] = ($event) => {
+                          onClick: _cache[11] || (_cache[11] = ($event) => {
                             $setup.defRulePopup.open();
                             $setup.state.frequency.selected = [$setup.state.task.period - 1, $setup.state.task.periodUnit - 1];
                           }),
@@ -32744,7 +32932,7 @@ ${i3}
               vue.createElementVNode("view", { style: { "display": "flex", "width": "96%", "margin-bottom": "1%" } }, [
                 vue.createVNode(_component_uni_icons, {
                   type: "closeempty",
-                  onClick: _cache[11] || (_cache[11] = ($event) => $setup.customPopup.close()),
+                  onClick: _cache[12] || (_cache[12] = ($event) => $setup.customPopup.close()),
                   size: 20
                 })
               ]),
@@ -32766,7 +32954,7 @@ ${i3}
                 multiple: "",
                 onChange: _ctx.takeCustom,
                 modelValue: $setup.state.rule.selected,
-                "onUpdate:modelValue": _cache[12] || (_cache[12] = ($event) => $setup.state.rule.selected = $event),
+                "onUpdate:modelValue": _cache[13] || (_cache[13] = ($event) => $setup.state.rule.selected = $event),
                 localdata: $setup.state.weekdays,
                 mode: "tag"
               }, null, 8, ["onChange", "modelValue", "localdata"])) : vue.createCommentVNode("v-if", true),
@@ -32774,7 +32962,7 @@ ${i3}
                 vue.createVNode(_component_k_radio_group, {
                   data: $setup.state.rule.data,
                   modelValue: $setup.state.rule.selection,
-                  "onUpdate:modelValue": _cache[13] || (_cache[13] = ($event) => $setup.state.rule.selection = $event),
+                  "onUpdate:modelValue": _cache[14] || (_cache[14] = ($event) => $setup.state.rule.selection = $event),
                   onOnChange: $setup.resetSomeData,
                   style: { "margin-top": "2%", "margin-bottom": "2%" }
                 }, null, 8, ["data", "modelValue"])
@@ -32849,7 +33037,7 @@ ${i3}
               vue.createElementVNode("view", { class: "header" }, [
                 vue.createVNode(_component_uni_icons, {
                   type: "closeempty",
-                  onClick: _cache[14] || (_cache[14] = ($event) => $setup.labelPopup.close())
+                  onClick: _cache[15] || (_cache[15] = ($event) => $setup.labelPopup.close())
                 })
               ]),
               vue.createElementVNode("view", { class: "label" }, [
@@ -32857,13 +33045,13 @@ ${i3}
                   vue.createVNode(_component_uni_easyinput, {
                     placeholder: "新标签",
                     modelValue: $setup.state.labelOpt.labelName,
-                    "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $setup.state.labelOpt.labelName = $event),
+                    "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $setup.state.labelOpt.labelName = $event),
                     onChangeOnce: $setup.createNewLabel
                   }, null, 8, ["modelValue"])
                 ]),
                 vue.createVNode(_component_uni_data_checkbox, {
                   modelValue: $setup.state.labelOpt.selected,
-                  "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $setup.state.labelOpt.selected = $event),
+                  "onUpdate:modelValue": _cache[17] || (_cache[17] = ($event) => $setup.state.labelOpt.selected = $event),
                   localdata: $setup.state.labelOpt.data,
                   mode: "tag",
                   onChange: $setup.changeTaskLabels,
@@ -32889,7 +33077,7 @@ ${i3}
                 vue.createElementVNode("view", { class: "header" }, [
                   vue.createVNode(_component_uni_icons, {
                     type: "closeempty",
-                    onClick: _cache[17] || (_cache[17] = ($event) => $setup.listPopup.close())
+                    onClick: _cache[18] || (_cache[18] = ($event) => $setup.listPopup.close())
                   })
                 ]),
                 vue.createElementVNode("button", {
@@ -32912,7 +33100,7 @@ ${i3}
                     "view",
                     {
                       class: "list-item",
-                      onClick: _cache[18] || (_cache[18] = ($event) => $setup.changeTaskList(null)),
+                      onClick: _cache[19] || (_cache[19] = ($event) => $setup.changeTaskList(null)),
                       style: vue.normalizeStyle($setup.state.listOpt.selected == null ? "background-color:rgb(25,25,24,.25)" : "")
                     },
                     [
@@ -32977,7 +33165,77 @@ ${i3}
           },
           512
           /* NEED_PATCH */
-        )) : vue.createCommentVNode("v-if", true)
+        )) : vue.createCommentVNode("v-if", true),
+        vue.createVNode(_component_uni_popup, {
+          ref: "recordPopup",
+          "background-color": $setup.subject.backColor,
+          type: "bottom",
+          onChange: $setup.closeRecordPopup
+        }, {
+          default: vue.withCtx(() => [
+            vue.createElementVNode("view", { class: "recoreding" }, [
+              vue.createElementVNode("view", { class: "header" }, [
+                vue.createVNode(_component_uni_icons, {
+                  type: "closeempty",
+                  color: $setup.subject.iconColor,
+                  onClick: _cache[20] || (_cache[20] = ($event) => $setup.recordPopup.close()),
+                  size: 24
+                }, null, 8, ["color"])
+              ]),
+              !$setup.state.recordOpt.finished ? (vue.openBlock(), vue.createElementBlock("view", {
+                key: 0,
+                class: "recording-content"
+              }, [
+                vue.createElementVNode("view", { style: { "display": "flex", "justify-content": "center", "height": "40px", "align-items": "center" } }, [
+                  vue.withDirectives(vue.createElementVNode(
+                    "text",
+                    { style: { "margin-right": "2%" } },
+                    vue.toDisplayString($setup.recorder.getTime()),
+                    513
+                    /* TEXT, NEED_PATCH */
+                  ), [
+                    [vue.vShow, $setup.recorder.isRecording]
+                  ]),
+                  !$setup.recorder.isRecording ? (vue.openBlock(), vue.createElementBlock("button", {
+                    key: 0,
+                    onClick: $setup.recordAction,
+                    type: "primary",
+                    size: "mini",
+                    style: { "height": "30px", "width": "65px" }
+                  }, "录制")) : vue.createCommentVNode("v-if", true),
+                  $setup.recorder.isRecording ? (vue.openBlock(), vue.createElementBlock("button", {
+                    key: 1,
+                    onClick: $setup.recordAction,
+                    style: { "background-color": "red", "color": "#fff", "height": "30px", "width": "65px" },
+                    size: "mini"
+                  }, "停止")) : vue.createCommentVNode("v-if", true)
+                ])
+              ])) : vue.createCommentVNode("v-if", true),
+              $setup.state.recordOpt.finished ? (vue.openBlock(), vue.createElementBlock("view", {
+                key: 1,
+                class: "recording-content",
+                style: { "flex-direction": "column" }
+              }, [
+                vue.createElementVNode(
+                  "h3",
+                  { style: { "margin-top": "2%", "margin-bottom": "2%" } },
+                  vue.toDisplayString($setup.state.recordOpt.content),
+                  1
+                  /* TEXT */
+                ),
+                vue.createElementVNode("button", {
+                  type: "primary",
+                  onClick: $setup.saveRecordContent,
+                  size: "mini",
+                  style: { "height": "30px", "width": "65px" },
+                  disabled: !$setup.state.recordOpt.transformed
+                }, "保存", 8, ["disabled"])
+              ])) : vue.createCommentVNode("v-if", true)
+            ])
+          ]),
+          _: 1
+          /* STABLE */
+        }, 8, ["background-color"])
       ],
       64
       /* STABLE_FRAGMENT */
@@ -33509,8 +33767,9 @@ ${i3}
                   type: "left",
                   onClick: $setup.closePopup,
                   class: "close",
-                  size: 25
-                }),
+                  size: 25,
+                  color: $setup.subject.iconColor
+                }, null, 8, ["color"]),
                 vue.createElementVNode(
                   "text",
                   {
@@ -33522,11 +33781,12 @@ ${i3}
                 ),
                 vue.createVNode(_component_uni_icons, {
                   type: "checkmarkempty",
-                  style: vue.normalizeStyle($setup.state.canAddHabit || $setup.state.isHabitUpdate ? "" : "color:lightgray"),
+                  style: vue.normalizeStyle($setup.state.canAddHabit || $setup.state.isHabitUpdate ? "" : "opacity:0.5"),
                   size: 25,
                   class: "create",
-                  onClick: $setup.editHabit
-                }, null, 8, ["style"])
+                  onClick: $setup.editHabit,
+                  color: $setup.subject.iconColor
+                }, null, 8, ["style", "color"])
               ]),
               vue.createElementVNode("view", { class: "habit-item" }, [
                 vue.createElementVNode("view", null, [
@@ -34236,13 +34496,14 @@ ${i3}
             vue.createElementVNode("view", { class: "record" }, [
               vue.createElementVNode("view", {
                 class: "header",
-                style: { "width": "98%" }
+                style: { "width": "98%", "height": "35px" }
               }, [
                 vue.createVNode(_component_uni_icons, {
                   type: "arrow-left",
                   size: 25,
-                  onClick: _cache[1] || (_cache[1] = ($event) => $setup.recordPopup.close())
-                })
+                  onClick: _cache[1] || (_cache[1] = ($event) => $setup.recordPopup.close()),
+                  color: $setup.subject.iconColor
+                }, null, 8, ["color"])
               ]),
               vue.createVNode(_component_k_record_month, {
                 class: "record-calendar",
@@ -34259,8 +34520,9 @@ ${i3}
                   days: $setup.state.selectedHabit.days,
                   weekPersistDays: $setup.state.selectedHabit.weekPersistDays,
                   period: $setup.state.selectedHabit.period
-                }
-              }, null, 8, ["modelValue", "current", "habitId", "beginDate", "continuousDays", "mostDays", "persistDays", "frequency"])
+                },
+                subject: $setup.subject
+              }, null, 8, ["modelValue", "current", "habitId", "beginDate", "continuousDays", "mostDays", "persistDays", "frequency", "subject"])
             ])
           ]),
           _: 1

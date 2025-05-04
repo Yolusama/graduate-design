@@ -13,7 +13,7 @@
 		<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;">
 			<!--#endif-->
 			<!--#ifndef H5-->
-			<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;">
+			<k-calendar :unchangable="true" @onChange="dateChange" style="top:0;height: 120px;" :subject="subject">
 				<!--#endif-->
 			</k-calendar>
 			<scroll-view class="content" :scroll-y="true">

@@ -1,6 +1,6 @@
 import { TaskState } from "../module/Common";
-import { Get,Patch,Post,Put } from "../module/Request";
-import { auth} from "./User";
+import { Get,Patch,Post,Put, UploadFile } from "../module/Request";
+import { auth, formDataAuth} from "./User";
 
 
 export function CreateTask(task,successCallback){
@@ -67,4 +67,8 @@ export function FinishTask(taskId){
 			url: route
 		});
 	});
+}
+
+export function Recording(file,successCallback){
+	UploadFile("/Api/Common/Recording",file,formDataAuth,{},successCallback);
 }

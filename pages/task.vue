@@ -1,7 +1,7 @@
 <template>
 	<view id="task" :style="{backgroundColor:subject.backColor}">
 		<uni-icons type="reload" :size="24" :color="subject.iconColor" @click="reloadTo('/pages/task')" class="fresh"></uni-icons>
-		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange"></k-calendar>
+		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange" :subject="subject"></k-calendar>
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
 			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
 				<view class="mask" v-if="task.state==TaskState.abondoned"></view>
@@ -39,10 +39,10 @@
 	<uni-popup type="right" ref="popup" :background-color="subject.backColor" @change="beforeClosePopup" style="z-index:101">
 		<scroll-view class="popup" :scroll-y="true">
 			<view class="header">
-				<uni-icons type="closeempty" @click="popup.close()" class="close" :size="25"></uni-icons>
+				<uni-icons type="closeempty" @click="popup.close()" class="close" :size="25" :color="subject.iconColor"></uni-icons>
 				<text :style="'font-weight: 600;color:'+subject.textColor">{{state.isTaskUpdate?"修改任务":"新建任务"}}</text>
-				<uni-icons type="checkmarkempty" :style="state.canCreateTask?'':'color:lightgray'" :size="25"
-					class="create" @click="editTask"></uni-icons>
+				<uni-icons type="checkmarkempty" :style="state.canCreateTask?'':'opacity:0.5'" :size="25"
+					class="create" @click="editTask" :color="subject.iconColor"></uni-icons>
 			</view>
 			<uni-list :border="true" style="width: 94%;">
 				<uni-list-item :show-extra-icon="true" :extra-icon="{type:'bars'}">

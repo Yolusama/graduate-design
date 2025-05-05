@@ -79,7 +79,6 @@ export default class Recorder{
 	   	
 	   	this.recorder.onstop = (e)=>{
 			value.getTracks().forEach(track => track.stop());
-			this.isRecording = false;
 			if(this.afterStopFunc==null||!this.toRecord)return;
 	        const audioBlob = new Blob(this.data, { type: "audio/wav" });
 	   		const file = URL.createObjectURL(audioBlob);
@@ -87,9 +86,12 @@ export default class Recorder{
 	   		Recording(file,response=>{
 				const res = JSON.parse(response.data);
 	   			if(!res.succeeded)
-	   				this.afterStopFunc({data:""});
+	   				this.afterStopFunc({data:"转换失败",ok:false});
 	   			else
-	   			    this.afterStopFunc(JSON.parse(res.data));
+	   			    {
+						const result = JSON.parse(res.data);
+						this.afterStopFunc({data:result.text,ok:true});
+					}
 	   		});
 	   	}
 	   }).catch(err=>{

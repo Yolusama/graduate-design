@@ -70,6 +70,9 @@
 		data[13].text = "番茄红";
 		data[14].text = "棕褐";
 		data[15].text = "银灰";
+		data[16].text = "蓟紫";
+		data[17].text = "春绿";
+		data[18].text = "金菊黄";
 
 		state.data = data;
 	});

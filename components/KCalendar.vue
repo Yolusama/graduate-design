@@ -15,8 +15,8 @@
 				<uni-icons type="right" :size="16" @click="switchRight" :color="subject.iconColor"></uni-icons>
 			</view>
 		</view>
-		<uni-segmented-control style-type="text" :values="state.view.items" :current="state.view.current"
-			v-if="state.view.expanded" @clickItem="switchViewMode"  :active-color="subject.fabColor"
+		<uni-segmented-control style-type="button" :values="state.view.items" :current="state.view.current"
+			v-if="state.view.expanded" @clickItem="switchViewMode"  :active-color="subject.fabColor" 
 			style="margin-bottom:5px">
 		</uni-segmented-control>
 		<swiper :current="state.current" @transition="toTransform" @change="transformed" :duration="state.duration"

@@ -6,17 +6,17 @@
 		<view class="info">
 			<image :src="imgSrc(state.user.avatar)" @click="changeAvatar" class="image"></image>
 			<view class="nickname-edit">
-				<text v-if="!state.modify.nickname" class="nickname">{{state.user.nickname}}</text>
+				<text v-if="!state.modify.nickname" class="nickname" :style="{color:subject.textColor}">{{state.user.nickname}}</text>
 				<uni-easyinput v-model="state.user.nickname" v-if="state.modify.nickname" @input="nicknameInput"
 					maxlength="25" @change="changeNickname" style="width: 60%;margin-right: 2%"></uni-easyinput>
 				<uni-icons type="compose" @click="state.modify.nickname=true;" v-if="!state.modify.nickname"
-					color="rgb(0,125,235)" :size="20"></uni-icons>
+					:color="subject.iconColor" :size="20"></uni-icons>
 				<uni-icons type="closeempty" @click="state.modify.nickname=false;" v-if="state.modify.nickname"
 					color="red" :size="20"></uni-icons>
 			</view>
 			<view class="email">
-				<text><uni-icons type="email" :size="18"></uni-icons> {{state.user.email}}</text>
-				<text style="color:rgb(0,75,235);margin-left: 4%;" @click="emailPopup.open()">更换</text>
+				<text :style="{color:subject.textColor}"><uni-icons type="email" :size="18" :color="subject.textColor"></uni-icons> {{state.user.email}}</text>
+				<text :style="{color:subject.iconColor,marginLeft:'4%'}" @click="emailPopup.open()">更换</text>
 			</view>
 			<uni-list style="width: 92%;margin-top:4%">
 				<uni-list-item>
@@ -49,10 +49,10 @@
 			</view>
 			<button type="primary" @click="pwdPopup.open()" size="mini" style="margin-top: 2%;">修改密码</button>
 		</view>
-		<uni-popup ref="emailPopup" background-color="#fff" type="left" @change="emailPopupClose" style="z-index: 101;">
+		<uni-popup ref="emailPopup" :background-color="subject.backColor" type="left" @change="emailPopupClose" style="z-index: 101;">
 			<view class="change">
 				<view class="header">
-					<uni-icons type="closeempty" @click="emailPopup.close()" :size="20">
+					<uni-icons type="closeempty" @click="emailPopup.close()" :size="20" :color="subject.iconColor">
 					</uni-icons>
 				</view>
 				<view class="change-content">
@@ -72,10 +72,10 @@
 				</view>
 			</view>
 		</uni-popup>
-		<uni-popup ref="pwdPopup" background-color="#fff" type="left" @change="pwdPopupClose" style="z-index: 101;">
+		<uni-popup ref="pwdPopup" :background-color="subject.backColor" type="left" @change="pwdPopupClose" style="z-index: 101;">
 			<view class="change">
 				<view class="header">
-					<uni-icons type="closeempty" @click="pwdPopup.close()">
+					<uni-icons type="closeempty" @click="pwdPopup.close()" :color="subject.iconColor" :size="20">
 					</uni-icons>
 				</view>
 				<view class="change-content">
@@ -104,7 +104,7 @@
 		<uni-popup ref="infoListedPopup" :background-color="subject.backColor" type="right" style="z-index:100">
 			<view class="user-listed">
 				<view class="header">
-					<uni-icons type="closeempty" :size="24" @click="infoListedPopup.close();"></uni-icons>
+					<uni-icons type="closeempty" :size="24" @click="infoListedPopup.close();" :color="subject.iconColor"></uni-icons>
 				</view>
 				<uni-list style="width: 100%;">
 					<uni-list-item show-arrow>
@@ -148,7 +148,7 @@
 		<uni-popup ref="habitPopup" :background-color="subject.backColor" type="right">
 			<view class="habits">
 				<view class="header">
-					<uni-icons type="closeempty" :size="24" @click="habitPopup.close();"></uni-icons>
+					<uni-icons type="closeempty" :size="24" @click="habitPopup.close();" :color="subject.iconColor"></uni-icons>
 				</view>
 				<uni-table empty-text="暂时没有设置习惯" :loading="state.pageLoading">
 					<uni-th>
@@ -716,7 +716,6 @@ import { SubjectStyle, getSubject } from '../module/Subject';
 		align-items: center;
 		padding: 1%;
 		border-radius: 7px;
-		background-color: rgb(96%, 98%, 99%);
 		width: 60%;
 		justify-content: center;
 	}
@@ -753,7 +752,7 @@ import { SubjectStyle, getSubject } from '../module/Subject';
 		/*#endif*/
 		height: 40px;
 		align-items: center;
-		width: 100%;
+		width:100%;
 		text-align: left;
 		padding-left: 3%;
 	}
@@ -764,6 +763,10 @@ import { SubjectStyle, getSubject } from '../module/Subject';
 		align-items: center;
 		justify-content: center;
 		height: 60%;
+		background-color: white;
+		border-radius: 7px;
+		width:92%;
+		margin: 0 auto;
 	}
 
 	#user .change .item {
@@ -865,7 +868,11 @@ import { SubjectStyle, getSubject } from '../module/Subject';
 		text-align: center;
 		color: darkcyan;
 		font-size: 14px;
-		height: 20vh;
+		max-height: 20vh;
 		margin-top: 2%;
+		background-color: white;
+		border-radius: 5px;
+		padding-top:5px;
+		padding-bottom: 5px;
 	}
 </style>

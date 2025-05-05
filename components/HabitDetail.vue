@@ -2,11 +2,11 @@
 	<uni-popup ref="detailPopup" type="right" :background-color="subject.backColor" @change="beforeClose">
 		<view class="detail">
 			<view class="header">
-				<uni-icons type="arrow-left" :size="25" @click="detailPopup.close();"></uni-icons>
+				<uni-icons type="arrow-left" :size="25" @click="detailPopup.close();" :color="subject.iconColor"></uni-icons>
 				<view style="margin-right: 7px;">
-					<uni-icons type="trash" :size="25" @click="removeHabit"></uni-icons>
+					<uni-icons type="trash" :size="25" @click="removeHabit" :color="subject.iconColor"></uni-icons>
 					<uni-icons type="compose" :size="25" @click="toEdit"
-						style="margin-left: 3vw;margin-right: 2%;"></uni-icons>
+						style="margin-left: 3vw;margin-right: 2%;" :color="subject.iconColor"></uni-icons>
 				</view>
 			</view>
 			<view class="detail-content">

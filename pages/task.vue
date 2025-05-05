@@ -1,6 +1,7 @@
 <template>
 	<view id="task" :style="{backgroundColor:subject.backColor}">
 		<uni-icons type="reload" :size="24" :color="subject.iconColor" @click="reloadTo('/pages/task')" class="fresh"></uni-icons>
+		<uni-icons type="mic" :size="24" :color="subject.iconColor" class="fresh" style="float:right" @click="recordPopup.open()"> </uni-icons>
 		<k-calendar :showWay="state.showWay" @modeChange="modeChange" @onChange="dateChange" :subject="subject"></k-calendar>
 		<scroll-view class="content" v-if="state.showWay!=CalendarDisplayWay.year" :scroll-y="true">
 			<view class="todo" v-for="(task,index) in taskPageOpt.data" :key="index" @click="seeTaskDetail(index)">
@@ -226,14 +227,14 @@
 	<uni-popup :background-color="subject.backColor" ref="detailPopup" type="right">
 		<scroll-view class="task-detail" v-if="state.selectedTask!=null" :scroll-y="true">
 			<view class="header">
-				<uni-icons type="closeempty" @click="closeDetailPopup" class="close" :size="25"></uni-icons>
+				<uni-icons type="closeempty" @click="closeDetailPopup" class="close" :size="25" :color="subject.iconColor"></uni-icons>
 				<text style="font-weight: 600;">查看/修改任务</text>
 				<text>&nbsp;</text>
 			</view>
-			<view class="task-detail-title">{{state.selectedTask.title}}</view>
-			<view v-html="'任务描述：'+state.selectedTask.description" class="description"></view>
-			<view class="def-text">开始：{{getDateTimeStr(state.selectedTask.beginTime,today.getFullYear())}}</view>
-			<view class="def-text">结束：{{getDateTimeStr(state.selectedTask.endTime,today.getFullYear())}}</view>
+			<view class="task-detail-title" :style="{color:subject.textColor}">{{state.selectedTask.title}}</view>
+			<view v-html="'任务描述：'+state.selectedTask.description" class="description" :style="{color:subject.textColor}"></view>
+			<view class="def-text" :style="{color:subject.introColor}">开始：{{getDateTimeStr(state.selectedTask.beginTime,today.getFullYear())}}</view>
+			<view class="def-text" :style="{color:subject.introColor}">结束：{{getDateTimeStr(state.selectedTask.endTime,today.getFullYear())}}</view>
 			<uni-list style="width:92%">
 				<uni-list-item>
 					<template v-slot:body>
@@ -269,20 +270,43 @@
 			</view>
 			<view class="func">
 				<view class="detail-func" @click="openEditUI">
-					<uni-icons type="compose" :size="30"></uni-icons>
-					<text>编辑</text>
+					<uni-icons type="compose" :size="30" :color="subject.iconColor"></uni-icons>
+					<text :style="{color:subject.textColor}">编辑</text>
 				</view>
 				<view class="detail-func" @click="state.isTaskCancel=true;openEditUI();">
-					<uni-icons type="close" :size="30"></uni-icons>
-					<text>取消</text>
+					<uni-icons type="close" :size="30" :color="subject.iconColor"></uni-icons>
+					<text :style="{color:subject.textColor}">取消</text>
 				</view>
 				<view class="detail-func" @click="state.isTaskRemove=true;openEditUI();">
-					<uni-icons type="trash" :size="30"></uni-icons>
-					<text>删除</text>
+					<uni-icons type="trash" :size="30" :color="subject.iconColor"></uni-icons>
+					<text :style="{color:subject.textColor}">删除</text>
 				</view>
 
 			</view>
 		</scroll-view>
+	</uni-popup>
+	<uni-popup ref="recordPopup" :background-color="subject.backColor" type="bottom" @change="closeRecordPopup">
+		<view class="recoreding">
+			<view class="header">
+				<uni-icons type="closeempty" :color="subject.iconColor" @click="recordPopup.close()"
+					:size="24"></uni-icons>
+			</view>
+			<view class="recording-content"v-if="!state.recordOpt.finished">
+				<view style="display: flex;justify-content: center;height: 40px;align-items: center;"
+					>
+					<text v-show="recorder.isRecording" style="margin-right: 2%;">{{recorder.getTime()}}</text>
+					<button @click="recordAction" type="primary" size="mini" v-if="!recorder.isRecording"
+						style="height: 30px;width: 65px;">录制</button>
+					<button @click="recordAction" style="background-color: red;color:#fff;height: 30px;width: 65px;"
+						size="mini" v-if="recorder.isRecording">停止</button>
+				</view>
+			</view>
+			<view class="recording-content" style="flex-direction: column;" v-if="state.recordOpt.finished">
+				<h3 style="margin-top: 2%;margin-bottom: 2%;">{{state.recordOpt.content}}</h3> 
+				<button type="primary" @click="saveRecordContent" size="mini" style="height: 30px;width: 65px;"
+				:disabled="!state.recordOpt.transformed">保存</button>
+			</view>
+		</view>
 	</uni-popup>
 	<uni-popup type="center" :background-color="subject.backColor" border-radius="10px 10px 10px 10px" ref="priorityPopup"
 		style="z-index:101">
@@ -298,7 +322,6 @@
 		<k-radio-group :data="state.modeContent" v-model="state.mode" @onChange="openEditOrRemoveTaskOrCancelTask">
 		</k-radio-group>
 	</uni-popup>
-
 	<uni-fab vertical="bottom" :pattern="pattern" :pop-menu="false" :horizontal="fabPosition.value()"
 		@fabClick="openToEdit" @longpress="fabPosition.left=!fabPosition.left" />
 </template>
@@ -355,6 +378,7 @@
 		onTabItemTap
 	} from "@dcloudio/uni-app"
 import { SubjectStyle, getSubject } from "../module/Subject";
+import Recorder from "../module/Recording";
 	const popup = ref(null);
 	const frequencyPopup = ref(null);
 	const defRulePopup = ref(null);
@@ -362,6 +386,7 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 	const priorityPopup = ref(null);
 	const customPopup = ref(null);
 	const editModePopup = ref(null);
+	const recordPopup = ref(null);
 	const today = ref(new Date());
 	const taskPageOpt = ref(new PageOption(1, 100, 0));
 	const pattern = ref({
@@ -376,6 +401,7 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 		}
 	});
 	const subject = ref(new SubjectStyle());
+	const recorder = ref(new Recorder());
 	const state = reactive({
 		showWay: CalendarDisplayWay.week,
 		canCreateTask: false,
@@ -431,7 +457,12 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 		modeContent: [],
 		isTaskUpdate: false,
 		isTaskCancel: false,
-		isTaskRemove: false
+		isTaskRemove: false,
+		recordOpt:{
+			content:"",
+			transfromed:false,
+			finished:false
+		}
 	});
 
 	onShow(function() {
@@ -510,7 +541,7 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 		state.frequency.selection = 0;
 		state.defOpt.mode = "一直";
 		state.defOpt.val = 0;
-		state.task.period = 1;
+		state.task.period = 0;
 		state.task.periodUnit = 1;
 		state.task.count = 0;
 		state.task.reminderInfoModels = [];
@@ -1039,6 +1070,52 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 				return "Ⅵ";
 		}
 	}
+	
+	function recordAction() {
+		if (!recorder.value.isRecording) {
+			recorder.value.startRecording(res => {
+				const content = res.data;
+				state.recordOpt.content = content.replace(/\s/g, "");
+				if(res.ok)
+				   state.recordOpt.transformed = true;
+			});
+		} else
+			{
+				state.recordOpt.finished = true;
+				state.recordOpt.content = "语音识别转换中...";
+				if(recorder.value.current==0)
+					{
+						popup.value.close();
+						recorder.value.stopRecording(false);
+					}
+				else
+				   recorder.value.stopRecording(true);   	
+			}
+	}
+	
+	function closeRecordPopup(e) {
+		if (e.show){ 
+			recorder.value = new Recorder();
+			return;
+			}
+		if (recorder.value.isRecording)
+			recorder.value.stopRecording(false);
+	    state.recordOpt = {
+			content:"",
+			finished:false,
+			transformed:false
+		};		
+	}
+	
+	function saveRecordContent(){
+		if(state.recordOpt.content.length==0)
+			return;
+		state.task.title = state.recordOpt.content;
+		state.canCreateTask = true;
+		editTask();
+		recordPopup.value.close();
+		state.canCreateTask = false;
+	}
 </script>
 
 <style>
@@ -1274,5 +1351,29 @@ import { SubjectStyle, getSubject } from "../module/Subject";
 		display: inline-block;
 		margin-top: 3vh;
 		/*#endif*/
+	}
+	
+	.recoreding {
+		position: relative;
+		height: 35vh;
+		width: 100vw;
+	}
+	
+	.recoreding .header {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding-left: 2%;
+		height: 40px;
+	}
+	
+	.recoreding .recording-content {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: white;
+		width: 92%;
+		height: 120px;
+		margin: 0 auto;
 	}
 </style>

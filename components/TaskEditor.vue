@@ -809,19 +809,17 @@
 	function recordAction() {
 		if (!recorder.value.isRecording) {
 			recorder.value.startRecording(res => {
-				const content = res.text;
+				const content = res.data;
 				state.recordOpt.content = content.replace(/\s/g, "");
-				state.recordOpt.transformed = true;
+				if(res.ok)
+				   state.recordOpt.transformed = true;
 			});
 		} else
 			{
 				state.recordOpt.finished = true;
 				state.recordOpt.content = "语音识别转换中...";
 				if(recorder.value.current==0)
-					{
-						popup.value.close();
-						recorder.value.stopRecording(false);
-					}
+				   recorder.value.stopRecording(false);
 				else
 				   recorder.value.stopRecording(true);   	
 			}
@@ -835,18 +833,17 @@
 			content:"",
 			finished:false,
 			transformed:false
-		};		
+		};	
 		popup.value.close();
 	}
 	
 	function saveRecordContent(){
+		console.log(state.recordOpt.content);
 		if(state.recordOpt.content.length==0)
-		{
-			popup.value.close();
 			return;
-		}
 		state.task.title = state.recordOpt.content;
 		editTask();
+		popup.value.close();
 	}
 
 	function open() {

@@ -1,37 +1,42 @@
 <template>
-	<view id="login" v-if="!state.hasLogan">
-		<uni-forms label-position="right" :rules="rules" label-align="right">
-			<uni-forms-item label="电子邮箱" name="email" class="item" v-if="state.useCheckCode||state.isReg">
-				<uni-easyinput type="email" v-model="state.email" maxlength="25" />
-			</uni-forms-item>
-			<uni-forms-item label="账户" name="email" class="item" v-if="!state.useCheckCode&&!state.isReg">
-				<uni-easyinput v-model="state.account" maxlength="25" placeholder="电子邮箱/账号" />
-			</uni-forms-item>
-			<uni-forms-item name="password" label="密码" v-if="!state.useCheckCode||state.isReg" maxlength="20"
-				class="item"> 
-				<uni-easyinput type="password" v-model="state.password"  placeholder="非邮箱注册的默认密码为账号前六位"/>
-			</uni-forms-item>
-			<uni-forms-item label="验证码" class="item" name="checkCode" v-if="state.useCheckCode||state.isReg">
-				<view class="check">
-					<uni-easyinput type="text" v-model="state.checkCode" :maxlength="state.checkCodeLen"
-						class="check-code">
-					</uni-easyinput>
-					<button size="mini" class="get-check-code" @click="getCheckCode"
-						:disabled="state.hasGotCode">{{state.checkCodeText}}</button>
+	<view id="login">
+		<view class="form" v-if="!state.hasLogan">
+			<uni-forms label-position="right" :rules="rules" label-align="right">
+				<uni-forms-item label="电子邮箱" name="email" class="item" v-if="state.useCheckCode||state.isReg">
+					<uni-easyinput type="email" v-model="state.email" maxlength="25" />
+				</uni-forms-item>
+				<uni-forms-item label="账户" name="email" class="item" v-if="!state.useCheckCode&&!state.isReg">
+					<uni-easyinput v-model="state.account" maxlength="25" placeholder="电子邮箱/账号" />
+				</uni-forms-item>
+				<uni-forms-item name="password" label="密码" v-if="!state.useCheckCode||state.isReg" maxlength="20"
+					class="item">
+					<uni-easyinput type="password" v-model="state.password" placeholder="非邮箱注册的默认密码为账号前六位" />
+				</uni-forms-item>
+				<uni-forms-item label="验证码" class="item" name="checkCode" v-if="state.useCheckCode||state.isReg">
+					<view class="check">
+						<uni-easyinput type="text" v-model="state.checkCode" :maxlength="state.checkCodeLen"
+							class="check-code">
+						</uni-easyinput>
+						<button size="mini" class="get-check-code" @click="getCheckCode"
+							:disabled="state.hasGotCode">{{state.checkCodeText}}</button>
+					</view>
+				</uni-forms-item>
+				<view class="btns">
+					<button type="primary" @click="login" class="btn" size="mini" v-if="!state.isReg">登录</button>
+					<button type="primary" @click="register" class="btn" size="mini" v-else>注册</button>
 				</view>
-			</uni-forms-item>
-			<view class="btns">
-				<button type="primary" @click="login" class="btn" size="mini" v-if="!state.isReg">登录</button>
-				<button type="primary" @click="register" class="btn" size="mini" v-else>注册</button>
-			</view>
-			<view class="login-opt">
-				<a @click="state.useCheckCode=true;state.isReg=false;state.checkCodeLen=4"
-					v-if="!state.useCheckCode">使用验证码登录</a>
-				<a @click="state.useCheckCode=false;state.isReg=false;" v-else>使用密码登录</a>
-				<a @click="state.isReg = true;state.checkCodeLen=6" v-if="!state.isReg">注册</a>
-				<a @click="state.isReg = false;state.checkCodeLen=6" v-else>注册</a>
-			</view>
-		</uni-forms>
+				<view class="login-opt">
+					<a @click="state.useCheckCode=true;state.isReg=false;state.checkCodeLen=4"
+						v-if="!state.useCheckCode">使用验证码登录</a>
+					<a @click="state.useCheckCode=false;state.isReg=false;" v-else>使用密码登录</a>
+					<a @click="state.isReg = true;state.checkCodeLen=6" v-if="!state.isReg">注册</a>
+					<a @click="state.isReg = false;state.checkCodeLen=6" v-else>注册</a>
+				</view>
+			</uni-forms>
+		</view>
+		<cover-view class="wait-image" v-else>
+			<cover-image src="../static/login.gif" />
+		</cover-view>
 		<uni-popup ref="bindEmailPopup" background-color="#fff" @change="popupClose">
 			<view class="bind-email">
 				<uni-nav-bar left-icon="arrow-left" @clickLeft="bindEmailPopup.close();"
@@ -60,7 +65,7 @@
 			</view>
 		</uni-popup>
 	</view>
-	<cover-image src="../static/login.gif" v-else />
+	
 </template>
 
 <script setup>
@@ -273,15 +278,12 @@
 <style scoped>
 	#login {
 		position: relative;
-		/*#ifndef H5*/
-		top: 20%;
-		/*#endif*/
-		/*#ifdef H5*/
-		top: 20vh;
-		/*#endif*/
-		width: 90%;
-		margin: 0 auto;
-		height: 100%;
+		width: 100vw;
+		display: flex;
+		height: 100vh;
+		justify-content: center;
+		align-items: center;
+		background: linear-gradient(180deg, cyan, gray);
 	}
 
 	#login .item {
@@ -338,5 +340,24 @@
 		/*#ifndef H5*/
 		padding-top: 3vh;
 		/*#endif*/
+	}
+
+	#login .wait-image {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width:94vw;
+		height: 80vh;
+	}
+
+	#login .form {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 92%;
+		background-color: white;
+		border-radius: 5px;
+		padding-top: 3%;
 	}
 </style>

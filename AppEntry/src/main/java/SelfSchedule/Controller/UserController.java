@@ -160,4 +160,17 @@ public class UserController extends ControllerBase{
             return fail("验证码错误或已过期！");
         return ok("绑定邮箱成功！");
     }
+
+    @GetMapping("/GetUserSubject/{userId}")
+    @ApiOperation(value = "获取用户设置的主题",notes = "获取用当前使用的主题")
+    public ActionResult<String> GetUserSubject(@PathVariable String userId){
+        return successWithData(userService.getUserSubject(userId,redis));
+    }
+
+    @PostMapping("/SetUserSubject/{userId}")
+    @ApiOperation(value = "获取用户设置的主题",notes = "获取用当前使用的主题")
+    public ActionResult SetUserSubject(@PathVariable String userId,@RequestParam String subject){
+       userService.setUserSubject(userId,subject,redis);
+       return ok("设置主题成功！");
+    }
 }

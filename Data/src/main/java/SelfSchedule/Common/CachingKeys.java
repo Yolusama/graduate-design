@@ -3,9 +3,9 @@ package SelfSchedule.Common;
 public final class CachingKeys {
     private CachingKeys(){}
     public static final String GetTasks = "GetTasks";
-    public static final String GetTasksDateValue = "GetTasks_Date";
+    public static final String GetTasksDateValue = "GetTasksDate";
     public static final String GetHabits = "GetHabits";
-    public static final String GetHabitsDateValue = "GetHabits_Date";
+    public static final String GetHabitsDateValue = "GetHabitsDate";
     public static final String GetHabitGroups = "GetHabitGroups";
     public static final String GetDefaultThumbs = "GetDefaultThumbs";
     public static final String GetUserHabitReminders = "GetUserHabitReminders";
@@ -21,4 +21,5 @@ public final class CachingKeys {
     public static final String GetNotifyAudios = "GetNotifyAudios";
     public static final String ContinuousDaysChecked = "ContinuousDaysChecked";
     public static final String GetTaskCalculation = "GetTaskCalculation";
+    public static final String GetUserSubject = "UserSubject";
 }

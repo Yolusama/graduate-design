@@ -1,20 +1,19 @@
-package SelfSchedule.Utils;
+package SelfSchedule.Functional;
 
 import SelfSchedule.Functional.VoskModel;
 import org.vosk.Recognizer;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import java.io.BufferedInputStream;
 
 import java.io.File;
 import java.util.concurrent.*;
 
-public class VoskUtil {
-
+public class VoskRecognizer {
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
-    public static CompletableFuture<String> recognize(File wavFile, String modelPath) {
+
+    public static CompletableFuture<String> recognize(File wavFile,String modelPath) {
         return CompletableFuture.supplyAsync(() -> {
             try (Recognizer recognizer = new Recognizer(VoskModel.getModel(modelPath), 16000.0f)) {
                 AudioInputStream ais = AudioSystem.getAudioInputStream(wavFile);
@@ -23,9 +22,8 @@ public class VoskUtil {
 
                 int nbytes;
                 while ((nbytes = ais.read(buffer)) >= 0) {
-                    if (recognizer.acceptWaveForm(buffer, nbytes)) {
+                    if (recognizer.acceptWaveForm(buffer, nbytes))
                         result.append(recognizer.getResult());
-                    }
                 }
                 result.append(recognizer.getFinalResult());
                 ais.close();
@@ -37,3 +35,4 @@ public class VoskUtil {
         }, executor);
     }
 }
+

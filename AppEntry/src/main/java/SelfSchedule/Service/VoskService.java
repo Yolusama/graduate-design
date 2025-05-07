@@ -2,7 +2,7 @@ package SelfSchedule.Service;
 
 import SelfSchedule.Common.Constants;
 import SelfSchedule.Functional.WavStandardization;
-import SelfSchedule.Utils.VoskUtil;
+import SelfSchedule.Functional.VoskRecognizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +28,7 @@ public class VoskService {
             Path tempFile = Path.of(String.format("%s.wav",randomName));
             Files.copy(stream,tempFile);
             File outputTemp = WavStandardization.standardize(ffmpegPath,randomName,tempFile.toFile());
-            CompletableFuture<String> future = VoskUtil.recognize(outputTemp, voskPath);
+            CompletableFuture<String> future = VoskRecognizer.recognize(outputTemp,voskPath);
             String res = future.get();
             stream.close();
             Files.delete(tempFile);

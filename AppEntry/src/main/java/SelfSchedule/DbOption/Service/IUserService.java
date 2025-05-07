@@ -33,4 +33,6 @@ public interface IUserService extends IService<User> {
     UserVO addUser(UserModel model);
     int updateUser(UserModel model);
     String uploadAvatar(String userId,String avatar,MultipartFile file,FileService fileService);
+    String getUserSubject(String userId,RedisCache redis);
+    void setUserSubject(String userId,String subject,RedisCache redis);
 }

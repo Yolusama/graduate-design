@@ -1,5 +1,6 @@
 package SelfSchedule.DbOption.ServiceImpl;
 
+import SelfSchedule.Common.CachingKeys;
 import SelfSchedule.Common.Constants;
 import SelfSchedule.DbOption.Mapper.HabitGroupMapper;
 import SelfSchedule.DbOption.Mapper.UserMapper;
@@ -378,5 +379,21 @@ public class UserService extends ServiceImpl<UserMapper, User> implements IUserS
              userTaskLabels.add(userTaskLabel);
          }
          userTaskLabelMapper.batchInsert(userTaskLabels);
+    }
+
+    @Override
+    public String getUserSubject(String userId, RedisCache redis) {
+        String key = String.format("%s_%s",userId, CachingKeys.GetUserSubject);
+        if(redis.has(key))
+            return redis.get(key).toString();
+        return null;
+    }
+
+    @Override
+    public void setUserSubject(String userId, String subject, RedisCache redis) {
+        String key = String.format("%s_%s",userId, CachingKeys.GetUserSubject);
+        if(redis.has(key))
+            redis.remove(key);
+        redis.set(key, subject);
     }
 }
